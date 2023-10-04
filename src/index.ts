@@ -1,9 +1,15 @@
-type Handle = () => Promise<string>
+import express from 'express'
+import userRoutes from './user.routes'
 
-const name: string = 'Hiep le'
+const app = express()
+const port = 3000
 
-const person: { name: string } = { name: name }
+app.post('/', (req, res) => {
+  res.send('Hello World!')
+})
 
-const handle: Handle = async () => Promise.resolve(name)
+app.use('/user', userRoutes)
 
-handle().then(console.log)
+app.listen(port, () => {
+  console.log(`App is listening at http://localhost:${port}`)
+})
