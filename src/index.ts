@@ -1,8 +1,9 @@
 import express from 'express'
-import userRoutes from './user.routes'
+import userRoutes from './routes/user.routes'
 
 const app = express()
 const port = 3000
+app.use(express.json())
 
 app.post('/', (req, res) => {
   res.send('Hello World!')
