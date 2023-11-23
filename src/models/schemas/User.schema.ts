@@ -1,10 +1,5 @@
 import { ObjectId } from 'mongodb'
-
-enum UserVerifyStatus {
-  Unverified, // chưa xác thực email, mặc định = 0
-  Verified, // đã xác thực email
-  Banned // bị khóa
-}
+import { UserVerifyStatus } from '~/constant/enum'
 
 interface UserType {
   _id?: ObjectId
@@ -32,11 +27,11 @@ export default class User {
   email: string
   date_of_birth: Date
   password: string
-  created_at: Date
-  updated_at: Date
-  email_verify_token: string
-  forgot_password_token: string
-  verify: UserVerifyStatus
+  created_at?: Date
+  updated_at?: Date
+  email_verify_token?: string
+  forgot_password_token?: string
+  verify?: UserVerifyStatus
 
   bio?: string
   location?: string
