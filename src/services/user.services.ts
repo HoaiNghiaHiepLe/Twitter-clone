@@ -10,7 +10,10 @@ class UserService {
     return signToken({
       payload: {
         user_id,
-        tokenType: TokenType.AccessToken
+        token_type: TokenType.AccessToken
+      },
+      options: {
+        expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN
       }
     })
   }
@@ -19,7 +22,10 @@ class UserService {
     return signToken({
       payload: {
         user_id,
-        tokenType: TokenType.RefreshToken
+        token_type: TokenType.RefreshToken
+      },
+      options: {
+        expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN
       }
     })
   }
@@ -32,7 +38,17 @@ class UserService {
         password: hashPassword(payload.password)
       })
     )
-    return result
+
+    const user_id = result.insertedId.toString()
+    const [access_token, refresh_token] = await Promise.all([
+      this.signAccessToken(user_id),
+      this.signRefreshToken(user_id)
+    ])
+
+    return {
+      access_token,
+      refresh_token
+    }
   }
   async checkExistEmail(email: string) {
     const user = await databaseService.users.findOne({ email })
