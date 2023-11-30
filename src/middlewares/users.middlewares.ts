@@ -1,7 +1,9 @@
 import { NextFunction, Request, Response } from 'express'
 import { Result, checkSchema } from 'express-validator'
+import { USER_MESSAGE } from '~/constant/message'
 import { ErrorWithStatus } from '~/models/Errors'
 import userService from '~/services/user.services'
+import { interpolateMessage } from '~/utils/utils'
 import { validate } from '~/utils/validation'
 
 export const loginValidator = (req: Request, res: Response, next: NextFunction) => {
@@ -20,24 +22,24 @@ export const loginValidator = (req: Request, res: Response, next: NextFunction) 
 export const registerValidator = validate(
   checkSchema({
     name: {
-      notEmpty: { errorMessage: 'Name is required' },
-      isString: { errorMessage: 'Name must be a string' },
+      notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'name' }) },
+      isString: { errorMessage: interpolateMessage(USER_MESSAGE.MUST_BE_A_STRING, { field: 'name' }) },
       isLength: {
         options: { min: 3, max: 100 },
-        errorMessage: 'Name must be between 3 and 100 characters'
+        errorMessage: interpolateMessage(USER_MESSAGE.MUST_BE_A_STRING, { field: 'name', min: '3', max: '100' })
       },
       trim: true
     },
     email: {
-      isEmail: { errorMessage: 'Email is invalid' },
-      notEmpty: { errorMessage: 'Email is required' },
+      isEmail: { errorMessage: interpolateMessage(USER_MESSAGE.INVALID_FORMAT, { field: 'email' }) },
+      notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'email' }) },
       trim: true,
       custom: {
         options: async (value) => {
           const isExistEmail = await userService.checkExistEmail(value as string)
 
           if (isExistEmail) {
-            throw 'Email already exists'
+            throw Error(interpolateMessage(USER_MESSAGE.ALREADY_EXISTS, { field: 'email' }))
           }
 
           return true
@@ -45,11 +47,11 @@ export const registerValidator = validate(
       }
     },
     password: {
-      notEmpty: { errorMessage: 'Password is required' },
-      isString: { errorMessage: 'Password must be a string' },
+      notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'password' }) },
+      isString: { errorMessage: interpolateMessage(USER_MESSAGE.MUST_BE_A_STRING, { field: 'password' }) },
       isLength: {
         options: { min: 6, max: 50 },
-        errorMessage: 'Password must be between 6 and 50 characters'
+        errorMessage: interpolateMessage(USER_MESSAGE.LENGTH, { field: 'password', min: '6', max: '50' })
       },
       isStrongPassword: {
         options: {
@@ -59,15 +61,15 @@ export const registerValidator = validate(
           minNumbers: 1,
           minSymbols: 1
         },
-        errorMessage: 'Password must be at least 6 characters, 1 uppercase letter and 1 symbol'
+        errorMessage: USER_MESSAGE.PASSWORD_STRONG
       }
     },
     confirm_password: {
-      notEmpty: { errorMessage: 'Password confirmation is required' },
-      isString: { errorMessage: 'Password confirmation must be a string' },
+      notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'confirm password' }) },
+      isString: { errorMessage: interpolateMessage(USER_MESSAGE.MUST_BE_A_STRING, { field: 'confirm password' }) },
       isLength: {
         options: { min: 6, max: 50 },
-        errorMessage: 'Password confirmation must be between 6 and 50 characters'
+        errorMessage: interpolateMessage(USER_MESSAGE.LENGTH, { field: 'confirm password', min: '6', max: '50' })
       },
       isStrongPassword: {
         options: {
@@ -77,22 +79,27 @@ export const registerValidator = validate(
           minNumbers: 1,
           minSymbols: 1
         },
-        errorMessage: 'Password must be at least 6 characters, 1 uppercase letter and 1 symbol'
+        errorMessage: interpolateMessage(USER_MESSAGE.STRONG, {
+          field: 'confirm password',
+          minLength: '6',
+          uppercase: '1',
+          minSymbols: '1'
+        })
       },
       custom: {
         options: (value, { req }) => {
           if (value !== req.body.password) {
-            throw new Error('Password confirmation does not match password')
+            throw new Error(interpolateMessage(USER_MESSAGE.NOT_MATCH, { field: 'confirm password' }))
           }
           return true
         }
       }
     },
     date_of_birth: {
-      notEmpty: { errorMessage: 'Date of birth is required' },
+      notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'date of birth' }) },
       isISO8601: {
         options: { strict: true, strictSeparator: true },
-        errorMessage: 'Date of birth must be a valid date'
+        errorMessage: interpolateMessage(USER_MESSAGE.INVALID_FORMAT, { field: 'date of birth' })
       }
     }
   })
