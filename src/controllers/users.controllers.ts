@@ -1,21 +1,22 @@
 import { NextFunction, Request, Response } from 'express'
-import User from '~/models/schemas/User.schema'
-import databaseService from '~/services/database.services'
 import userService from '~/services/user.services'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { RegisterReqBody } from '~/models/schemas/requests/User.request'
+import { RegisterReqBody } from '~/models/requests/User.request'
+import { USER_MESSAGE } from '~/constant/message'
+import { interpolateMessage } from '~/utils/utils'
+import User from '~/models/schemas/User.schema'
+import { ObjectId } from 'mongodb'
 
-export const loginController = (req: Request, res: Response) => {
-  const { email, password } = req.body
+export const loginController = async (req: Request, res: Response) => {
+  const { user } = req
 
-  if (email !== 'hieple@mail.com' || password !== '123456') {
-    return res.status(401).json({
-      code: 401,
-      message: 'Email or password is incorrect'
-    })
-  }
+  const user_id = ((user as User)._id as ObjectId).toString()
 
-  res.json({ message: 'Login sucessful' })
+  const result = await userService.login(user_id)
+  return res.json({
+    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'login' }),
+    result
+  })
 }
 
 export const registerController = async (
@@ -25,7 +26,7 @@ export const registerController = async (
 ) => {
   const result = await userService.register(req.body)
   return res.json({
-    message: 'register successful',
+    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'register' }),
     result
   })
 }
