@@ -1,24 +1,38 @@
-import { NextFunction, Request, Response } from 'express'
-import { Result, checkSchema } from 'express-validator'
+import { checkSchema } from 'express-validator'
 import { USER_MESSAGE } from '~/constant/message'
-import { ErrorWithStatus } from '~/models/Errors'
-import userService from '~/services/user.services'
+import { checkExistEmail, authenticateUser } from '~/repository/users.repository'
 import { interpolateMessage } from '~/utils/utils'
 import { validate } from '~/utils/validation'
 
-export const loginValidator = (req: Request, res: Response, next: NextFunction) => {
-  const { email, password } = req.body
+export const loginValidator = validate(
+  checkSchema({
+    email: {
+      isEmail: { errorMessage: interpolateMessage(USER_MESSAGE.INVALID_FORMAT, { field: 'email' }) },
+      trim: true,
+      custom: {
+        options: async (value, { req }) => {
+          const user = await authenticateUser(value as string, req.body.password as string)
 
-  if (!email || !password) {
-    return res.status(400).json({
-      code: 400,
-      message: 'Email and password are required'
-    })
-  }
+          if (user === null) {
+            throw Error(interpolateMessage(USER_MESSAGE.INCORRECT, { field: 'email or password' }))
+          }
 
-  next()
-}
+          req.user = user
 
+          return true
+        }
+      }
+    },
+    password: {
+      notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'password' }) },
+      isString: { errorMessage: interpolateMessage(USER_MESSAGE.MUST_BE_A_STRING, { field: 'password' }) },
+      isLength: {
+        options: { min: 6, max: 50 },
+        errorMessage: interpolateMessage(USER_MESSAGE.LENGTH, { field: 'password', min: '6', max: '50' })
+      }
+    }
+  })
+)
 export const registerValidator = validate(
   checkSchema({
     name: {
@@ -36,7 +50,7 @@ export const registerValidator = validate(
       trim: true,
       custom: {
         options: async (value) => {
-          const isExistEmail = await userService.checkExistEmail(value as string)
+          const isExistEmail = await checkExistEmail(value as string)
 
           if (isExistEmail) {
             throw Error(interpolateMessage(USER_MESSAGE.ALREADY_EXISTS, { field: 'email' }))
