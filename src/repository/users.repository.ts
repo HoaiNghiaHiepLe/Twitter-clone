@@ -33,3 +33,19 @@ export const insertRefreshToken = async (token: string, user_id: string) => {
 
   return result
 }
+
+export const checkUserRefreshToken = async (token: string) => {
+  const refreshToken = await databaseService.refreshTokens.findOne({ token })
+
+  if (refreshToken === null) {
+    return null
+  }
+
+  const user = await databaseService.users.findOne({ _id: refreshToken.user_id })
+
+  if (user === null) {
+    return null
+  }
+
+  return user
+}

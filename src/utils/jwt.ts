@@ -1,7 +1,5 @@
 import jwt, { SignOptions } from 'jsonwebtoken'
 import { config } from 'dotenv'
-import { ErrorWithStatus } from '~/models/Errors'
-import HTTP_STATUS from '~/constant/httpStatus'
 
 config()
 
@@ -33,7 +31,7 @@ export const verifyToken = ({
 }) => {
   return new Promise<jwt.JwtPayload>((resolve, reject) => {
     jwt.verify(token, secretOrPublicKey, options, (error, decoded) => {
-      if (error) throw reject(new ErrorWithStatus({ message: error.message, status: HTTP_STATUS.UNAUTHORIZED }))
+      if (error) reject(error)
       resolve(decoded as jwt.JwtPayload)
     })
   })

@@ -2,7 +2,7 @@ import { checkSchema } from 'express-validator'
 import HTTP_STATUS from '~/constant/httpStatus'
 import { USER_MESSAGE } from '~/constant/message'
 import { ErrorWithStatus } from '~/models/Errors'
-import { checkExistEmail, authenticateUser } from '~/repository/users.repository'
+import { checkExistEmail, authenticateUser, checkUserRefreshToken } from '~/repository/users.repository'
 import { verifyToken } from '~/utils/jwt'
 import { interpolateMessage } from '~/utils/utils'
 import { validate } from '~/utils/validation'
@@ -11,7 +11,7 @@ export const loginValidator = validate(
   checkSchema(
     {
       email: {
-        isEmail: { errorMessage: interpolateMessage(USER_MESSAGE.INVALID_FORMAT, { field: 'email' }) },
+        isEmail: { errorMessage: interpolateMessage(USER_MESSAGE.INVALID, { field: 'email' }) },
         trim: true,
         custom: {
           options: async (value, { req }) => {
@@ -52,7 +52,7 @@ export const registerValidator = validate(
         trim: true
       },
       email: {
-        isEmail: { errorMessage: interpolateMessage(USER_MESSAGE.INVALID_FORMAT, { field: 'email' }) },
+        isEmail: { errorMessage: interpolateMessage(USER_MESSAGE.INVALID, { field: 'email' }) },
         notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'email' }) },
         trim: true,
         custom: {
@@ -120,7 +120,7 @@ export const registerValidator = validate(
         notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'date of birth' }) },
         isISO8601: {
           options: { strict: true, strictSeparator: true },
-          errorMessage: interpolateMessage(USER_MESSAGE.INVALID_FORMAT, { field: 'date of birth' })
+          errorMessage: interpolateMessage(USER_MESSAGE.INVALID, { field: 'date of birth' })
         }
       }
     },
@@ -140,22 +140,67 @@ export const accessTokenValidator = validate(
         },
         custom: {
           options: async (value: string, { req }) => {
-            const access_token = value.split(' ')[1]
-            if (!access_token) {
+            try {
+              const access_token = value.split(' ')[1]
+              if (!access_token) {
+                throw new ErrorWithStatus({
+                  message: interpolateMessage(USER_MESSAGE.INVALID, { field: 'access token' }),
+                  status: HTTP_STATUS.UNAUTHORIZED
+                })
+              }
+              const decoded_authorization = await verifyToken({ token: access_token })
+              req.decoded_authorization = decoded_authorization
+            } catch (error) {
               throw new ErrorWithStatus({
-                message: interpolateMessage(USER_MESSAGE.INVALID_FORMAT, { field: 'access token' }),
+                message: interpolateMessage(USER_MESSAGE.INVALID, { field: 'access token' }),
                 status: HTTP_STATUS.UNAUTHORIZED
               })
             }
-            const decoded_authorization = await verifyToken({ token: access_token })
-
-            req.decoded_authorization = decoded_authorization
-
             return true
           }
         }
       }
     },
     ['headers']
+  )
+)
+
+export const refreshTokenValidator = validate(
+  checkSchema(
+    {
+      refresh_token: {
+        notEmpty: {
+          errorMessage: new ErrorWithStatus({
+            message: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'refresh token' }),
+            status: HTTP_STATUS.UNAUTHORIZED
+          })
+        },
+
+        custom: {
+          options: async (value: string, { req }) => {
+            try {
+              const [decoded_refresh_token, refresh_token] = await Promise.all([
+                verifyToken({ token: value }),
+                checkUserRefreshToken(value)
+              ])
+              if (!refresh_token) {
+                throw new ErrorWithStatus({
+                  message: interpolateMessage(USER_MESSAGE.INVALID, { field: 'refresh token' }),
+                  status: HTTP_STATUS.UNAUTHORIZED
+                })
+              }
+              req.decoded_refresh_token = decoded_refresh_token
+            } catch (error) {
+              throw new ErrorWithStatus({
+                message: interpolateMessage(USER_MESSAGE.INVALID, { field: 'refresh token' }),
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            }
+            return true
+          }
+        }
+      }
+    },
+    ['body']
   )
 )

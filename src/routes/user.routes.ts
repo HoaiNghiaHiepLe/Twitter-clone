@@ -1,6 +1,11 @@
 import { Router } from 'express'
 import { loginController, registerController } from '~/controllers/users.controllers'
-import { accessTokenValidator, loginValidator, registerValidator } from '~/middlewares/users.middlewares'
+import {
+  accessTokenValidator,
+  loginValidator,
+  refreshTokenValidator,
+  registerValidator
+} from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
 
 const usersRoutes = Router()
@@ -33,6 +38,7 @@ usersRoutes.post('/register', registerValidator, wrapRequestHandler(registerCont
 usersRoutes.post(
   '/logout',
   accessTokenValidator,
+  refreshTokenValidator,
   wrapRequestHandler((req, res) => {
     return res.json({ message: 'Logout successfully' })
   })
