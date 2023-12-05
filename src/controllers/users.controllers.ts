@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import userService from '~/services/user.services'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { RegisterReqBody } from '~/models/requests/User.request'
+import { RegisterReqBody, LogoutReqBody } from '~/models/requests/User.request'
 import { USER_MESSAGE } from '~/constant/message'
 import { interpolateMessage } from '~/utils/utils'
 import User from '~/models/schemas/User.schema'
@@ -28,5 +28,15 @@ export const registerController = async (
   return res.json({
     message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'register' }),
     result
+  })
+}
+
+export const logoutController = async (req: Request<ParamsDictionary, any, LogoutReqBody>, res: Response) => {
+  const { refresh_token } = req.body
+
+  userService.logout(refresh_token)
+
+  return res.json({
+    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'logout' })
   })
 }

@@ -1,10 +1,7 @@
-import User from '~/models/schemas/User.schema'
-import databaseService from './database.services'
 import { RegisterReqBody } from '~/models/requests/User.request'
-import { hashPassword } from '~/utils/crypto'
 import { signToken } from '~/utils/jwt'
 import { TokenType } from '~/constant/enum'
-import { insertRefreshToken } from '~/repository/users.repository'
+import { insertRefreshToken, insertUser, removeRefreshToken } from '~/repository/users.repository'
 import { config } from 'dotenv'
 
 config()
@@ -38,13 +35,7 @@ class UserService {
   }
 
   async register(payload: RegisterReqBody) {
-    const result = await databaseService.users.insertOne(
-      new User({
-        ...payload,
-        date_of_birth: new Date(payload.date_of_birth as string),
-        password: hashPassword(payload.password)
-      })
-    )
+    const result = await insertUser(payload)
 
     const user_id = result.insertedId.toString()
     const [access_token, refresh_token] = await this.signAccessAndRefreshToken(user_id)
@@ -64,6 +55,10 @@ class UserService {
       access_token,
       refresh_token
     }
+  }
+
+  async logout(token: string) {
+    return await removeRefreshToken(token)
   }
 }
 

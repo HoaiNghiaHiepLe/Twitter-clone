@@ -1,4 +1,5 @@
 import { checkSchema } from 'express-validator'
+import { JsonWebTokenError } from 'jsonwebtoken'
 import HTTP_STATUS from '~/constant/httpStatus'
 import { USER_MESSAGE } from '~/constant/message'
 import { ErrorWithStatus } from '~/models/Errors'
@@ -6,6 +7,8 @@ import { checkExistEmail, authenticateUser, checkUserRefreshToken } from '~/repo
 import { verifyToken } from '~/utils/jwt'
 import { interpolateMessage } from '~/utils/utils'
 import { validate } from '~/utils/validation'
+import capitalize from 'lodash/capitalize'
+import { Request } from 'express'
 
 export const loginValidator = validate(
   checkSchema(
@@ -140,21 +143,26 @@ export const accessTokenValidator = validate(
         },
         custom: {
           options: async (value: string, { req }) => {
-            try {
-              const access_token = value.split(' ')[1]
-              if (!access_token) {
-                throw new ErrorWithStatus({
-                  message: interpolateMessage(USER_MESSAGE.INVALID, { field: 'access token' }),
-                  status: HTTP_STATUS.UNAUTHORIZED
-                })
-              }
-              const decoded_authorization = await verifyToken({ token: access_token })
-              req.decoded_authorization = decoded_authorization
-            } catch (error) {
+            const access_token = value.split(' ')[1]
+            if (!access_token) {
               throw new ErrorWithStatus({
                 message: interpolateMessage(USER_MESSAGE.INVALID, { field: 'access token' }),
                 status: HTTP_STATUS.UNAUTHORIZED
               })
+            }
+
+            try {
+              const decoded_authorization = await verifyToken({ token: access_token })
+              ;(req as Request).decoded_authorization = decoded_authorization
+            } catch (error) {
+              if (error instanceof JsonWebTokenError) {
+                throw new ErrorWithStatus({
+                  message: capitalize((error as JsonWebTokenError).message),
+                  status: HTTP_STATUS.UNAUTHORIZED
+                })
+              } else {
+                throw error
+              }
             }
             return true
           }
@@ -189,12 +197,16 @@ export const refreshTokenValidator = validate(
                   status: HTTP_STATUS.UNAUTHORIZED
                 })
               }
-              req.decoded_refresh_token = decoded_refresh_token
+              ;(req as Request).decoded_refresh_token = decoded_refresh_token
             } catch (error) {
-              throw new ErrorWithStatus({
-                message: interpolateMessage(USER_MESSAGE.INVALID, { field: 'refresh token' }),
-                status: HTTP_STATUS.UNAUTHORIZED
-              })
+              if (error instanceof JsonWebTokenError) {
+                throw new ErrorWithStatus({
+                  message: capitalize((error as JsonWebTokenError).message),
+                  status: HTTP_STATUS.UNAUTHORIZED
+                })
+              } else {
+                throw error
+              }
             }
             return true
           }

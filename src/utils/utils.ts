@@ -15,3 +15,7 @@ export function defineProperty<T extends object, K extends keyof T>(
     }
   })
 }
+
+export const capitalizeFirstLetter = (str: string): string => {
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
