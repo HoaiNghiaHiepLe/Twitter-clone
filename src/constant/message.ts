@@ -10,5 +10,6 @@ export const USER_MESSAGE = {
   NOT_MATCH: ':field does not match',
   NOT_FOUND: ':field not found',
   INCORRECT: ':field is incorrect',
-  SUCCESSFUL: ':work successful'
+  SUCCESSFUL: ':work successful',
+  ALREADY: ':field already :work before'
 } as const
