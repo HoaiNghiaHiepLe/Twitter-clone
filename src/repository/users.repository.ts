@@ -1,4 +1,5 @@
 import { ObjectId } from 'mongodb'
+import { UserVerifyStatus } from '~/constant/enum'
 import { RegisterReqBody } from '~/models/requests/User.request'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
 import User from '~/models/schemas/User.schema'
@@ -24,8 +25,10 @@ export const insertUser = async (payload: RegisterReqBody) => {
   const user = await databaseService.users.insertOne(
     new User({
       ...payload,
+      _id: new ObjectId(payload.user_id),
       date_of_birth: new Date(payload.date_of_birth as string),
-      password: hashPassword(payload.password)
+      password: hashPassword(payload.password),
+      email_verify_token: payload.email_verify_token as string
     })
   )
 
@@ -66,4 +69,29 @@ export const checkUserRefreshToken = async (token: string) => {
 
 export const removeRefreshToken = async (token: string) => {
   await databaseService.refreshTokens.deleteOne({ token })
+}
+
+export const findUserById = async (user_id: string) => {
+  const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
+
+  if (user === null) {
+    return null
+  }
+
+  return user
+}
+
+export const updateEmailVerifyToken = async (user_id: string) => {
+  const result = await databaseService.users.updateOne(
+    { _id: new ObjectId(user_id) },
+    {
+      $set: {
+        email_verify_token: '',
+        verify: UserVerifyStatus.Verified,
+        updated_at: new Date()
+      }
+    }
+  )
+
+  return result
 }
