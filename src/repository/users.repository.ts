@@ -81,17 +81,32 @@ export const findUserById = async (user_id: string) => {
   return user
 }
 
-export const updateEmailVerifyToken = async (user_id: string) => {
-  const result = await databaseService.users.updateOne(
-    { _id: new ObjectId(user_id) },
-    {
-      $set: {
-        email_verify_token: '',
-        verify: UserVerifyStatus.Verified,
-        updated_at: new Date()
+export const updateEmailVerifyToken = async (user_id: string, emailVerifyToken?: string) => {
+  let result = null
+
+  if (emailVerifyToken && emailVerifyToken !== '') {
+    result = await databaseService.users.updateOne(
+      { _id: new ObjectId(user_id) },
+      {
+        $set: {
+          email_verify_token: emailVerifyToken
+        },
+        $currentDate: {
+          updated_at: true
+        }
       }
-    }
-  )
+    )
+  } else {
+    result = await databaseService.users.updateOne({ _id: new ObjectId(user_id) }, [
+      {
+        $set: {
+          email_verify_token: '',
+          verify: UserVerifyStatus.Verified,
+          updated_at: '$$NOW'
+        }
+      }
+    ])
+  }
 
   return result
 }

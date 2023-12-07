@@ -101,6 +101,16 @@ class UserService {
       refresh_token
     }
   }
+
+  async resendVerifyEmail(user_id: string) {
+    const emailVerifyToken = await this.signEmailVerifyToken(user_id)
+
+    await updateEmailVerifyToken(user_id, emailVerifyToken)
+
+    return {
+      email_verify_token: emailVerifyToken
+    }
+  }
 }
 
 const userService = new UserService()
