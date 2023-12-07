@@ -1,16 +1,23 @@
 import { NextFunction, Request, Response } from 'express'
 import userService from '~/services/user.services'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { RegisterReqBody, LogoutReqBody, TokenPayload } from '~/models/requests/User.request'
+import {
+  RegisterReqBody,
+  LogoutReqBody,
+  TokenPayload,
+  LoginReqBody,
+  verifyEmailReqBody
+} from '~/models/requests/User.request'
 import { USER_MESSAGE } from '~/constant/message'
 import { interpolateMessage } from '~/utils/utils'
 import User from '~/models/schemas/User.schema'
 import { ObjectId } from 'mongodb'
 import HTTP_STATUS from '~/constant/httpStatus'
 import { findUserById } from '~/repository/users.repository'
+import { UserVerifyStatus } from '~/constant/enum'
 
-export const loginController = async (req: Request, res: Response) => {
-  const { user } = req
+export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
+  const { user } = req as LoginReqBody
 
   const user_id = ((user as User)._id as ObjectId).toString()
 
@@ -26,7 +33,7 @@ export const registerController = async (
   res: Response,
   next: NextFunction
 ) => {
-  const result = await userService.register(req.body)
+  const result = await userService.register(req.body as RegisterReqBody)
   return res.json({
     message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'register' }),
     result
@@ -34,7 +41,7 @@ export const registerController = async (
 }
 
 export const logoutController = async (req: Request<ParamsDictionary, any, LogoutReqBody>, res: Response) => {
-  const { refresh_token } = req.body
+  const { refresh_token } = req.body as LogoutReqBody
 
   userService.logout(refresh_token)
 
@@ -43,7 +50,7 @@ export const logoutController = async (req: Request<ParamsDictionary, any, Logou
   })
 }
 
-export const emailVerifyController = async (req: Request, res: Response) => {
+export const emailVerifyController = async (req: Request<ParamsDictionary, any, verifyEmailReqBody>, res: Response) => {
   const { user_id } = req.decoded_email_verify_token as TokenPayload
 
   const user = await findUserById(user_id)
@@ -55,6 +62,7 @@ export const emailVerifyController = async (req: Request, res: Response) => {
       status: HTTP_STATUS.NOT_FOUND
     })
   }
+
   // already verified
   if (user.email_verify_token === '') {
     return res.json({
@@ -68,6 +76,34 @@ export const emailVerifyController = async (req: Request, res: Response) => {
   // verify email success
   return res.json({
     message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'email verify' }),
+    result
+  })
+}
+
+export const resendVerifyEmailController = async (req: Request, res: Response) => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+
+  const user = await findUserById(user_id)
+
+  // not found
+  if (!user) {
+    return res.json({
+      message: interpolateMessage(USER_MESSAGE.NOT_FOUND, { field: 'User' }),
+      status: HTTP_STATUS.NOT_FOUND
+    })
+  }
+
+  if (user.verify === UserVerifyStatus.Verified) {
+    return res.json({
+      message: interpolateMessage(USER_MESSAGE.ALREADY, { field: 'email', work: 'verified' }),
+      status: HTTP_STATUS.OK
+    })
+  }
+
+  const result = await userService.resendVerifyEmail(user_id)
+
+  return res.json({
+    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'resend verify email' }),
     result
   })
 }
