@@ -5,7 +5,8 @@ import {
   insertRefreshToken,
   insertUser,
   removeRefreshToken,
-  updateEmailVerifyToken
+  updateEmailVerifyToken,
+  updateForgotPasswordToken
 } from '~/repository/users.repository'
 import { config } from 'dotenv'
 import { ObjectId } from 'mongodb'
@@ -53,6 +54,19 @@ class UserService {
 
   private signAccessAndRefreshToken(user_id: string) {
     return Promise.all([this.signAccessToken(user_id), this.signRefreshToken(user_id)])
+  }
+
+  private signForgotPasswordToken(user_id: string) {
+    return signToken({
+      payload: {
+        user_id,
+        token_type: TokenType.ForgotPasswordToken
+      },
+      privateKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN as string,
+      options: {
+        expiresIn: process.env.FORGOT_PASSWORD_TOKEN_EXPIRES_IN
+      }
+    })
   }
 
   async register(payload: RegisterReqBody) {
@@ -109,6 +123,16 @@ class UserService {
 
     return {
       email_verify_token: emailVerifyToken
+    }
+  }
+
+  async forgotPassword(user_id: string) {
+    const forgotPasswordToken = await this.signForgotPasswordToken(user_id)
+
+    const result = await updateForgotPasswordToken(user_id, forgotPasswordToken)
+
+    return {
+      forgot_password_token: forgotPasswordToken
     }
   }
 }

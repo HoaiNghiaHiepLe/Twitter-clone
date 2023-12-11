@@ -11,5 +11,8 @@ export const USER_MESSAGE = {
   NOT_FOUND: ':field not found',
   INCORRECT: ':field is incorrect',
   SUCCESSFUL: ':work successful',
-  ALREADY: ':field already :work before'
+  ALREADY: ':field already :work before',
+  SEND_EMAIL: 'A :link has been sent to your email',
+  UNVERIFIED: ':field is unverified',
+  EXPIRED: ':field is expired'
 } as const

@@ -29,3 +29,10 @@ export interface LogoutReqBody {
 export type verifyEmailReqBody = {
   email_verify_token: string
 }
+
+export type forgotPasswordReqBody = {
+  user: User
+}
+export type verifyForgotPasswordReqBody = {
+  forgot_password_token: string
+}
