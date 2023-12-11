@@ -5,15 +5,17 @@ import {
   insertRefreshToken,
   insertUser,
   removeRefreshToken,
+  resetUserPassword,
   updateEmailVerifyToken,
   updateForgotPasswordToken
 } from '~/repository/users.repository'
 import { config } from 'dotenv'
-import { ObjectId } from 'mongodb'
+import { ObjectId, UpdateResult } from 'mongodb'
+import User from '~/models/schemas/User.schema'
 
 config()
 class UserService {
-  private signAccessToken(user_id: string) {
+  private signAccessToken(user_id: string): Promise<string> {
     return signToken({
       payload: {
         user_id,
@@ -26,7 +28,7 @@ class UserService {
     })
   }
 
-  private signRefreshToken(user_id: string) {
+  private signRefreshToken(user_id: string): Promise<string> {
     return signToken({
       payload: {
         user_id,
@@ -39,7 +41,7 @@ class UserService {
     })
   }
 
-  private signEmailVerifyToken(user_id: string) {
+  private signEmailVerifyToken(user_id: string): Promise<string> {
     return signToken({
       payload: {
         user_id,
@@ -52,11 +54,11 @@ class UserService {
     })
   }
 
-  private signAccessAndRefreshToken(user_id: string) {
+  private signAccessAndRefreshToken(user_id: string): Promise<[string, string]> {
     return Promise.all([this.signAccessToken(user_id), this.signRefreshToken(user_id)])
   }
 
-  private signForgotPasswordToken(user_id: string) {
+  private signForgotPasswordToken(user_id: string): Promise<string> {
     return signToken({
       payload: {
         user_id,
@@ -69,7 +71,9 @@ class UserService {
     })
   }
 
-  async register(payload: RegisterReqBody) {
+  async register(
+    payload: RegisterReqBody
+  ): Promise<{ access_token: string; refresh_token: string; email_verify_token: string }> {
     const user_id = new ObjectId()
 
     payload.user_id = user_id
@@ -92,7 +96,7 @@ class UserService {
     }
   }
 
-  async login(user_id: string) {
+  async login(user_id: string): Promise<{ access_token: string; refresh_token: string }> {
     const [access_token, refresh_token] = await this.signAccessAndRefreshToken(user_id)
     insertRefreshToken(refresh_token, user_id)
     return {
@@ -105,7 +109,7 @@ class UserService {
     return await removeRefreshToken(token)
   }
 
-  async verifyEmail(user_id: string) {
+  async verifyEmail(user_id: string): Promise<{ access_token: string; refresh_token: string }> {
     const [token] = await Promise.all([this.signAccessAndRefreshToken(user_id), updateEmailVerifyToken(user_id)])
 
     const [access_token, refresh_token] = token
@@ -116,7 +120,7 @@ class UserService {
     }
   }
 
-  async resendVerifyEmail(user_id: string) {
+  async resendVerifyEmail(user_id: string): Promise<{ email_verify_token: string }> {
     const emailVerifyToken = await this.signEmailVerifyToken(user_id)
 
     await updateEmailVerifyToken(user_id, emailVerifyToken)
@@ -126,7 +130,7 @@ class UserService {
     }
   }
 
-  async forgotPassword(user_id: string) {
+  async forgotPassword(user_id: string): Promise<{ forgot_password_token: string }> {
     const forgotPasswordToken = await this.signForgotPasswordToken(user_id)
 
     const result = await updateForgotPasswordToken(user_id, forgotPasswordToken)
@@ -134,6 +138,10 @@ class UserService {
     return {
       forgot_password_token: forgotPasswordToken
     }
+  }
+
+  async resetPassword(user_id: string, password: string): Promise<UpdateResult<User>> {
+    return await resetUserPassword(user_id, password)
   }
 }
 

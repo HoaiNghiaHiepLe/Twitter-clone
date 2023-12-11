@@ -8,7 +8,7 @@ import {
   LoginReqBody,
   verifyEmailReqBody,
   forgotPasswordReqBody,
-  verifyForgotPasswordReqBody
+  resetPasswordReqBody
 } from '~/models/requests/User.request'
 import { USER_MESSAGE } from '~/constant/message'
 import { interpolateMessage } from '~/utils/utils'
@@ -125,11 +125,12 @@ export const forgotPasswordController = async (
   })
 }
 
-export const verifyForgotPasswordController = async (
-  req: Request<ParamsDictionary, any, verifyForgotPasswordReqBody>,
+export const resetPasswordController = async (
+  req: Request<ParamsDictionary, any, resetPasswordReqBody>,
   res: Response
 ) => {
   const { user_id, exp } = req.decoded_forgot_password_token as TokenPayload
+  const { forgot_password_token, password } = req.body
 
   const user = await findUserById(user_id)
 
@@ -141,7 +142,7 @@ export const verifyForgotPasswordController = async (
     })
   }
 
-  if (user.forgot_password_token !== req.body.forgot_password_token) {
+  if (user.forgot_password_token !== forgot_password_token) {
     throw new ErrorWithStatus({
       message: interpolateMessage(USER_MESSAGE.INVALID, { field: 'forgot password token' }),
       status: HTTP_STATUS.BAD_REQUEST
@@ -157,7 +158,9 @@ export const verifyForgotPasswordController = async (
     })
   }
 
+  await userService.resetPassword(user_id, password)
+
   return res.json({
-    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'Verify forgot password token' })
+    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'Reset password' })
   })
 }
