@@ -6,7 +6,9 @@ import {
   LogoutReqBody,
   TokenPayload,
   LoginReqBody,
-  verifyEmailReqBody
+  verifyEmailReqBody,
+  forgotPasswordReqBody,
+  verifyForgotPasswordReqBody
 } from '~/models/requests/User.request'
 import { USER_MESSAGE } from '~/constant/message'
 import { interpolateMessage } from '~/utils/utils'
@@ -15,6 +17,7 @@ import { ObjectId } from 'mongodb'
 import HTTP_STATUS from '~/constant/httpStatus'
 import { findUserById } from '~/repository/users.repository'
 import { UserVerifyStatus } from '~/constant/enum'
+import { ErrorWithStatus } from '~/models/Errors'
 
 export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   const { user } = req as LoginReqBody
@@ -105,5 +108,56 @@ export const resendVerifyEmailController = async (req: Request, res: Response) =
   return res.json({
     message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'resend verify email' }),
     result
+  })
+}
+
+export const forgotPasswordController = async (
+  req: Request<ParamsDictionary, any, forgotPasswordReqBody>,
+  res: Response
+) => {
+  const { user } = req as forgotPasswordReqBody
+  const user_id = ((user as User)._id as ObjectId).toString()
+  const result = await userService.forgotPassword(user_id)
+
+  return res.json({
+    message: interpolateMessage(USER_MESSAGE.SEND_EMAIL, { link: 'forgot password link' }),
+    result
+  })
+}
+
+export const verifyForgotPasswordController = async (
+  req: Request<ParamsDictionary, any, verifyForgotPasswordReqBody>,
+  res: Response
+) => {
+  const { user_id, exp } = req.decoded_forgot_password_token as TokenPayload
+
+  const user = await findUserById(user_id)
+
+  // not found
+  if (!user) {
+    return res.json({
+      message: interpolateMessage(USER_MESSAGE.NOT_FOUND, { field: 'User' }),
+      status: HTTP_STATUS.NOT_FOUND
+    })
+  }
+
+  if (user.forgot_password_token !== req.body.forgot_password_token) {
+    throw new ErrorWithStatus({
+      message: interpolateMessage(USER_MESSAGE.INVALID, { field: 'forgot password token' }),
+      status: HTTP_STATUS.BAD_REQUEST
+    })
+  }
+
+  const currentTime = Math.floor(Date.now() / 1000)
+
+  if ((exp as number) < currentTime) {
+    throw new ErrorWithStatus({
+      message: interpolateMessage(USER_MESSAGE.EXPIRED, { field: 'forgot password token' }),
+      status: HTTP_STATUS.BAD_REQUEST
+    })
+  }
+
+  return res.json({
+    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'Verify forgot password token' })
   })
 }

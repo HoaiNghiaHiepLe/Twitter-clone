@@ -110,3 +110,21 @@ export const updateEmailVerifyToken = async (user_id: string, emailVerifyToken?:
 
   return result
 }
+
+export const updateForgotPasswordToken = async (user_id: string, forgotPasswordToken?: string) => {
+  // update forgot password token
+  const result = await databaseService.users.updateOne(
+    { _id: new ObjectId(user_id) },
+    {
+      $set: {
+        forgot_password_token: forgotPasswordToken
+      },
+      $currentDate: {
+        updated_at: true
+      }
+    }
+  )
+  // send reset password link to email: https://twitter.com/forgot-password?token=token
+
+  return result
+}

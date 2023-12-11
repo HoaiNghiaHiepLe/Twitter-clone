@@ -9,6 +9,7 @@ import { interpolateMessage } from '~/utils/utils'
 import { validate } from '~/utils/validation'
 import capitalize from 'lodash/capitalize'
 import { Request } from 'express'
+import { UserVerifyStatus } from '~/constant/enum'
 
 export const loginValidator = validate(
   checkSchema(
@@ -42,6 +43,7 @@ export const loginValidator = validate(
     ['body']
   )
 )
+
 export const registerValidator = validate(
   checkSchema(
     {
@@ -238,6 +240,79 @@ export const verifyEmailTokenValidator = validate(
                 secretOrPublicKey: process.env.JWT_SECRET_EMAIL_VERIFY_TOKEN as string
               })
               ;(req as Request).decoded_email_verify_token = decoded_email_verify_token
+            } catch (error) {
+              if (error instanceof JsonWebTokenError) {
+                throw new ErrorWithStatus({
+                  message: capitalize((error as JsonWebTokenError).message),
+                  status: HTTP_STATUS.UNAUTHORIZED
+                })
+              } else {
+                throw error
+              }
+            }
+            return true
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)
+
+export const forgotPasswordValidator = validate(
+  checkSchema(
+    {
+      email: {
+        isEmail: { errorMessage: interpolateMessage(USER_MESSAGE.INVALID, { field: 'email' }) },
+        trim: true,
+        custom: {
+          options: async (value, { req }) => {
+            const user = await checkExistEmail(value as string)
+
+            if (!user) {
+              throw new ErrorWithStatus({
+                message: interpolateMessage(USER_MESSAGE.NOT_FOUND, { field: 'user' }),
+                status: HTTP_STATUS.NOT_FOUND
+              })
+            }
+
+            if (user.verify !== UserVerifyStatus.Verified) {
+              throw new ErrorWithStatus({
+                message: interpolateMessage(USER_MESSAGE.UNVERIFIED, { field: 'Your account' }),
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            }
+
+            req.user = user
+
+            return true
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)
+
+export const verifyForgotPasswordTokenValidator = validate(
+  checkSchema(
+    {
+      forgot_password_token: {
+        trim: true,
+        notEmpty: {
+          errorMessage: new ErrorWithStatus({
+            message: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'forgot password token' }),
+            status: HTTP_STATUS.UNAUTHORIZED
+          })
+        },
+        custom: {
+          options: async (value, { req }) => {
+            try {
+              const decoded_forgot_password_token = await verifyToken({
+                token: value,
+                secretOrPublicKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN as string
+              })
+              ;(req as Request).decoded_forgot_password_token = decoded_forgot_password_token
             } catch (error) {
               if (error instanceof JsonWebTokenError) {
                 throw new ErrorWithStatus({
