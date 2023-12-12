@@ -164,3 +164,12 @@ export const resetPasswordController = async (
     message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'Reset password' })
   })
 }
+
+export const getMeController = async (req: Request, res: Response) => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const user = await userService.getMe(user_id)
+  return res.json({
+    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'Get me' }),
+    result: user
+  })
+}
