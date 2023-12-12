@@ -88,8 +88,6 @@ class UserService {
 
     insertRefreshToken(refresh_token, user_id.toString())
 
-    console.log('email_verify_token', payload.email_verify_token)
-
     return {
       access_token,
       refresh_token,
