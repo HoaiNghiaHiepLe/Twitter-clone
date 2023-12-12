@@ -1,27 +1,27 @@
 import { RegisterReqBody } from '~/models/requests/User.request'
 import { signToken } from '~/utils/jwt'
-import { TokenType } from '~/constant/enum'
+import { TokenType, UserVerifyStatus } from '~/constant/enum'
 import {
   findUserById,
   insertRefreshToken,
   insertUser,
   removeRefreshToken,
   resetUserPassword,
-  updateEmailVerifyToken,
+  verifyUser,
   updateForgotPasswordToken
 } from '~/repository/users.repository'
 import { config } from 'dotenv'
 import { ObjectId, UpdateResult } from 'mongodb'
 import User from '~/models/schemas/User.schema'
-import { omit } from 'lodash'
 
 config()
 class UserService {
-  private signAccessToken(user_id: string): Promise<string> {
+  private signAccessToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }): Promise<string> {
     return signToken({
       payload: {
         user_id,
-        token_type: TokenType.AccessToken
+        token_type: TokenType.AccessToken,
+        verify: verify
       },
       privateKey: process.env.JWT_SECRET_ACCESS_TOKEN as string,
       options: {
@@ -30,11 +30,12 @@ class UserService {
     })
   }
 
-  private signRefreshToken(user_id: string): Promise<string> {
+  private signRefreshToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }): Promise<string> {
     return signToken({
       payload: {
         user_id,
-        token_type: TokenType.RefreshToken
+        token_type: TokenType.RefreshToken,
+        verify: verify
       },
       privateKey: process.env.JWT_SECRET_REFRESH_TOKEN as string,
       options: {
@@ -43,11 +44,12 @@ class UserService {
     })
   }
 
-  private signEmailVerifyToken(user_id: string): Promise<string> {
+  private signEmailVerifyToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }): Promise<string> {
     return signToken({
       payload: {
         user_id,
-        token_type: TokenType.EmailVerifyToken
+        token_type: TokenType.EmailVerifyToken,
+        verify: verify
       },
       privateKey: process.env.JWT_SECRET_EMAIL_VERIFY_TOKEN as string,
       options: {
@@ -56,15 +58,22 @@ class UserService {
     })
   }
 
-  private signAccessAndRefreshToken(user_id: string): Promise<[string, string]> {
-    return Promise.all([this.signAccessToken(user_id), this.signRefreshToken(user_id)])
+  private signAccessAndRefreshToken({
+    user_id,
+    verify
+  }: {
+    user_id: string
+    verify: UserVerifyStatus
+  }): Promise<[string, string]> {
+    return Promise.all([this.signAccessToken({ user_id, verify }), this.signRefreshToken({ user_id, verify })])
   }
 
-  private signForgotPasswordToken(user_id: string): Promise<string> {
+  private signForgotPasswordToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }): Promise<string> {
     return signToken({
       payload: {
         user_id,
-        token_type: TokenType.ForgotPasswordToken
+        token_type: TokenType.ForgotPasswordToken,
+        verify: verify
       },
       privateKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN as string,
       options: {
@@ -80,11 +89,17 @@ class UserService {
 
     payload.user_id = user_id
 
-    payload.email_verify_token = await this.signEmailVerifyToken(user_id.toString())
+    payload.email_verify_token = await this.signEmailVerifyToken({
+      user_id: user_id.toString(),
+      verify: UserVerifyStatus.Unverified
+    })
 
     await insertUser(payload)
 
-    const [access_token, refresh_token] = await this.signAccessAndRefreshToken(user_id.toString())
+    const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
+      user_id: user_id.toString(),
+      verify: UserVerifyStatus.Unverified
+    })
 
     insertRefreshToken(refresh_token, user_id.toString())
 
@@ -96,8 +111,14 @@ class UserService {
     }
   }
 
-  async login(user_id: string): Promise<{ access_token: string; refresh_token: string }> {
-    const [access_token, refresh_token] = await this.signAccessAndRefreshToken(user_id)
+  async login({
+    user_id,
+    verify
+  }: {
+    user_id: string
+    verify: UserVerifyStatus
+  }): Promise<{ access_token: string; refresh_token: string }> {
+    const [access_token, refresh_token] = await this.signAccessAndRefreshToken({ user_id, verify })
     insertRefreshToken(refresh_token, user_id)
     return {
       access_token,
@@ -109,8 +130,11 @@ class UserService {
     return await removeRefreshToken(token)
   }
 
-  async verifyEmail(user_id: string): Promise<{ access_token: string; refresh_token: string }> {
-    const [token] = await Promise.all([this.signAccessAndRefreshToken(user_id), updateEmailVerifyToken(user_id)])
+  async verifyEmail({ user_id }: { user_id: string }): Promise<{ access_token: string; refresh_token: string }> {
+    const [token] = await Promise.all([
+      this.signAccessAndRefreshToken({ user_id, verify: UserVerifyStatus.Verified }),
+      verifyUser(user_id)
+    ])
 
     const [access_token, refresh_token] = token
 
@@ -121,19 +145,25 @@ class UserService {
   }
 
   async resendVerifyEmail(user_id: string): Promise<{ email_verify_token: string }> {
-    const emailVerifyToken = await this.signEmailVerifyToken(user_id)
+    const emailVerifyToken = await this.signEmailVerifyToken({ user_id, verify: UserVerifyStatus.Unverified })
 
-    await updateEmailVerifyToken(user_id, emailVerifyToken)
+    await verifyUser(user_id, emailVerifyToken)
 
     return {
       email_verify_token: emailVerifyToken
     }
   }
 
-  async forgotPassword(user_id: string): Promise<{ forgot_password_token: string }> {
-    const forgotPasswordToken = await this.signForgotPasswordToken(user_id)
+  async forgotPassword({
+    user_id,
+    verify
+  }: {
+    user_id: string
+    verify: UserVerifyStatus
+  }): Promise<{ forgot_password_token: string }> {
+    const forgotPasswordToken = await this.signForgotPasswordToken({ user_id, verify })
 
-    const result = await updateForgotPasswordToken(user_id, forgotPasswordToken)
+    await updateForgotPasswordToken(user_id, forgotPasswordToken)
 
     return {
       forgot_password_token: forgotPasswordToken

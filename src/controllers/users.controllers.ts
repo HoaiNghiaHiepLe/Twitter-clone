@@ -23,8 +23,9 @@ export const loginController = async (req: Request<ParamsDictionary, any, LoginR
   const { user } = req as LoginReqBody
 
   const user_id = ((user as User)._id as ObjectId).toString()
+  const verify = (user as User).verify as UserVerifyStatus
 
-  const result = await userService.login(user_id)
+  const result = await userService.login({ user_id, verify })
   return res.json({
     message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'login' }),
     result
@@ -74,7 +75,7 @@ export const emailVerifyController = async (req: Request<ParamsDictionary, any, 
     })
   }
 
-  const result = await userService.verifyEmail(user_id)
+  const result = await userService.verifyEmail({ user_id })
 
   // verify email success
   return res.json({
@@ -117,7 +118,7 @@ export const forgotPasswordController = async (
 ) => {
   const { user } = req as forgotPasswordReqBody
   const user_id = ((user as User)._id as ObjectId).toString()
-  const result = await userService.forgotPassword(user_id)
+  const result = await userService.forgotPassword({ user_id, verify: (user as User).verify as UserVerifyStatus })
 
   return res.json({
     message: interpolateMessage(USER_MESSAGE.SEND_EMAIL, { link: 'forgot password link' }),
@@ -171,5 +172,11 @@ export const getMeController = async (req: Request, res: Response) => {
   return res.json({
     message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'Get me' }),
     result: user
+  })
+}
+
+export const updateMeController = async (req: Request, res: Response) => {
+  return res.json({
+    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'update user' })
   })
 }
