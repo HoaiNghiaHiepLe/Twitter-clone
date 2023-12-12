@@ -36,8 +36,6 @@ export const insertUser = async (payload: RegisterReqBody) => {
 }
 
 export const insertRefreshToken = async (token: string, user_id: string) => {
-  const refreshToken = new RefreshToken({ token, user_id: new ObjectId(user_id) })
-
   const result = await databaseService.refreshTokens.insertOne(
     new RefreshToken({ user_id: new ObjectId(user_id), token })
   )
@@ -75,7 +73,7 @@ export const findUserById = async (user_id: string, projection?: Document) => {
   return user
 }
 
-export const updateEmailVerifyToken = async (user_id: string, emailVerifyToken?: string) => {
+export const verifyUser = async (user_id: string, emailVerifyToken?: string) => {
   let result = null
 
   if (emailVerifyToken && emailVerifyToken !== '') {

@@ -8,8 +8,9 @@ import { verifyToken } from '~/utils/jwt'
 import { interpolateMessage } from '~/utils/utils'
 import { validate } from '~/utils/validation'
 import capitalize from 'lodash/capitalize'
-import { Request } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { UserVerifyStatus } from '~/constant/enum'
+import { TokenPayload } from '~/models/requests/User.request'
 
 const passwordSchema: ParamSchema = {
   notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'password' }) },
@@ -337,3 +338,18 @@ export const resetPasswordValidator = validate(
     ['body']
   )
 )
+
+export const verifyUserValidator = (req: Request, res: Response, next: NextFunction) => {
+  const { verify } = req.decoded_authorization as TokenPayload
+
+  if (verify !== UserVerifyStatus.Verified) {
+    return next(
+      new ErrorWithStatus({
+        message: interpolateMessage(USER_MESSAGE.UNVERIFIED, { field: 'Your account' }),
+        status: HTTP_STATUS.FORBIDDEN
+      })
+    )
+  }
+
+  next()
+}
