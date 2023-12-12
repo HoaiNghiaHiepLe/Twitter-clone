@@ -2,6 +2,7 @@ import { Router } from 'express'
 import {
   emailVerifyController,
   forgotPasswordController,
+  getMeController,
   loginController,
   logoutController,
   registerController,
@@ -88,5 +89,15 @@ usersRoutes.post('/forgot-password', forgotPasswordValidator, wrapRequestHandler
  */
 
 usersRoutes.post('/reset-password', resetPasswordValidator, wrapRequestHandler(resetPasswordController))
+
+/**
+ * Description: Get My Profile
+ * Path: /me
+ * Method: GET
+ * Header: {Authorization: Bearer <access_token>}
+ * Body: {}
+ */
+
+usersRoutes.get('/me', accessTokenValidator, wrapRequestHandler(getMeController))
 
 export default usersRoutes

@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb'
+import { Document, ObjectId } from 'mongodb'
 import { UserVerifyStatus } from '~/constant/enum'
 import { RegisterReqBody } from '~/models/requests/User.request'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
@@ -71,8 +71,8 @@ export const removeRefreshToken = async (token: string) => {
   await databaseService.refreshTokens.deleteOne({ token })
 }
 
-export const findUserById = async (user_id: string) => {
-  const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
+export const findUserById = async (user_id: string, projection?: Document) => {
+  const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) }, { projection: projection })
 
   if (user === null) {
     return null

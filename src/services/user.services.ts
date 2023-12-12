@@ -2,6 +2,7 @@ import { RegisterReqBody } from '~/models/requests/User.request'
 import { signToken } from '~/utils/jwt'
 import { TokenType } from '~/constant/enum'
 import {
+  findUserById,
   insertRefreshToken,
   insertUser,
   removeRefreshToken,
@@ -12,6 +13,7 @@ import {
 import { config } from 'dotenv'
 import { ObjectId, UpdateResult } from 'mongodb'
 import User from '~/models/schemas/User.schema'
+import { omit } from 'lodash'
 
 config()
 class UserService {
@@ -142,6 +144,15 @@ class UserService {
 
   async resetPassword(user_id: string, password: string): Promise<UpdateResult<User>> {
     return await resetUserPassword(user_id, password)
+  }
+
+  async getMe(user_id: string): Promise<User | null> {
+    const user = await findUserById(user_id, {
+      password: 0,
+      email_verify_token: 0,
+      forgot_password_token: 0
+    })
+    return user
   }
 }
 
