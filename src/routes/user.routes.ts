@@ -18,7 +18,8 @@ import {
   registerValidator,
   forgotPasswordValidator,
   resetPasswordValidator,
-  verifyUserValidator
+  verifyUserValidator,
+  updateMeValidator
 } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
 
@@ -110,6 +111,12 @@ usersRoutes.get('/me', accessTokenValidator, wrapRequestHandler(getMeController)
  * Body: UserSchema
  */
 
-usersRoutes.patch('/me', accessTokenValidator, verifyUserValidator, wrapRequestHandler(updateMeController))
+usersRoutes.patch(
+  '/me',
+  accessTokenValidator,
+  verifyUserValidator,
+  updateMeValidator,
+  wrapRequestHandler(updateMeController)
+)
 
 export default usersRoutes

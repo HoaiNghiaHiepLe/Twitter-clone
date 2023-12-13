@@ -3,6 +3,13 @@ import { ObjectId } from 'mongodb'
 import { TokenType } from '~/constant/enum'
 import User from '../schemas/User.schema'
 
+export type updateMeReqBody = Pick<
+  User,
+  'name' | 'bio' | 'location' | 'website' | 'username' | 'avatar' | 'cover_photo'
+> & {
+  date_of_birth?: string
+}
+
 export type LoginReqBody = {
   user: User
 }

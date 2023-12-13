@@ -1,4 +1,4 @@
-import { RegisterReqBody } from '~/models/requests/User.request'
+import { RegisterReqBody, updateMeReqBody } from '~/models/requests/User.request'
 import { signToken } from '~/utils/jwt'
 import { TokenType, UserVerifyStatus } from '~/constant/enum'
 import {
@@ -8,10 +8,11 @@ import {
   removeRefreshToken,
   resetUserPassword,
   verifyUser,
-  updateForgotPasswordToken
+  updateForgotPasswordToken,
+  updateUserProfile
 } from '~/repository/users.repository'
 import { config } from 'dotenv'
-import { ObjectId, UpdateResult } from 'mongodb'
+import { ObjectId, UpdateResult, WithId } from 'mongodb'
 import User from '~/models/schemas/User.schema'
 
 config()
@@ -180,6 +181,11 @@ class UserService {
       email_verify_token: 0,
       forgot_password_token: 0
     })
+    return user
+  }
+
+  async updateMe(user_id: string, payload: updateMeReqBody): Promise<WithId<User> | null> {
+    const user = await updateUserProfile(user_id, payload)
     return user
   }
 }

@@ -1,4 +1,4 @@
-import { ParamSchema, checkSchema } from 'express-validator'
+import { ParamSchema, check, checkSchema } from 'express-validator'
 import { JsonWebTokenError } from 'jsonwebtoken'
 import HTTP_STATUS from '~/constant/httpStatus'
 import { USER_MESSAGE } from '~/constant/message'
@@ -63,6 +63,46 @@ const confirmPasswordSchema: ParamSchema = {
   }
 }
 
+const nameSchema: ParamSchema = {
+  notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'name' }) },
+  isString: { errorMessage: interpolateMessage(USER_MESSAGE.MUST_BE_A_STRING, { field: 'name' }) },
+  isLength: {
+    options: { min: 3, max: 100 },
+    errorMessage: interpolateMessage(USER_MESSAGE.MUST_BE_A_STRING, { field: 'name', min: '3', max: '100' })
+  },
+  trim: true
+}
+
+const dateOfBirthSchema: ParamSchema = {
+  notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'date of birth' }) },
+  isISO8601: {
+    options: { strict: true, strictSeparator: true },
+    errorMessage: interpolateMessage(USER_MESSAGE.INVALID, { field: 'date of birth' })
+  }
+}
+
+const repeatedSchema = ({
+  field,
+  minLength,
+  maxLength
+}: {
+  field: string
+  minLength: number | string
+  maxLength: number | string
+}) => ({
+  isString: { errorMessage: interpolateMessage(USER_MESSAGE.MUST_BE_A_STRING, { field: field.toString() }) },
+  isLength: {
+    options: { min: Number(minLength), max: Number(maxLength) },
+    errorMessage: interpolateMessage(USER_MESSAGE.LENGTH, {
+      field: field.toString(),
+      min: minLength.toString(),
+      max: maxLength.toString()
+    })
+  },
+  trim: true,
+  optional: true
+})
+
 export const loginValidator = validate(
   checkSchema(
     {
@@ -99,15 +139,7 @@ export const loginValidator = validate(
 export const registerValidator = validate(
   checkSchema(
     {
-      name: {
-        notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'name' }) },
-        isString: { errorMessage: interpolateMessage(USER_MESSAGE.MUST_BE_A_STRING, { field: 'name' }) },
-        isLength: {
-          options: { min: 3, max: 100 },
-          errorMessage: interpolateMessage(USER_MESSAGE.MUST_BE_A_STRING, { field: 'name', min: '3', max: '100' })
-        },
-        trim: true
-      },
+      name: nameSchema,
       email: {
         isEmail: { errorMessage: interpolateMessage(USER_MESSAGE.INVALID, { field: 'email' }) },
         notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'email' }) },
@@ -126,13 +158,7 @@ export const registerValidator = validate(
       },
       password: passwordSchema,
       confirm_password: confirmPasswordSchema,
-      date_of_birth: {
-        notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'date of birth' }) },
-        isISO8601: {
-          options: { strict: true, strictSeparator: true },
-          errorMessage: interpolateMessage(USER_MESSAGE.INVALID, { field: 'date of birth' })
-        }
-      }
+      date_of_birth: dateOfBirthSchema
     },
     ['body']
   )
@@ -353,3 +379,19 @@ export const verifyUserValidator = (req: Request, res: Response, next: NextFunct
 
   next()
 }
+
+export const updateMeValidator = validate(
+  checkSchema(
+    {
+      name: { ...nameSchema, optional: true, notEmpty: undefined },
+      date_of_birth: { ...dateOfBirthSchema, optional: true },
+      bio: repeatedSchema({ field: 'bio', minLength: 1, maxLength: 100 }),
+      location: repeatedSchema({ field: 'location', minLength: 1, maxLength: 200 }),
+      website: repeatedSchema({ field: 'website', minLength: 1, maxLength: 400 }),
+      username: repeatedSchema({ field: 'username', minLength: 1, maxLength: 50 }),
+      avatar: repeatedSchema({ field: 'avatar', minLength: 1, maxLength: 400 }),
+      cover_photo: repeatedSchema({ field: 'cover photo', minLength: 1, maxLength: 400 })
+    },
+    ['body']
+  )
+)

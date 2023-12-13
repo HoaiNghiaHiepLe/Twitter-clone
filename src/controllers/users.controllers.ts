@@ -8,7 +8,8 @@ import {
   LoginReqBody,
   verifyEmailReqBody,
   forgotPasswordReqBody,
-  resetPasswordReqBody
+  resetPasswordReqBody,
+  updateMeReqBody
 } from '~/models/requests/User.request'
 import { USER_MESSAGE } from '~/constant/message'
 import { interpolateMessage } from '~/utils/utils'
@@ -175,8 +176,14 @@ export const getMeController = async (req: Request, res: Response) => {
   })
 }
 
-export const updateMeController = async (req: Request, res: Response) => {
+export const updateMeController = async (req: Request<ParamsDictionary, any, updateMeReqBody>, res: Response) => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const body = req.body as updateMeReqBody
+
+  const updatedUser = await userService.updateMe(user_id, body)
+
   return res.json({
-    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'update user' })
+    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'update user' }),
+    result: updatedUser
   })
 }

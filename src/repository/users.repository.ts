@@ -1,6 +1,6 @@
-import { Document, ObjectId } from 'mongodb'
+import { Document, ObjectId, WithId } from 'mongodb'
 import { UserVerifyStatus } from '~/constant/enum'
-import { RegisterReqBody } from '~/models/requests/User.request'
+import { RegisterReqBody, updateMeReqBody } from '~/models/requests/User.request'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
 import User from '~/models/schemas/User.schema'
 import databaseService from '~/services/database.services'
@@ -133,5 +133,33 @@ export const resetUserPassword = async (user_id: string, password: string) => {
       }
     }
   )
+  return result
+}
+
+export const updateUserProfile = async (user_id: string, payload: updateMeReqBody): Promise<WithId<User> | null> => {
+  const _payload = payload.date_of_birth
+    ? { ...payload, date_of_birth: new Date(payload.date_of_birth as string) }
+    : payload
+
+  const result = await databaseService.users.findOneAndUpdate(
+    { _id: new ObjectId(user_id) },
+    {
+      $set: {
+        ...(_payload as updateMeReqBody & { date_of_birth?: Date })
+      },
+      $currentDate: {
+        updated_at: true
+      }
+    },
+    {
+      returnDocument: 'after',
+      projection: {
+        password: 0,
+        email_verify_token: 0,
+        forgot_password_token: 0
+      }
+    }
+  )
+
   return result
 }
