@@ -26,6 +26,7 @@ export const insertUser = async (payload: RegisterReqBody) => {
     new User({
       ...payload,
       _id: new ObjectId(payload.user_id),
+      username: `user_${payload.user_id?.toString()}`,
       date_of_birth: new Date(payload.date_of_birth as string),
       password: hashPassword(payload.password),
       email_verify_token: payload.email_verify_token as string
@@ -71,6 +72,10 @@ export const findUserById = async (user_id: string, projection?: Document) => {
   }
 
   return user
+}
+
+export const findUserByUserName = async (username: string, projection?: Document) => {
+  return await databaseService.users.findOne({ username }, { projection: projection })
 }
 
 export const verifyUser = async (user_id: string, emailVerifyToken?: string) => {

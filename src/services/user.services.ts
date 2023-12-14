@@ -9,7 +9,8 @@ import {
   resetUserPassword,
   verifyUser,
   updateForgotPasswordToken,
-  updateUserProfile
+  updateUserProfile,
+  findUserByUserName
 } from '~/repository/users.repository'
 import { config } from 'dotenv'
 import { ObjectId, UpdateResult, WithId } from 'mongodb'
@@ -186,6 +187,18 @@ class UserService {
 
   async updateMe(user_id: string, payload: UpdateMeReqBody): Promise<WithId<User> | null> {
     const user = await updateUserProfile(user_id, payload)
+    return user
+  }
+
+  async getUserInfo(username: string): Promise<User | null> {
+    const user = await findUserByUserName(username, {
+      password: 0,
+      email_verify_token: 0,
+      forgot_password_token: 0,
+      verify: 0,
+      created_at: 0,
+      updated_at: 0
+    })
     return user
   }
 }
