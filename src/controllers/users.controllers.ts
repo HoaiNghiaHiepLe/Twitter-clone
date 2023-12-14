@@ -6,10 +6,11 @@ import {
   LogoutReqBody,
   TokenPayload,
   LoginReqBody,
-  verifyEmailReqBody,
-  forgotPasswordReqBody,
-  resetPasswordReqBody,
-  UpdateMeReqBody
+  VerifyEmailReqBody,
+  ForgotPasswordReqBody,
+  ResetPasswordReqBody,
+  UpdateMeReqBody,
+  GetUserProfileParams
 } from '~/models/requests/User.request'
 import { USER_MESSAGE } from '~/constant/message'
 import { interpolateMessage } from '~/utils/utils'
@@ -56,7 +57,7 @@ export const logoutController = async (req: Request<ParamsDictionary, any, Logou
   })
 }
 
-export const emailVerifyController = async (req: Request<ParamsDictionary, any, verifyEmailReqBody>, res: Response) => {
+export const emailVerifyController = async (req: Request<ParamsDictionary, any, VerifyEmailReqBody>, res: Response) => {
   const { user_id } = req.decoded_email_verify_token as TokenPayload
 
   const user = await findUserById(user_id)
@@ -115,10 +116,10 @@ export const resendVerifyEmailController = async (req: Request, res: Response) =
 }
 
 export const forgotPasswordController = async (
-  req: Request<ParamsDictionary, any, forgotPasswordReqBody>,
+  req: Request<ParamsDictionary, any, ForgotPasswordReqBody>,
   res: Response
 ) => {
-  const { user } = req as forgotPasswordReqBody
+  const { user } = req as ForgotPasswordReqBody
   const user_id = ((user as User)._id as ObjectId).toString()
   const result = await userService.forgotPassword({ user_id, verify: (user as User).verify as UserVerifyStatus })
 
@@ -129,7 +130,7 @@ export const forgotPasswordController = async (
 }
 
 export const resetPasswordController = async (
-  req: Request<ParamsDictionary, any, resetPasswordReqBody>,
+  req: Request<ParamsDictionary, any, ResetPasswordReqBody>,
   res: Response
 ) => {
   const { user_id, exp } = req.decoded_forgot_password_token as TokenPayload
@@ -198,5 +199,23 @@ export const updateMeController = async (req: Request<ParamsDictionary, any, Upd
   return res.json({
     message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'update user' }),
     result: updatedUser
+  })
+}
+
+export const getUserInfoController = async (req: Request<GetUserProfileParams>, res: Response) => {
+  const { username } = req.params
+
+  const user = await userService.getUserInfo(username)
+
+  if (!user) {
+    throw new ErrorWithStatus({
+      message: interpolateMessage(USER_MESSAGE.NOT_FOUND, { field: 'User' }),
+      status: HTTP_STATUS.NOT_FOUND
+    })
+  }
+
+  return res.json({
+    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'Get user info' }),
+    result: user
   })
 }

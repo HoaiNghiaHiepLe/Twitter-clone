@@ -33,14 +33,18 @@ export interface LogoutReqBody {
   refresh_token: string
 }
 
-export type verifyEmailReqBody = {
+export type VerifyEmailReqBody = {
   email_verify_token: string
 }
 
-export type forgotPasswordReqBody = {
+export type GetUserProfileParams = {
+  username: string
+}
+
+export type ForgotPasswordReqBody = {
   user: User
 }
-export type resetPasswordReqBody = {
+export type ResetPasswordReqBody = {
   forgot_password_token: string
   password: string
   confirm_password: string
