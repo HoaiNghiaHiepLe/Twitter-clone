@@ -1,6 +1,6 @@
 import { Document, ObjectId, WithId } from 'mongodb'
 import { UserVerifyStatus } from '~/constant/enum'
-import { RegisterReqBody, updateMeReqBody } from '~/models/requests/User.request'
+import { RegisterReqBody, UpdateMeReqBody } from '~/models/requests/User.request'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
 import User from '~/models/schemas/User.schema'
 import databaseService from '~/services/database.services'
@@ -136,7 +136,7 @@ export const resetUserPassword = async (user_id: string, password: string) => {
   return result
 }
 
-export const updateUserProfile = async (user_id: string, payload: updateMeReqBody): Promise<WithId<User> | null> => {
+export const updateUserProfile = async (user_id: string, payload: UpdateMeReqBody): Promise<WithId<User> | null> => {
   const _payload = payload.date_of_birth
     ? { ...payload, date_of_birth: new Date(payload.date_of_birth as string) }
     : payload
@@ -145,7 +145,7 @@ export const updateUserProfile = async (user_id: string, payload: updateMeReqBod
     { _id: new ObjectId(user_id) },
     {
       $set: {
-        ...(_payload as updateMeReqBody & { date_of_birth?: Date })
+        ...(_payload as UpdateMeReqBody & { date_of_birth?: Date })
       },
       $currentDate: {
         updated_at: true

@@ -9,7 +9,7 @@ import {
   verifyEmailReqBody,
   forgotPasswordReqBody,
   resetPasswordReqBody,
-  updateMeReqBody
+  UpdateMeReqBody
 } from '~/models/requests/User.request'
 import { USER_MESSAGE } from '~/constant/message'
 import { interpolateMessage } from '~/utils/utils'
@@ -19,6 +19,7 @@ import HTTP_STATUS from '~/constant/httpStatus'
 import { findUserById } from '~/repository/users.repository'
 import { UserVerifyStatus } from '~/constant/enum'
 import { ErrorWithStatus } from '~/models/Errors'
+import { pick } from 'lodash'
 
 export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   const { user } = req as LoginReqBody
@@ -176,9 +177,21 @@ export const getMeController = async (req: Request, res: Response) => {
   })
 }
 
-export const updateMeController = async (req: Request<ParamsDictionary, any, updateMeReqBody>, res: Response) => {
+export const updateMeController = async (req: Request<ParamsDictionary, any, UpdateMeReqBody>, res: Response) => {
   const { user_id } = req.decoded_authorization as TokenPayload
-  const body = req.body as updateMeReqBody
+  const body = req.body as UpdateMeReqBody
+
+  //? Lọc dữ liệu ngay tại controller, k tái sử dụng như middleware
+  // const body = pick(req.body, [
+  //   'name',
+  //   'bio',
+  //   'location',
+  //   'website',
+  //   'username',
+  //   'avatar',
+  //   'cover_photo',
+  //   'date_of_birth'
+  // ]) as UpdateMeReqBody
 
   const updatedUser = await userService.updateMe(user_id, body)
 

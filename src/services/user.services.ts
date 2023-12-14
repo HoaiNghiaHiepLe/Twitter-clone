@@ -1,4 +1,4 @@
-import { RegisterReqBody, updateMeReqBody } from '~/models/requests/User.request'
+import { RegisterReqBody, UpdateMeReqBody } from '~/models/requests/User.request'
 import { signToken } from '~/utils/jwt'
 import { TokenType, UserVerifyStatus } from '~/constant/enum'
 import {
@@ -184,7 +184,7 @@ class UserService {
     return user
   }
 
-  async updateMe(user_id: string, payload: updateMeReqBody): Promise<WithId<User> | null> {
+  async updateMe(user_id: string, payload: UpdateMeReqBody): Promise<WithId<User> | null> {
     const user = await updateUserProfile(user_id, payload)
     return user
   }
