@@ -81,7 +81,7 @@ const dateOfBirthSchema: ParamSchema = {
   }
 }
 
-const repeatedSchema = ({
+const commonSchema = ({
   field,
   minLength,
   maxLength
@@ -385,12 +385,12 @@ export const updateMeValidator = validate(
     {
       name: { ...nameSchema, optional: true, notEmpty: undefined },
       date_of_birth: { ...dateOfBirthSchema, optional: true },
-      bio: repeatedSchema({ field: 'bio', minLength: 1, maxLength: 100 }),
-      location: repeatedSchema({ field: 'location', minLength: 1, maxLength: 200 }),
-      website: repeatedSchema({ field: 'website', minLength: 1, maxLength: 400 }),
-      username: repeatedSchema({ field: 'username', minLength: 1, maxLength: 50 }),
-      avatar: repeatedSchema({ field: 'avatar', minLength: 1, maxLength: 400 }),
-      cover_photo: repeatedSchema({ field: 'cover photo', minLength: 1, maxLength: 400 })
+      bio: commonSchema({ field: 'bio', minLength: 1, maxLength: 100 }),
+      location: commonSchema({ field: 'location', minLength: 1, maxLength: 200 }),
+      website: commonSchema({ field: 'website', minLength: 1, maxLength: 400 }),
+      username: commonSchema({ field: 'username', minLength: 1, maxLength: 50 }),
+      avatar: commonSchema({ field: 'avatar', minLength: 1, maxLength: 400 }),
+      cover_photo: commonSchema({ field: 'cover photo', minLength: 1, maxLength: 400 })
     },
     ['body']
   )
