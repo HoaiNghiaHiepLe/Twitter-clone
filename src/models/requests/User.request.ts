@@ -49,3 +49,7 @@ export type ResetPasswordReqBody = {
   password: string
   confirm_password: string
 }
+
+export type FollowReqBody = {
+  followed_user_id: string
+}

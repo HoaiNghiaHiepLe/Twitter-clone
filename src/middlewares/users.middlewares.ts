@@ -3,14 +3,16 @@ import { JsonWebTokenError } from 'jsonwebtoken'
 import HTTP_STATUS from '~/constant/httpStatus'
 import { USER_MESSAGE } from '~/constant/message'
 import { ErrorWithStatus } from '~/models/Errors'
-import { checkExistEmail, authenticateUser, checkUserRefreshToken } from '~/repository/users.repository'
+import { checkExistEmail, authenticateUser, checkUserRefreshToken, findUserById } from '~/repository/users.repository'
 import { verifyToken } from '~/utils/jwt'
 import { interpolateMessage } from '~/utils/utils'
 import { validate } from '~/utils/validation'
 import capitalize from 'lodash/capitalize'
 import { NextFunction, Request, Response } from 'express'
 import { UserVerifyStatus } from '~/constant/enum'
-import { TokenPayload } from '~/models/requests/User.request'
+import { FollowReqBody, TokenPayload } from '~/models/requests/User.request'
+import userService from '~/services/user.services'
+import { ObjectId } from 'mongodb'
 
 const passwordSchema: ParamSchema = {
   notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'password' }) },
@@ -391,6 +393,35 @@ export const updateMeValidator = validate(
       username: commonSchema({ field: 'username', minLength: 1, maxLength: 50 }),
       avatar: commonSchema({ field: 'avatar', minLength: 1, maxLength: 400 }),
       cover_photo: commonSchema({ field: 'cover photo', minLength: 1, maxLength: 400 })
+    },
+    ['body']
+  )
+)
+
+export const followValidator = validate(
+  checkSchema(
+    {
+      followed_user_id: {
+        custom: {
+          options: async (value: string, { req }) => {
+            if (!ObjectId.isValid(value)) {
+              throw new ErrorWithStatus({
+                message: interpolateMessage(USER_MESSAGE.INVALID, { field: 'Followed user id' }),
+                status: HTTP_STATUS.NOT_FOUND
+              })
+            }
+
+            const verifiedUser = await findUserById(value, { verify: 1 })
+
+            if (verifiedUser?.verify !== UserVerifyStatus.Verified) {
+              throw new ErrorWithStatus({
+                message: interpolateMessage(USER_MESSAGE.UNVERIFIED, { field: 'User' }),
+                status: HTTP_STATUS.FORBIDDEN
+              })
+            }
+          }
+        }
+      }
     },
     ['body']
   )

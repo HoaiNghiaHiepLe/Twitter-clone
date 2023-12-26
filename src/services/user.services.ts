@@ -10,7 +10,9 @@ import {
   verifyUser,
   updateForgotPasswordToken,
   updateUserProfile,
-  findUserByUserName
+  findUserByUserName,
+  insertFollower,
+  findFollowerById
 } from '~/repository/users.repository'
 import { config } from 'dotenv'
 import { ObjectId, UpdateResult, WithId } from 'mongodb'
@@ -200,6 +202,18 @@ class UserService {
       updated_at: 0
     })
     return user
+  }
+
+  async followUser(user_id: string, followed_user_id: string) {
+    const followedUser = await findFollowerById(user_id, followed_user_id)
+
+    if (followedUser) {
+      return null
+    }
+
+    const result = await insertFollower(user_id, followed_user_id)
+
+    return result
   }
 }
 
