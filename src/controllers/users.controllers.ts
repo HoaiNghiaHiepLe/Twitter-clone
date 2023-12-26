@@ -10,7 +10,8 @@ import {
   ForgotPasswordReqBody,
   ResetPasswordReqBody,
   UpdateMeReqBody,
-  GetUserProfileParams
+  GetUserProfileParams,
+  FollowReqBody
 } from '~/models/requests/User.request'
 import { USER_MESSAGE } from '~/constant/message'
 import { interpolateMessage } from '~/utils/utils'
@@ -217,5 +218,23 @@ export const getUserInfoController = async (req: Request<GetUserProfileParams>, 
   return res.json({
     message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'Get user info' }),
     result: user
+  })
+}
+
+export const followUserController = async (req: Request<ParamsDictionary, any, FollowReqBody>, res: Response) => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const { followed_user_id } = req.body as FollowReqBody
+
+  const user = await userService.followUser(user_id, followed_user_id)
+
+  if (!user) {
+    throw new ErrorWithStatus({
+      message: interpolateMessage(USER_MESSAGE.ALREADY, { field: 'User', work: 'follow' }),
+      status: HTTP_STATUS.BAD_REQUEST
+    })
+  }
+
+  return res.json({
+    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'follow user' })
   })
 }

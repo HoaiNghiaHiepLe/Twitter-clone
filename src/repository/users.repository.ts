@@ -1,6 +1,7 @@
-import { Document, ObjectId, WithId } from 'mongodb'
+import { Document, InsertOneResult, ObjectId, WithId } from 'mongodb'
 import { UserVerifyStatus } from '~/constant/enum'
 import { RegisterReqBody, UpdateMeReqBody } from '~/models/requests/User.request'
+import Follower from '~/models/schemas/Follower.schema'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
 import User from '~/models/schemas/User.schema'
 import databaseService from '~/services/database.services'
@@ -72,6 +73,17 @@ export const findUserById = async (user_id: string, projection?: Document) => {
   }
 
   return user
+}
+
+export const findFollowerById = async (user_id: string, followed_user_id: string, projection?: Document) => {
+  const follower = await databaseService.followers.find(
+    {
+      user_id: new ObjectId(user_id),
+      followed_user_id: new ObjectId(followed_user_id)
+    },
+    { projection: projection }
+  )
+  return follower
 }
 
 export const findUserByUserName = async (username: string, projection?: Document) => {
@@ -167,4 +179,10 @@ export const updateUserProfile = async (user_id: string, payload: UpdateMeReqBod
   )
 
   return result
+}
+
+export const insertFollower = async (user_id: string, followed_user_id: string): Promise<InsertOneResult<any>> => {
+  return await databaseService.followers.insertOne(
+    new Follower({ user_id: new ObjectId(user_id), followed_user_id: new ObjectId(followed_user_id) })
+  )
 }

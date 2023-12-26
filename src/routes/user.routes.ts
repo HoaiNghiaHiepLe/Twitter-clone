@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import {
   emailVerifyController,
+  followUserController,
   forgotPasswordController,
   getMeController,
   getUserInfoController,
@@ -21,7 +22,8 @@ import {
   forgotPasswordValidator,
   resetPasswordValidator,
   verifyUserValidator,
-  updateMeValidator
+  updateMeValidator,
+  followValidator
 } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
 import { UpdateMeReqBody } from '~/models/requests/User.request'
@@ -139,5 +141,21 @@ usersRoutes.patch(
  */
 
 usersRoutes.get('/:username', wrapRequestHandler<{ username: string }>(getUserInfoController))
+
+/**
+ * Description: Follow someone
+ * Path: /follow
+ * Method: POST
+ * Header: {Authorization: Bearer <access_token>}
+ * Body: {followed_user_id: string}
+ */
+
+usersRoutes.post(
+  '/follow',
+  accessTokenValidator,
+  verifyUserValidator,
+  followValidator,
+  wrapRequestHandler(followUserController)
+)
 
 export default usersRoutes
