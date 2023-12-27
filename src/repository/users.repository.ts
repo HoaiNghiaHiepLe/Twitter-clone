@@ -1,4 +1,4 @@
-import { Document, InsertOneResult, ObjectId, WithId } from 'mongodb'
+import { Document, InsertOneResult, ObjectId, UpdateResult, WithId } from 'mongodb'
 import { UserVerifyStatus } from '~/constant/enum'
 import { RegisterReqBody, UpdateMeReqBody } from '~/models/requests/User.request'
 import Follower from '~/models/schemas/Follower.schema'
@@ -193,4 +193,19 @@ export const deleteFollower = async (user_id: string, followed_user_id: string) 
     user_id: new ObjectId(user_id),
     followed_user_id: new ObjectId(followed_user_id)
   })
+}
+
+export const changeUserPassword = async (user_id: string, password: string): Promise<UpdateResult<User>> => {
+  const result = await databaseService.users.updateOne(
+    { _id: new ObjectId(user_id) },
+    {
+      $set: {
+        password: hashPassword(password)
+      },
+      $currentDate: {
+        updated_at: true
+      }
+    }
+  )
+  return result
 }

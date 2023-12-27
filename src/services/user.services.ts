@@ -13,7 +13,8 @@ import {
   findUserByUserName,
   insertFollower,
   findFollowerById,
-  deleteFollower
+  deleteFollower,
+  changeUserPassword
 } from '~/repository/users.repository'
 import { config } from 'dotenv'
 import { DeleteResult, ObjectId, UpdateResult, WithId } from 'mongodb'
@@ -227,6 +228,10 @@ class UserService {
     const result = await deleteFollower(user_id, followed_user_id)
 
     return result
+  }
+
+  async changePassword(user_id: string, password: string): Promise<UpdateResult<User>> {
+    return await changeUserPassword(user_id, password)
   }
 }
 

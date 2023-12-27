@@ -57,3 +57,9 @@ export type FollowReqBody = {
 export type UnFollowReqParams = {
   followed_user_id: string
 }
+
+export type changePasswordReqBody = {
+  old_password: string
+  password: string
+  confirm_password: string
+}

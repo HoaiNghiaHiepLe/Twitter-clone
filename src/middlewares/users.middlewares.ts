@@ -20,6 +20,7 @@ import { FollowReqBody, TokenPayload } from '~/models/requests/User.request'
 import userService from '~/services/user.services'
 import { ObjectId } from 'mongodb'
 import { REGEX_USERNAME } from '~/constant/regex'
+import { hashPassword } from '~/utils/crypto'
 
 const passwordSchema: ParamSchema = {
   notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'password' }) },
@@ -471,5 +472,43 @@ export const unFollowValidator = validate(
       followed_user_id: followedUserIdSchema
     },
     ['params']
+  )
+)
+
+export const changePasswordValidator = validate(
+  checkSchema(
+    {
+      old_password: {
+        ...passwordSchema,
+        custom: {
+          options: async (value, { req }) => {
+            const { user_id } = req.decoded_authorization as TokenPayload
+
+            const user = await findUserById(user_id)
+
+            if (!user) {
+              throw new ErrorWithStatus({
+                message: interpolateMessage(USER_MESSAGE.NOT_FOUND, { field: 'User' }),
+                status: HTTP_STATUS.NOT_FOUND
+              })
+            }
+
+            const isMatch = hashPassword(value) === user.password
+
+            if (!isMatch) {
+              throw new ErrorWithStatus({
+                message: interpolateMessage(USER_MESSAGE.INCORRECT, { field: 'old password' }),
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            }
+
+            return true
+          }
+        }
+      },
+      password: passwordSchema,
+      confirm_password: confirmPasswordSchema
+    },
+    ['body']
   )
 )

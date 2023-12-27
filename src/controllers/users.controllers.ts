@@ -12,7 +12,8 @@ import {
   UpdateMeReqBody,
   GetUserProfileParams,
   FollowReqBody,
-  UnFollowReqParams
+  UnFollowReqParams,
+  changePasswordReqBody
 } from '~/models/requests/User.request'
 import { USER_MESSAGE } from '~/constant/message'
 import { interpolateMessage } from '~/utils/utils'
@@ -255,5 +256,20 @@ export const unfollowUserController = async (req: Request<UnFollowReqParams>, re
 
   return res.json({
     message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'unfollow user' })
+  })
+}
+
+export const changePasswordController = async (
+  req: Request<ParamsDictionary, any, changePasswordReqBody>,
+  res: Response
+) => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+
+  const { password } = req.body
+
+  await userService.changePassword(user_id, password)
+
+  return res.json({
+    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'change password' })
   })
 }
