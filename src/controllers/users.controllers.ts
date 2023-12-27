@@ -244,7 +244,7 @@ export const unfollowUserController = async (req: Request<UnFollowReqParams>, re
   const { user_id } = req.decoded_authorization as TokenPayload
   const { followed_user_id } = req.params as UnFollowReqParams
 
-  const result = await userService.unFollowUser(user_id, followed_user_id)
+  const result = await userService.unfollowUser(user_id, followed_user_id)
 
   if (!result) {
     throw new ErrorWithStatus({

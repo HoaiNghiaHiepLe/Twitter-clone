@@ -217,7 +217,7 @@ class UserService {
     return result
   }
 
-  async unFollowUser(user_id: string, followed_user_id: string): Promise<DeleteResult | null> {
+  async unfollowUser(user_id: string, followed_user_id: string): Promise<DeleteResult | null> {
     const followedUser = await findFollowerById(user_id, followed_user_id)
 
     if (!followedUser) {
