@@ -11,7 +11,8 @@ import {
   ResetPasswordReqBody,
   UpdateMeReqBody,
   GetUserProfileParams,
-  FollowReqBody
+  FollowReqBody,
+  UnFollowReqParams
 } from '~/models/requests/User.request'
 import { USER_MESSAGE } from '~/constant/message'
 import { interpolateMessage } from '~/utils/utils'
@@ -236,5 +237,23 @@ export const followUserController = async (req: Request<ParamsDictionary, any, F
 
   return res.json({
     message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'follow user' })
+  })
+}
+
+export const unfollowUserController = async (req: Request<UnFollowReqParams>, res: Response) => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const { followed_user_id } = req.params as UnFollowReqParams
+
+  const result = await userService.unFollowUser(user_id, followed_user_id)
+
+  if (!result) {
+    throw new ErrorWithStatus({
+      message: interpolateMessage(USER_MESSAGE.ALREADY, { field: 'User', work: 'unfollowed' }),
+      status: HTTP_STATUS.BAD_REQUEST
+    })
+  }
+
+  return res.json({
+    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'unfollow user' })
   })
 }

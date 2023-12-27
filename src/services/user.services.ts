@@ -12,10 +12,11 @@ import {
   updateUserProfile,
   findUserByUserName,
   insertFollower,
-  findFollowerById
+  findFollowerById,
+  deleteFollower
 } from '~/repository/users.repository'
 import { config } from 'dotenv'
-import { ObjectId, UpdateResult, WithId } from 'mongodb'
+import { DeleteResult, ObjectId, UpdateResult, WithId } from 'mongodb'
 import User from '~/models/schemas/User.schema'
 
 config()
@@ -212,6 +213,18 @@ class UserService {
     }
 
     const result = await insertFollower(user_id, followed_user_id)
+
+    return result
+  }
+
+  async unFollowUser(user_id: string, followed_user_id: string): Promise<DeleteResult | null> {
+    const followedUser = await findFollowerById(user_id, followed_user_id)
+
+    if (!followedUser) {
+      return null
+    }
+
+    const result = await deleteFollower(user_id, followed_user_id)
 
     return result
   }

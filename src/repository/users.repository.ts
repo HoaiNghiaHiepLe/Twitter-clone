@@ -76,13 +76,14 @@ export const findUserById = async (user_id: string, projection?: Document) => {
 }
 
 export const findFollowerById = async (user_id: string, followed_user_id: string, projection?: Document) => {
-  const follower = await databaseService.followers.find(
+  const follower = await databaseService.followers.findOne(
     {
       user_id: new ObjectId(user_id),
       followed_user_id: new ObjectId(followed_user_id)
     },
     { projection: projection }
   )
+
   return follower
 }
 
@@ -185,4 +186,11 @@ export const insertFollower = async (user_id: string, followed_user_id: string):
   return await databaseService.followers.insertOne(
     new Follower({ user_id: new ObjectId(user_id), followed_user_id: new ObjectId(followed_user_id) })
   )
+}
+
+export const deleteFollower = async (user_id: string, followed_user_id: string) => {
+  return await databaseService.followers.deleteOne({
+    user_id: new ObjectId(user_id),
+    followed_user_id: new ObjectId(followed_user_id)
+  })
 }

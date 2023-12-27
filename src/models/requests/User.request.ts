@@ -53,3 +53,7 @@ export type ResetPasswordReqBody = {
 export type FollowReqBody = {
   followed_user_id: string
 }
+
+export type UnFollowReqParams = {
+  followed_user_id: string
+}
