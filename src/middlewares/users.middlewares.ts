@@ -83,6 +83,28 @@ const dateOfBirthSchema: ParamSchema = {
   }
 }
 
+const followedUserIdSchema: ParamSchema = {
+  custom: {
+    options: async (value: string, { req }) => {
+      if (!ObjectId.isValid(value)) {
+        throw new ErrorWithStatus({
+          message: interpolateMessage(USER_MESSAGE.INVALID, { field: 'User id' }),
+          status: HTTP_STATUS.NOT_FOUND
+        })
+      }
+
+      const verifiedUser = await findUserById(value, { verify: 1 })
+
+      if (verifiedUser?.verify !== UserVerifyStatus.Verified) {
+        throw new ErrorWithStatus({
+          message: interpolateMessage(USER_MESSAGE.UNVERIFIED, { field: 'User' }),
+          status: HTTP_STATUS.FORBIDDEN
+        })
+      }
+    }
+  }
+}
+
 const commonSchema = ({
   field,
   minLength,
@@ -401,28 +423,17 @@ export const updateMeValidator = validate(
 export const followValidator = validate(
   checkSchema(
     {
-      followed_user_id: {
-        custom: {
-          options: async (value: string, { req }) => {
-            if (!ObjectId.isValid(value)) {
-              throw new ErrorWithStatus({
-                message: interpolateMessage(USER_MESSAGE.INVALID, { field: 'Followed user id' }),
-                status: HTTP_STATUS.NOT_FOUND
-              })
-            }
-
-            const verifiedUser = await findUserById(value, { verify: 1 })
-
-            if (verifiedUser?.verify !== UserVerifyStatus.Verified) {
-              throw new ErrorWithStatus({
-                message: interpolateMessage(USER_MESSAGE.UNVERIFIED, { field: 'User' }),
-                status: HTTP_STATUS.FORBIDDEN
-              })
-            }
-          }
-        }
-      }
+      followed_user_id: followedUserIdSchema
     },
     ['body']
+  )
+)
+
+export const unFollowValidator = validate(
+  checkSchema(
+    {
+      followed_user_id: followedUserIdSchema
+    },
+    ['params']
   )
 )
