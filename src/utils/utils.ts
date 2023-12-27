@@ -1,6 +1,9 @@
 export function interpolateMessage(template: string, replacements: { [key: string]: string }): string {
-  return Object.keys(replacements).reduce((acc, key) => {
-    return acc.replace(new RegExp(`:${key}`, 'g'), replacements[key])
+  const templateKeys = template.match(/:[a-zA-Z0-9_]+/g) || []
+  return templateKeys.reduce((acc, key) => {
+    const cleanKey = key.substring(1) // Remove the ':' prefix
+    const replacement = Object.prototype.hasOwnProperty.call(replacements, cleanKey) ? replacements[cleanKey] : ''
+    return acc.replace(new RegExp(key, 'g'), replacement)
   }, template)
 }
 

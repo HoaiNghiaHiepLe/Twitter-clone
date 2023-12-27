@@ -3,7 +3,13 @@ import { JsonWebTokenError } from 'jsonwebtoken'
 import HTTP_STATUS from '~/constant/httpStatus'
 import { USER_MESSAGE } from '~/constant/message'
 import { ErrorWithStatus } from '~/models/Errors'
-import { checkExistEmail, authenticateUser, checkUserRefreshToken, findUserById } from '~/repository/users.repository'
+import {
+  checkExistEmail,
+  authenticateUser,
+  checkUserRefreshToken,
+  findUserById,
+  findUserByUserName
+} from '~/repository/users.repository'
 import { verifyToken } from '~/utils/jwt'
 import { interpolateMessage } from '~/utils/utils'
 import { validate } from '~/utils/validation'
@@ -13,6 +19,7 @@ import { UserVerifyStatus } from '~/constant/enum'
 import { FollowReqBody, TokenPayload } from '~/models/requests/User.request'
 import userService from '~/services/user.services'
 import { ObjectId } from 'mongodb'
+import { REGEX_USERNAME } from '~/constant/regex'
 
 const passwordSchema: ParamSchema = {
   notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'password' }) },
@@ -29,7 +36,11 @@ const passwordSchema: ParamSchema = {
       minNumbers: 1,
       minSymbols: 1
     },
-    errorMessage: USER_MESSAGE.PASSWORD_STRONG
+    errorMessage: interpolateMessage(USER_MESSAGE.STRONG, {
+      field: 'password',
+      minLength: '6',
+      additionals: '1 uppercase letter and 1 symbol'
+    })
   }
 }
 
@@ -51,8 +62,7 @@ const confirmPasswordSchema: ParamSchema = {
     errorMessage: interpolateMessage(USER_MESSAGE.STRONG, {
       field: 'confirm password',
       minLength: '6',
-      uppercase: '1',
-      minSymbols: '1'
+      additionals: '1 uppercase letter and 1 symbol'
     })
   },
   custom: {
@@ -65,15 +75,41 @@ const confirmPasswordSchema: ParamSchema = {
   }
 }
 
-const nameSchema: ParamSchema = {
-  notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'name' }) },
-  isString: { errorMessage: interpolateMessage(USER_MESSAGE.MUST_BE_A_STRING, { field: 'name' }) },
-  isLength: {
-    options: { min: 3, max: 100 },
-    errorMessage: interpolateMessage(USER_MESSAGE.MUST_BE_A_STRING, { field: 'name', min: '3', max: '100' })
+const createNameSchema = ({
+  field,
+  minLength = '6',
+  maxLength = '-15',
+  additionals = 'not only numbers'
+}: {
+  field: string
+  minLength?: string
+  maxLength?: string
+  additionals?: string
+}): ParamSchema => ({
+  notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: field }) },
+  isString: { errorMessage: interpolateMessage(USER_MESSAGE.MUST_BE_A_STRING, { field: field }) },
+  custom: {
+    options: async (value: string) => {
+      if (!REGEX_USERNAME.test(value)) {
+        throw new Error(
+          interpolateMessage(USER_MESSAGE.STRONG, {
+            field: field,
+            minLength: minLength,
+            maxLength: maxLength,
+            additionals: additionals
+          })
+        )
+      }
+
+      const user = await findUserByUserName(value)
+
+      if (user) {
+        throw new Error(interpolateMessage(USER_MESSAGE.ALREADY_EXISTS, { field: field }))
+      }
+    }
   },
   trim: true
-}
+})
 
 const dateOfBirthSchema: ParamSchema = {
   notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'date of birth' }) },
@@ -113,7 +149,7 @@ const commonSchema = ({
   field: string
   minLength: number | string
   maxLength: number | string
-}) => ({
+}): ParamSchema => ({
   isString: { errorMessage: interpolateMessage(USER_MESSAGE.MUST_BE_A_STRING, { field: field.toString() }) },
   isLength: {
     options: { min: Number(minLength), max: Number(maxLength) },
@@ -163,7 +199,7 @@ export const loginValidator = validate(
 export const registerValidator = validate(
   checkSchema(
     {
-      name: nameSchema,
+      name: createNameSchema({ field: 'name' }),
       email: {
         isEmail: { errorMessage: interpolateMessage(USER_MESSAGE.INVALID, { field: 'email' }) },
         notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'email' }) },
@@ -407,12 +443,12 @@ export const verifyUserValidator = (req: Request, res: Response, next: NextFunct
 export const updateMeValidator = validate(
   checkSchema(
     {
-      name: { ...nameSchema, optional: true, notEmpty: undefined },
+      name: { ...createNameSchema({ field: 'name' }), optional: true, notEmpty: undefined },
       date_of_birth: { ...dateOfBirthSchema, optional: true },
       bio: commonSchema({ field: 'bio', minLength: 1, maxLength: 100 }),
       location: commonSchema({ field: 'location', minLength: 1, maxLength: 200 }),
       website: commonSchema({ field: 'website', minLength: 1, maxLength: 400 }),
-      username: commonSchema({ field: 'username', minLength: 1, maxLength: 50 }),
+      username: { ...createNameSchema({ field: 'User name' }), optional: true, notEmpty: undefined },
       avatar: commonSchema({ field: 'avatar', minLength: 1, maxLength: 400 }),
       cover_photo: commonSchema({ field: 'cover photo', minLength: 1, maxLength: 400 })
     },
