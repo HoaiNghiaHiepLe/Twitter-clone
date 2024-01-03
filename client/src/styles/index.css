@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --light-background: #f1f4fa;
+  --light-text: #06152b;
+  --light-dashboard-heart-background: rgba(58, 54, 219, 0.1);
+  --light-dashboard-game-background: rgba(3, 168, 158, 0.2);
+  --light-dashboard-bag-background: rgba(255, 105, 180, 0.1);
+  --light-primary: rgba(58, 54, 219, 1);
+  --light-primary-background: rgba(58, 54, 219, 0.1);
+  --light-secondary: rgba(255, 105, 180, 1);
+  --light-secondary-background: rgba(255, 105, 180, 0.1);
+  --light-accent: rgba(3, 168, 158, 1);
+  --light-accent-background: rgba(3, 168, 158, 0.1);
+  --mint-green-background: #33cc99;
+  --gray-9a: #9a9aa9;
+  --yellow-ffd: #ffd66b;
+  --gray-text: #79787a;
+  --dark-gray: #514f4f;
+}
+
+body,
+html {
+  height: 100vh;
+  width: 100vw;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
