@@ -1,5 +1,4 @@
 import { Navigate, Outlet, useLocation, useRoutes } from 'react-router-dom'
-import { LoginOAuth } from 'src/components'
 import { PATH } from 'src/constants/path'
 import MainLayout from 'src/layouts/MainLayout'
 import { Login } from 'src/pages'
@@ -34,10 +33,6 @@ const useRouteElement = () => {
             {
               path: PATH.LOGIN,
               element: <Login />
-            },
-            {
-              path: PATH.LOGIN_OAUTH,
-              element: <LoginOAuth />
             }
           ]
         },

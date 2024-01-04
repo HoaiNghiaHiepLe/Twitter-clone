@@ -5,5 +5,5 @@ import { NavMenuListType } from 'src/types/NavMenuList.type'
 
 export const NAV_MENU_ITEMS: NavMenuListType[] = [
   { icon: <SvgLogin />, title: 'Home', path: PATH.HOME },
-  { icon: <SvgLogin />, title: 'Login With Google', path: PATH.LOGIN_OAUTH }
+  { icon: <SvgLogin />, title: 'Login', path: PATH.LOGIN }
 ]
