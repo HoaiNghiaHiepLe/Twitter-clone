@@ -23,7 +23,9 @@ import HTTP_STATUS from '~/constant/httpStatus'
 import { findUserById } from '~/repository/users.repository'
 import { UserVerifyStatus } from '~/constant/enum'
 import { ErrorWithStatus } from '~/models/Errors'
-import { pick } from 'lodash'
+import { config } from 'dotenv'
+
+config()
 
 export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   const { user } = req as LoginReqBody
@@ -32,10 +34,28 @@ export const loginController = async (req: Request<ParamsDictionary, any, LoginR
   const verify = (user as User).verify as UserVerifyStatus
 
   const result = await userService.login({ user_id, verify })
+
   return res.json({
     message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'login' }),
     result
   })
+}
+
+export const oAuthController = async (req: Request, res: Response) => {
+  const { code } = req.query
+
+  const result = await userService.oAuth(code as string)
+
+  const urlRedirect = `${process.env.CLIENT_REDIRECT_URI}/?access_token=${result?.access_token}&refresh_token=${result?.refresh_token}&new_user=${result?.new_user}&verify=${result?.verify}`
+
+  if (!result) {
+    throw new ErrorWithStatus({
+      message: interpolateMessage(USER_MESSAGE.FAILED, { field: 'Login' }),
+      status: HTTP_STATUS.BAD_REQUEST
+    })
+  }
+
+  return res.redirect(urlRedirect)
 }
 
 export const registerController = async (

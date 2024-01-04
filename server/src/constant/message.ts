@@ -13,5 +13,6 @@ export const USER_MESSAGE = {
   ALREADY: ':field already :work before',
   SEND_EMAIL: 'A :link has been sent to your email',
   UNVERIFIED: ':field is unverified',
-  EXPIRED: ':field is expired'
+  EXPIRED: ':field is expired',
+  FAILED: ':work failed'
 } as const
