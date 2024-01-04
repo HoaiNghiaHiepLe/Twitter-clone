@@ -14,11 +14,15 @@ import {
   insertFollower,
   findFollowerById,
   deleteFollower,
-  changeUserPassword
+  changeUserPassword,
+  checkExistEmail
 } from '~/repository/users.repository'
 import { config } from 'dotenv'
 import { DeleteResult, ObjectId, UpdateResult, WithId } from 'mongodb'
 import User from '~/models/schemas/User.schema'
+import axios from 'axios'
+import { googleOAuthPayload, googleOAuthToken } from '~/types/oAuth.type'
+import { hashPassword } from '~/utils/crypto'
 
 config()
 class UserService {
@@ -129,6 +133,67 @@ class UserService {
     return {
       access_token,
       refresh_token
+    }
+  }
+
+  private async getOAuthGoogleToken(code: string): Promise<googleOAuthToken> {
+    const body = {
+      code,
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      client_secret: process.env.GOOGLE_CLIENT_SECRET,
+      redirect_uri: process.env.GOOGLE_REDIRECT_URI,
+      grant_type: 'authorization_code'
+    }
+
+    const { data } = await axios.post('https://oauth2.googleapis.com/token', body, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    })
+
+    return data
+  }
+
+  private async getOAuthGoogleUserInfo(access_token: string, id_token: string): Promise<googleOAuthPayload> {
+    const { data } = await axios.get('https://www.googleapis.com/oauth2/v1/userinfo', {
+      params: {
+        access_token,
+        alt: 'json'
+      },
+      headers: {
+        Authorization: `Bearer ${id_token}`
+      }
+    })
+
+    return data
+  }
+
+  async oAuth(code: string) {
+    const { id_token, access_token } = await this.getOAuthGoogleToken(code)
+    const userInfo = await this.getOAuthGoogleUserInfo(access_token, id_token)
+
+    if (!userInfo.verified_email) {
+      return null
+    }
+
+    const user = await checkExistEmail(userInfo.email)
+
+    if (user) {
+      const user_id = user._id.toString()
+      const verify = user.verify as UserVerifyStatus
+
+      const result = await this.login({ user_id, verify })
+
+      return { ...result, new_user: 0, verify: verify }
+    } else {
+      const payload: Omit<RegisterReqBody, 'confirm_password'> = {
+        name: userInfo.name,
+        email: userInfo.email,
+        password: hashPassword(Math.random().toString(36).substring(2, 15))
+      }
+
+      const result = await this.register(payload as RegisterReqBody)
+      return { ...result, new_user: 1, verify: UserVerifyStatus.Unverified }
     }
   }
 
