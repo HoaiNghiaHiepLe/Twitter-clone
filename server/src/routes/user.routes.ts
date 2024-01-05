@@ -32,8 +32,9 @@ import {
 } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
 import { UpdateMeReqBody } from '~/models/requests/User.request'
+import { PATH } from '~/constant/path'
 
-const usersRoutes = Router()
+const usersRouter = Router()
 
 /**
  * Description: Login a user
@@ -41,7 +42,7 @@ const usersRoutes = Router()
  * Method: POST
  * Body: { email: string, password: string }
  */
-usersRoutes.post('/login', loginValidator, wrapRequestHandler(loginController))
+usersRouter.post(PATH.USER.LOGIN, loginValidator, wrapRequestHandler(loginController))
 
 /**
  * Description: Oauth with google
@@ -49,7 +50,7 @@ usersRoutes.post('/login', loginValidator, wrapRequestHandler(loginController))
  * Method: GET
  * Query: { code: string }
  */
-usersRoutes.get('/oauth/google', wrapRequestHandler(oAuthController))
+usersRouter.get(PATH.USER.OAUTH, wrapRequestHandler(oAuthController))
 
 /**
  * Description: Register a new user
@@ -58,7 +59,7 @@ usersRoutes.get('/oauth/google', wrapRequestHandler(oAuthController))
  * Body: { name: string, email: string, password: string, confirm_password: string, date_of_birth: ISO8601 }
  */
 
-usersRoutes.post('/register', registerValidator, wrapRequestHandler(registerController))
+usersRouter.post(PATH.USER.REGISTER, registerValidator, wrapRequestHandler(registerController))
 
 /**
  * Description: Logout a user
@@ -68,7 +69,7 @@ usersRoutes.post('/register', registerValidator, wrapRequestHandler(registerCont
  * Body: {refresh_token: string}
  */
 
-usersRoutes.post('/logout', accessTokenValidator, refreshTokenValidator, wrapRequestHandler(logoutController))
+usersRouter.post(PATH.USER.LOGOUT, accessTokenValidator, refreshTokenValidator, wrapRequestHandler(logoutController))
 
 /**
  * Description: Verify email when user click on the link in the email
@@ -78,7 +79,7 @@ usersRoutes.post('/logout', accessTokenValidator, refreshTokenValidator, wrapReq
  * Body: {email_verify_token: string}
  */
 
-usersRoutes.post('/verify-email', verifyEmailTokenValidator, wrapRequestHandler(emailVerifyController))
+usersRouter.post(PATH.USER.VERIFY_EMAIL, verifyEmailTokenValidator, wrapRequestHandler(emailVerifyController))
 
 /**
  * Description: Resend Verify email when user click on the link in the email
@@ -89,7 +90,7 @@ usersRoutes.post('/verify-email', verifyEmailTokenValidator, wrapRequestHandler(
  *
  */
 
-usersRoutes.post('/resend-verify-email', accessTokenValidator, wrapRequestHandler(resendVerifyEmailController))
+usersRouter.post(PATH.USER.RESEND_VERIFY_EMAIL, accessTokenValidator, wrapRequestHandler(resendVerifyEmailController))
 
 /**
  * Description: Submit email to reset password, send email to user
@@ -99,7 +100,7 @@ usersRoutes.post('/resend-verify-email', accessTokenValidator, wrapRequestHandle
  * Body: {email: string}
  */
 
-usersRoutes.post('/forgot-password', forgotPasswordValidator, wrapRequestHandler(forgotPasswordController))
+usersRouter.post(PATH.USER.FORGOT_PASSWORD, forgotPasswordValidator, wrapRequestHandler(forgotPasswordController))
 
 /**
  * Description: Reset password
@@ -109,7 +110,7 @@ usersRoutes.post('/forgot-password', forgotPasswordValidator, wrapRequestHandler
  * Body: {forgot_password_token: string, password: string, confirm_password: string}
  */
 
-usersRoutes.post('/reset-password', resetPasswordValidator, wrapRequestHandler(resetPasswordController))
+usersRouter.post(PATH.USER.RESET_PASSWORD, resetPasswordValidator, wrapRequestHandler(resetPasswordController))
 
 /**
  * Description: Get My Profile
@@ -119,7 +120,7 @@ usersRoutes.post('/reset-password', resetPasswordValidator, wrapRequestHandler(r
  * Body: {}
  */
 
-usersRoutes.get('/me', accessTokenValidator, wrapRequestHandler(getMeController))
+usersRouter.get(PATH.USER.ME, accessTokenValidator, wrapRequestHandler(getMeController))
 
 /**
  * Description: Get My Profile
@@ -129,8 +130,8 @@ usersRoutes.get('/me', accessTokenValidator, wrapRequestHandler(getMeController)
  * Body: UserSchema
  */
 
-usersRoutes.patch(
-  '/me',
+usersRouter.patch(
+  PATH.USER.ME,
   accessTokenValidator,
   verifyUserValidator,
   updateMeValidator,
@@ -153,7 +154,7 @@ usersRoutes.patch(
  * Method: GET
  */
 
-usersRoutes.get('/:username', wrapRequestHandler<{ username: string }>(getUserInfoController))
+usersRouter.get(PATH.USER.GET_USER, wrapRequestHandler<{ username: string }>(getUserInfoController))
 
 /**
  * Description: Follow someone
@@ -163,8 +164,8 @@ usersRoutes.get('/:username', wrapRequestHandler<{ username: string }>(getUserIn
  * Body: {followed_user_id: string}
  */
 
-usersRoutes.post(
-  '/follow',
+usersRouter.post(
+  PATH.USER.FOLLOW,
   accessTokenValidator,
   verifyUserValidator,
   followValidator,
@@ -179,8 +180,8 @@ usersRoutes.post(
  * Body: {}
  */
 
-usersRoutes.delete(
-  '/follow/:followed_user_id',
+usersRouter.delete(
+  PATH.USER.UNFOLLOW,
   accessTokenValidator,
   verifyUserValidator,
   unFollowValidator,
@@ -195,12 +196,12 @@ usersRoutes.delete(
  * Body: {old_password: string, password: string, confirm_password: string}
  */
 
-usersRoutes.put(
-  '/change-password',
+usersRouter.put(
+  PATH.USER.CHANGE_PASSWORD,
   accessTokenValidator,
   verifyUserValidator,
   changePasswordValidator,
   wrapRequestHandler(changePasswordController)
 )
 
-export default usersRoutes
+export default usersRouter
