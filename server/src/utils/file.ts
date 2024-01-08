@@ -15,12 +15,15 @@ export const initFolder = () => {
   }
 }
 
-export const handleUploadSingleImage = async (req: Request): Promise<formidable.File> => {
+export const handleUpload = async (req: Request): Promise<formidable.File[]> => {
+  const MAX_FILE = 4
+  const MAX_FILE_SIZE = 300 * 1024 // 300KB
   const form = formidable({
     uploadDir: path.resolve(DIR.UPLOAD_TEMP_DIR),
-    maxFiles: 1,
+    maxFiles: MAX_FILE,
     keepExtensions: true,
-    maxFieldsSize: 300 * 1024, // 300KB,
+    maxFileSize: MAX_FILE_SIZE, // 300KB,
+    maxTotalFileSize: MAX_FILE_SIZE * MAX_FILE, // 300KB,
     filter: ({ name, originalFilename, mimetype }) => {
       const valid = name === 'image' && Boolean(mimetype?.includes('image/'))
 
@@ -44,7 +47,7 @@ export const handleUploadSingleImage = async (req: Request): Promise<formidable.
           })
         )
       }
-      resolve((files.image as formidable.File[])[0])
+      resolve(files.image as formidable.File[])
     })
   })
 }
