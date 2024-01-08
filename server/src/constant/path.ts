@@ -1,7 +1,4 @@
 export const PATH = {
-  FOLDER: {
-    UPLOAD_IMAGE: 'uploads/images'
-  },
   USER: {
     LOGIN: '/login',
     OAUTH: '/oauth/google',
