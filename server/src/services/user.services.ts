@@ -21,8 +21,8 @@ import { config } from 'dotenv'
 import { DeleteResult, ObjectId, UpdateResult, WithId } from 'mongodb'
 import User from '~/models/schemas/User.schema'
 import axios from 'axios'
-import { googleOAuthPayload, googleOAuthToken } from '~/types/oAuth.type'
 import { hashPassword } from '~/utils/crypto'
+import { googleOAuthPayload, googleOAuthToken } from '~/types/OAuth.type'
 
 config()
 class UserService {
