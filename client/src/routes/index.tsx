@@ -3,6 +3,7 @@ import { PATH } from 'src/constants/path'
 import MainLayout from 'src/layouts/MainLayout'
 import { Login } from 'src/pages'
 import Home from 'src/pages/Home'
+import NotFound from 'src/pages/NotFound'
 
 function RejectedRoute() {
   const isAuthenticated = false
@@ -40,6 +41,10 @@ const useRouteElement = () => {
           path: '',
           element: <ProtectedRoute />,
           children: []
+        },
+        {
+          path: '*',
+          element: <NotFound />
         }
       ]
     }

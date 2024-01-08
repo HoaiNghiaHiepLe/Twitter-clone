@@ -12,14 +12,17 @@ class MediaService {
   async handleUploadImage(req: Request) {
     const file = await handleUploadSingleImage(req)
     const newName = getNameFromFullName(file.newFilename)
+
+    //? Lưu file vào thư mục uploads kèm theo phần mở rộng .jpg
     const newPath = path.resolve(DIR.UPLOAD_IMAGE_DIR, `${newName}.jpg`)
     await sharp(file.filepath).jpeg().toFile(newPath)
     // delete file in temp folder after upload
     fs.unlinkSync(file.filepath)
-    console.log(isProduction)
+
+    //? Trả về đường dẫn tới file k kèm theo phần mở rộng
     return isProduction
-      ? `${process.env.HOST}/static/${newName}.jpg`
-      : `http://localhost:${process.env.PORT}/static/${newName}.jpg`
+      ? `${process.env.HOST}/static/${newName}`
+      : `http://localhost:${process.env.PORT}/static/${newName}`
   }
 }
 
