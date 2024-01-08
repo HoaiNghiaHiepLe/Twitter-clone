@@ -1,4 +1,9 @@
 export const PATH = {
+  BASE: {
+    USERS: '/users',
+    MEDIAS: '/medias',
+    STATIC: '/static'
+  },
   USER: {
     LOGIN: '/login',
     OAUTH: '/oauth/google',
@@ -14,5 +19,7 @@ export const PATH = {
     FOLLOW: '/follow',
     UNFOLLOW: '/follow/:followed_user_id'
   },
-  MEDIA: { UPLOAD_IMAGE: '/upload-image' }
+  MEDIA: {
+    UPLOAD_IMAGE: '/upload-image'
+  }
 } as const
