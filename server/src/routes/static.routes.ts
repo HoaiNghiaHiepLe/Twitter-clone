@@ -21,7 +21,7 @@ const staticRouter = Router()
  * Description: static route for images
  * Path: /image/:fileName
  * Method: GET
- * Params: fileName
+ * Params: type (image or video), mediaName
  */
 // 1 static route for just images
 staticRouter.get(PATH.STATIC.IMAGE, serveImageController)
