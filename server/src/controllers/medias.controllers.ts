@@ -4,6 +4,7 @@ import { isProduction } from '~/constant/config'
 import { DIR } from '~/constant/dir'
 import { ErrorWithStatus } from '~/models/Errors'
 import mediaServices from '~/services/media.services'
+import fs from 'fs'
 
 export const uploadImageController = async (req: Request, res: Response) => {
   const url = await mediaServices.handleUploadImage(req)
@@ -13,18 +14,36 @@ export const uploadImageController = async (req: Request, res: Response) => {
   })
 }
 
-export const serveImageController = (req: Request, res: Response) => {
-  const { fileName } = req.params
+export const uploadVideoController = async (req: Request, res: Response) => {
+  const url = await mediaServices.handleUploadVideo(req)
+  return res.json({
+    message: 'Upload video successfully',
+    url
+  })
+}
 
-  //? Redirect về trang not found nếu không tìm thấy file
+export const serveMediaController = (req: Request, res: Response) => {
+  const { mediaType, fileName } = req.params
+
+  let filePath
+  if (mediaType === 'image') {
+    filePath = path.resolve(DIR.UPLOAD_IMAGE_DIR, fileName + '.jpg')
+  } else if (mediaType === 'video') {
+    filePath = path.resolve(DIR.UPLOAD_VIDEO_DIR, fileName)
+  } else {
+    return res.status(400).send('Invalid media type')
+  }
+
+  // Serve the file if it exists
+  if (fs.existsSync(filePath)) {
+    return res.sendFile(filePath)
+  }
+  return redirectToNotFound(res)
+}
+
+function redirectToNotFound(res: Response) {
   const urlRedirect = isProduction
     ? `${process.env.HOST}/not-found`
     : `http://localhost:${process.env.PORT_CLIENT}/not-found`
-
-  //? Trả về file nếu tìm thấy kèm theo phần mở rộng .jpg
-  return res.sendFile(path.resolve(DIR.UPLOAD_IMAGE_DIR, fileName + '.jpg'), (err) => {
-    if (err) {
-      res.redirect(urlRedirect)
-    }
-  })
+  res.redirect(urlRedirect)
 }

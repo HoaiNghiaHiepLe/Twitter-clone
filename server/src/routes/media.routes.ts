@@ -1,16 +1,34 @@
 import { Router } from 'express'
 import { PATH } from '~/constant/path'
-import { uploadImageController } from '~/controllers/medias.controllers'
+import { uploadImageController, uploadVideoController } from '~/controllers/medias.controllers'
+import { accessTokenValidator, verifyUserValidator } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
 
 const mediasRouter = Router()
 
 /**
- * Description: Login a user
- * Path: /login
+ * Description: Upload Images
+ * Path: /upload-image
  * Method: POST
- * Body: { email: string, password: string }
+ * Body: { image : files}
  */
-mediasRouter.post(PATH.MEDIA.UPLOAD_IMAGE, wrapRequestHandler(uploadImageController))
+mediasRouter.post(
+  PATH.MEDIA.UPLOAD_IMAGE,
+  accessTokenValidator,
+  verifyUserValidator,
+  wrapRequestHandler(uploadImageController)
+)
+/**
+ * Description: Upload video
+ * Path: /upload-video
+ * Method: POST
+ * Body: { video: files}
+ */
+mediasRouter.post(
+  PATH.MEDIA.UPLOAD_VIDEO,
+  accessTokenValidator,
+  verifyUserValidator,
+  wrapRequestHandler(uploadVideoController)
+)
 
 export default mediasRouter
