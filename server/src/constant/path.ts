@@ -20,6 +20,10 @@ export const PATH = {
     UNFOLLOW: '/follow/:followed_user_id'
   },
   MEDIA: {
-    UPLOAD_IMAGE: '/upload-image'
+    UPLOAD_IMAGE: '/upload-image',
+    UPLOAD_VIDEO: '/upload-video'
+  },
+  STATIC: {
+    MEDIA: '/:mediaType/:fileName'
   }
 } as const

@@ -1,16 +1,16 @@
 import { Router } from 'express'
 import { PATH } from '~/constant/path'
-import { serveImageController } from '~/controllers/medias.controllers'
+import { serveMediaController } from '~/controllers/medias.controllers'
 
 const staticRouter = Router()
 
 /**
- * Description: static route
- * Path: /login
+ * Description: Unified static route for images and videos
+ * Path: /media/:type/:mediaName
  * Method: GET
- * Params: fileName
+ * Params: type (image or video), mediaName
  */
 
-staticRouter.get(`/:fileName`, serveImageController)
+staticRouter.get(PATH.STATIC.MEDIA, serveMediaController)
 
 export default staticRouter
