@@ -1,8 +1,9 @@
 import { Router } from 'express'
 import { PATH } from '~/constant/path'
-import { uploadImageController, uploadVideoController } from '~/controllers/medias.controllers'
+import { uploadImageController, uploadMediaController, uploadVideoController } from '~/controllers/medias.controllers'
 import { accessTokenValidator, verifyUserValidator } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
+import formidable from 'formidable'
 
 const mediasRouter = Router()
 
@@ -30,5 +31,12 @@ mediasRouter.post(
   verifyUserValidator,
   wrapRequestHandler(uploadVideoController)
 )
+/**
+ * Description: Upload medias
+ * Path: /upload-medias
+ * Method: POST
+ * Body: { files: files}
+ */
+mediasRouter.post(PATH.MEDIA.UPLOAD_MEDIA, accessTokenValidator, verifyUserValidator, uploadMediaController)
 
 export default mediasRouter
