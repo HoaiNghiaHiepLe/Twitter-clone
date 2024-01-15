@@ -25,6 +25,8 @@ class MediaService {
 
         await sharp(file.filepath).jpeg().toFile(newPath)
 
+        sharp.cache(false)
+
         fs.unlinkSync(file.filepath)
 
         //? Trả về đường dẫn tới file k kèm theo phần mở rộng
@@ -64,20 +66,18 @@ class MediaService {
     return results
   }
 
-  async handleUploadVideo(req: Request): Promise<Media[]> {
+  async handleUploadVideo(req: Request) {
     const files = await uploadVideo(req)
 
     //? return nhiều file
-    const results = await Promise.all(
-      files.map(async (file) => {
-        return {
-          url: isProduction
-            ? `${process.env.HOST}/static/video/${file.newFilename}`
-            : `http://localhost:${process.env.PORT}/static/video/${file.newFilename}`,
-          type: MediaType.Video
-        }
-      })
-    )
+    const results: Media[] = files.map((file) => {
+      return {
+        url: isProduction
+          ? `${process.env.HOST}/static/video/${file.newFilename}`
+          : `http://localhost:${process.env.PORT}/static/video/${file.newFilename}`,
+        type: MediaType.Video
+      }
+    })
     return results
   }
 

@@ -56,16 +56,15 @@ export const uploadImage = async (req: Request): Promise<formidable.File[]> => {
 }
 
 export const uploadVideo = async (req: Request): Promise<formidable.File[]> => {
-  const MAX_FILE = 1
-  const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
+  const MAX_FILE = 2
+  const MAX_FILE_SIZE = 300 * 1024 * 1024 // 300MB
   const form = formidable({
     uploadDir: path.resolve(DIR.UPLOAD_VIDEO_DIR),
     maxFiles: MAX_FILE,
-    keepExtensions: true,
     maxFileSize: MAX_FILE_SIZE,
     maxTotalFileSize: MAX_FILE_SIZE * MAX_FILE, // 50MB,
     filter: ({ name, originalFilename, mimetype }) => {
-      const valid = name === 'video' && Boolean(mimetype?.includes('video/'))
+      const valid = name === 'video' && Boolean(mimetype?.includes('mp4') || Boolean(mimetype?.includes('quicktime')))
 
       if (!valid) {
         form.emit('error' as any, new Error('File is not valid') as any)
@@ -87,6 +86,18 @@ export const uploadVideo = async (req: Request): Promise<formidable.File[]> => {
           })
         )
       }
+      const videos = files.video as formidable.File[]
+
+      videos.forEach((video) => {
+        //Tách extension của file từ originalFilename
+        const videoExtension = getFileExtension(video.originalFilename as string)
+        // Đổi filepath cũ (k có ext) và gán thêm extension cho filepath mới trong thư mục uploads
+        fs.renameSync(video.filepath, `${video.filepath}.${videoExtension}`)
+        // Gán lại đường dẫn mới cho file trả về cho client
+        // video.newFilename là đường dẫn tới file mới trả về cho client trong service
+        video.newFilename = `${video.newFilename}.${videoExtension}`
+      })
+
       resolve(files.video as formidable.File[])
     })
   })
@@ -96,4 +107,10 @@ export const getNameFromFullName = (fullName: string) => {
   const nameArray = fullName.split('.')
   const name = nameArray.slice(0, nameArray.length - 1).join('')
   return name
+}
+
+export const getFileExtension = (fullName: string) => {
+  const nameArray = fullName.split('.')
+  const extension = nameArray[nameArray.length - 1]
+  return extension
 }
