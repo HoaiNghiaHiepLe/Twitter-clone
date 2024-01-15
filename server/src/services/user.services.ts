@@ -22,7 +22,7 @@ import { DeleteResult, ObjectId, UpdateResult, WithId } from 'mongodb'
 import User from '~/models/schemas/User.schema'
 import axios from 'axios'
 import { hashPassword } from '~/utils/crypto'
-import { googleOAuthPayload, googleOAuthToken } from '~/types/OAuth.type'
+import { googleOAuthPayload, googleOAuthToken } from '~/types/oAuth.type'
 
 config()
 class UserService {
@@ -199,6 +199,29 @@ class UserService {
 
   async logout(token: string) {
     return await removeRefreshToken(token)
+  }
+
+  async refreshToken({
+    user_id,
+    verify,
+    refresh_token: old_refresh_token
+  }: {
+    user_id: string
+    verify: UserVerifyStatus
+    refresh_token: string
+  }): Promise<{ access_token: string; refresh_token: string }> {
+    const [access_token, refresh_token] = await Promise.all([
+      this.signAccessToken({ user_id, verify }),
+      this.signRefreshToken({ user_id, verify }),
+      removeRefreshToken(old_refresh_token)
+    ])
+
+    insertRefreshToken(refresh_token, user_id)
+
+    return {
+      access_token,
+      refresh_token
+    }
   }
 
   async verifyEmail({ user_id }: { user_id: string }): Promise<{ access_token: string; refresh_token: string }> {
