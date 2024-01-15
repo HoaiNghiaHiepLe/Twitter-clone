@@ -9,6 +9,7 @@ export const PATH = {
     OAUTH: '/oauth/google',
     REGISTER: '/register',
     LOGOUT: '/logout',
+    REFRESH_TOKEN: '/refresh-token',
     VERIFY_EMAIL: '/verify-email',
     RESEND_VERIFY_EMAIL: '/resend-verify-email',
     FORGOT_PASSWORD: '/forgot-password',

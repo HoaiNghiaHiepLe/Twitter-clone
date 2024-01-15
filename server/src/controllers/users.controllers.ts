@@ -13,7 +13,8 @@ import {
   GetUserProfileParams,
   FollowReqBody,
   UnFollowReqParams,
-  changePasswordReqBody
+  changePasswordReqBody,
+  RefreshTokenReqBody
 } from '~/models/requests/User.request'
 import { USER_MESSAGE } from '~/constant/message'
 import { interpolateMessage } from '~/utils/utils'
@@ -72,11 +73,22 @@ export const registerController = async (
 
 export const logoutController = async (req: Request<ParamsDictionary, any, LogoutReqBody>, res: Response) => {
   const { refresh_token } = req.body as LogoutReqBody
-
   userService.logout(refresh_token)
 
   return res.json({
     message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'logout' })
+  })
+}
+
+export const refreshTokenController = async (req: Request, res: Response) => {
+  const { refresh_token } = req.body as RefreshTokenReqBody
+  const { user_id, verify } = req.decoded_refresh_token as TokenPayload
+
+  const result = await userService.refreshToken({ user_id, verify, refresh_token })
+
+  return res.json({
+    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'refresh token' }),
+    result
   })
 }
 
