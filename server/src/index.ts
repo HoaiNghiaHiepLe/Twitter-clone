@@ -24,11 +24,11 @@ app.use(express.json())
 app.use(PATH.BASE.USERS, userRouter)
 app.use(PATH.BASE.MEDIAS, mediasRouter)
 
-//serve static file by express
-// app.use(PATH.BASE.STATIC, express.static(path.resolve(DIR.UPLOAD_IMAGE_DIR)))
-
 // serve static file by router
 app.use(PATH.BASE.STATIC, staticRouter)
+
+//serve static file by express
+app.use(PATH.BASE.STATIC, express.static(path.resolve(DIR.UPLOAD_VIDEO_DIR)))
 
 app.use(defaultErrorHandler)
 

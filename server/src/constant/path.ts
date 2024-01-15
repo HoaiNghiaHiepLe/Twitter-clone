@@ -25,6 +25,8 @@ export const PATH = {
     UPLOAD_MEDIA: '/upload-media'
   },
   STATIC: {
-    MEDIA: '/:mediaType/:fileName'
+    MEDIA: '/:mediaType/:fileName',
+    IMAGE: '/image/:fileName',
+    VIDEO_STREAM: '/video-stream/:fileName'
   }
 } as const
