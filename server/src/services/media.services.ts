@@ -3,7 +3,7 @@ import path from 'path'
 import sharp from 'sharp'
 import { DIR } from '~/constant/dir'
 import { getNameFromFullName, uploadImage, uploadVideo } from '~/utils/file'
-import fs from 'fs'
+import fsPromise from 'fs/promises'
 import { isProduction } from '~/constant/config'
 import { config } from 'dotenv'
 import { MediaType } from '~/constant/enum'
@@ -16,7 +16,7 @@ class MediaService {
     const files = await uploadImage(req)
 
     //? return nhiều file
-    const results = await Promise.all(
+    const results: Media[] = await Promise.all(
       files.map(async (file) => {
         const newName = getNameFromFullName(file.newFilename)
         //? Lưu file vào thư mục uploads kèm theo phần mở rộng .jpg
@@ -27,7 +27,7 @@ class MediaService {
 
         sharp.cache(false)
 
-        fs.unlinkSync(file.filepath)
+        fsPromise.unlink(file.filepath)
 
         //? Trả về đường dẫn tới file k kèm theo phần mở rộng
         return {
@@ -49,10 +49,14 @@ class MediaService {
 
         //? Lưu file vào thư mục uploads kèm theo phần mở rộng .jpg
         const newPath = path.resolve(DIR.UPLOAD_IMAGE_DIR, `${newName}.jpg`)
-
+        //? Tắt cơ chế cache của sharp để tránh bị lỗi lock file (do sharp tự động cache) khi unlink file bằng fs ở dưới
+        //! ex: [Error: EPERM: operation not permitted, unlink 'E:\personal-work\Twitter-clone\server\uploads\temps\9c32def7eebcbbc6e956a2f01.jpg']
+        //? Xử lý hình ảnh bằng sharp
         await sharp(file.filepath).jpeg().toFile(newPath)
 
-        fs.unlinkSync(file.filepath)
+        sharp.cache(false)
+
+        fsPromise.unlink(file.filepath)
 
         //? Trả về đường dẫn tới file k kèm theo phần mở rộng
         return {
