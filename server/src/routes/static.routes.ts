@@ -27,7 +27,7 @@ const staticRouter = Router()
 staticRouter.get(PATH.STATIC.IMAGE, serveImageController)
 
 /**
- * Description: static route for video streaming
+ * Description: custom static route for video streaming
  * Path: /video-stream/:fileName
  * Method: GET
  * Params: fileName

@@ -27,7 +27,7 @@ app.use(PATH.BASE.MEDIAS, mediasRouter)
 // serve static file by router
 app.use(PATH.BASE.STATIC, staticRouter)
 
-//serve static file by express
+//serve static video streaming by express
 app.use(PATH.BASE.STATIC, express.static(path.resolve(DIR.UPLOAD_VIDEO_DIR)))
 
 app.use(defaultErrorHandler)

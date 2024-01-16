@@ -2,7 +2,7 @@ import { Request } from 'express'
 import path from 'path'
 import sharp from 'sharp'
 import { DIR } from '~/constant/dir'
-import { getNameFromFullName, uploadImage, uploadVideo } from '~/utils/file'
+import { getFileExtension, getNameFromFullName, uploadImage, uploadVideo } from '~/utils/file'
 import fsPromise from 'fs/promises'
 import { isProduction } from '~/constant/config'
 import { config } from 'dotenv'
@@ -12,6 +12,7 @@ import formidable from 'formidable'
 
 config()
 class MediaService {
+  //For upload image only controller
   async handleUploadImage(req: Request): Promise<Media[]> {
     const files = await uploadImage(req)
 
@@ -41,6 +42,23 @@ class MediaService {
     return results
   }
 
+  //For upload video only controller
+  async handleUploadVideo(req: Request) {
+    const files = await uploadVideo(req)
+
+    //? return nhiều file
+    const results: Media[] = files.map((file) => {
+      return {
+        url: isProduction
+          ? `${process.env.HOST}/static/${file.newFilename}`
+          : `http://localhost:${process.env.PORT}/static/${file.newFilename}`,
+        type: MediaType.Video
+      }
+    })
+    return results
+  }
+
+  // For upload both image and video controller
   async handleUploadImageFiles(files: formidable.File[]): Promise<Media[]> {
     //? return nhiều file
     const results = await Promise.all(
@@ -70,29 +88,25 @@ class MediaService {
     return results
   }
 
-  async handleUploadVideo(req: Request) {
-    const files = await uploadVideo(req)
-
-    //? return nhiều file
-    const results: Media[] = files.map((file) => {
-      return {
-        url: isProduction
-          ? `${process.env.HOST}/static/video/${file.newFilename}`
-          : `http://localhost:${process.env.PORT}/static/video/${file.newFilename}`,
-        type: MediaType.Video
-      }
-    })
-    return results
-  }
-
-  async handleUploadVideoFiles(files: formidable.File[]): Promise<Media[]> {
+  // For upload both image and video controller
+  async handleUploadVideoFiles(videos: formidable.File[]): Promise<Media[]> {
     //? return nhiều file
     const results = await Promise.all(
-      files.map(async (file) => {
+      videos.map(async (video) => {
+        const newVideoName = getNameFromFullName(video.newFilename)
+
+        const videoExtension = getFileExtension(video.originalFilename as string)
+
+        const newPath = path.resolve(DIR.UPLOAD_VIDEO_DIR, `${newVideoName}.${videoExtension}`)
+
+        fsPromise.rename(video.filepath, newPath)
+
+        video.newFilename = `${newVideoName}.${videoExtension}`
+
         return {
           url: isProduction
-            ? `${process.env.HOST}/static/video/${file.newFilename}`
-            : `http://localhost:${process.env.PORT}/static/video/${file.newFilename}`,
+            ? `${process.env.HOST}/static/${video.newFilename}`
+            : `http://localhost:${process.env.PORT}/static/${video.newFilename}`,
           type: MediaType.Video
         }
       })
