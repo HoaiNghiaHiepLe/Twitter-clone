@@ -9,13 +9,13 @@ import { config } from 'dotenv'
 import { MediaType } from '~/constant/enum'
 import { Media } from '~/types/Media.type'
 import formidable from 'formidable'
+import { encodeHLSWithMultipleVideoStreams } from '~/utils/video'
 
 config()
 class MediaService {
   //For upload image only controller
   async handleUploadImage(req: Request): Promise<Media[]> {
     const files = await uploadImage(req)
-
     //? return nhiều file
     const results: Media[] = await Promise.all(
       files.map(async (file) => {
@@ -55,6 +55,32 @@ class MediaService {
         type: MediaType.Video
       }
     })
+    return results
+  }
+
+  // for upload video HLS
+  async handleUploadVideoHLS(req: Request): Promise<Media[]> {
+    // Upload video files
+    const files = await uploadVideo(req)
+
+    //? encode HLS song song từng file video bằng Promise.all
+    //? Phải dùng Promise.all ở đây để đảm bảo việc encode của tất cả video hoàn thành mới trả về kết quả
+    // Nếu k dùng Promise.all khi hoàn thành encode của video đầu tiên sẽ trả về kết quả cho client => client sẽ nhận được kết quả trước khi encode xong tất cả video
+    const results: Media[] = await Promise.all(
+      files.map(async (file) => {
+        // Gọi hàm để encode HLS cho từng video
+        await encodeHLSWithMultipleVideoStreams(file.filepath)
+        const newName = getNameFromFullName(file.newFilename)
+        // await fsPromise.unlink(file.filepath)
+        // Tạo Media object để trả về cho client
+        return {
+          url: isProduction
+            ? `${process.env.HOST}/static/video-hls/${newName}`
+            : `http://localhost:${process.env.PORT}/static/video-hls/${newName}`,
+          type: MediaType.HLS
+        }
+      })
+    )
     return results
   }
 
@@ -100,8 +126,8 @@ class MediaService {
         const newPath = path.resolve(DIR.UPLOAD_VIDEO_DIR, `${newVideoName}.${videoExtension}`)
 
         fsPromise.rename(video.filepath, newPath)
-
         video.newFilename = `${newVideoName}.${videoExtension}`
+        video.filepath = newPath
 
         return {
           url: isProduction

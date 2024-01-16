@@ -24,9 +24,17 @@ export const uploadVideoController = async (req: Request, res: Response) => {
   })
 }
 
+export const uploadVideoHLSController = async (req: Request, res: Response) => {
+  const url = await mediaServices.handleUploadVideoHLS(req)
+  return res.json({
+    message: 'Upload video successfully',
+    url
+  })
+}
+
 export const uploadMediaController = async (req: Request, res: Response) => {
   const MAX_IMAGE_FILES = 3
-  const MAX_VIDEO_FILES = 1
+  const MAX_VIDEO_FILES = 2
   const MAX_IMAGE_SIZE = 300 * 1024 //300KB
   const MAX_VIDEO_SIZE = 1024 * 1024 * 50 //5MB
   const MAX_TOTAL_FILES = MAX_IMAGE_FILES + MAX_VIDEO_FILES
@@ -161,7 +169,6 @@ export const serveVideoStreamController = async (req: Request, res: Response, ne
     'Content-Length': contentLength,
     'Content-Type': contentType
   }
-  console.log('headers', headers)
 
   // HTTP Status 206: content bị chia nhiều đoạn (partial content)
   res.writeHead(HTTP_STATUS.PARTIAL_CONTENT, headers)
