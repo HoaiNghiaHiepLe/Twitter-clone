@@ -21,18 +21,21 @@ export const initFolder = () => {
 export const uploadImage = async (req: Request): Promise<formidable.File[]> => {
   const MAX_FILE = 4
   const MAX_FILE_SIZE = 300 * 1024 // 300KB
+
   const form = formidable({
     uploadDir: path.resolve(DIR.UPLOAD_TEMP_DIR),
     maxFiles: MAX_FILE,
     keepExtensions: true,
     maxFileSize: MAX_FILE_SIZE, // 300KB,
     maxTotalFileSize: MAX_FILE_SIZE * MAX_FILE, // 300KB,
+    multiples: true,
     filter: ({ name, originalFilename, mimetype }) => {
       const valid = name === 'image' && Boolean(mimetype?.includes('image/'))
 
       if (!valid) {
         form.emit('error' as any, new Error('File is not valid') as any)
       }
+
       return valid
     }
   })
@@ -58,8 +61,15 @@ export const uploadImage = async (req: Request): Promise<formidable.File[]> => {
 export const uploadVideo = async (req: Request): Promise<formidable.File[]> => {
   const MAX_FILE = 2
   const MAX_FILE_SIZE = 300 * 1024 * 1024 // 300MB
+  const nanoId = (await import('nanoid')).nanoid
+  const idName = nanoId()
+
+  const folderPath = path.resolve(DIR.UPLOAD_VIDEO_DIR, idName)
+
+  fs.mkdirSync(folderPath)
+
   const form = formidable({
-    uploadDir: path.resolve(DIR.UPLOAD_VIDEO_DIR),
+    uploadDir: path.resolve(DIR.UPLOAD_VIDEO_DIR, idName),
     maxFiles: MAX_FILE,
     maxFileSize: MAX_FILE_SIZE,
     maxTotalFileSize: MAX_FILE_SIZE * MAX_FILE, // 50MB,
@@ -70,6 +80,9 @@ export const uploadVideo = async (req: Request): Promise<formidable.File[]> => {
         form.emit('error' as any, new Error('File is not valid') as any)
       }
       return valid
+    },
+    filename: () => {
+      return idName
     }
   })
 
@@ -96,6 +109,7 @@ export const uploadVideo = async (req: Request): Promise<formidable.File[]> => {
         // Gán lại đường dẫn mới cho file trả về cho client
         // video.newFilename là đường dẫn tới file mới trả về cho client trong service
         video.newFilename = `${video.newFilename}.${videoExtension}`
+        video.filepath = `${video.filepath}.${videoExtension}`
       })
 
       resolve(files.video as formidable.File[])

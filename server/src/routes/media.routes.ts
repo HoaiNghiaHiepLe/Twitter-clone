@@ -1,9 +1,13 @@
 import { Router } from 'express'
 import { PATH } from '~/constant/path'
-import { uploadImageController, uploadMediaController, uploadVideoController } from '~/controllers/medias.controllers'
+import {
+  uploadImageController,
+  uploadMediaController,
+  uploadVideoController,
+  uploadVideoHLSController
+} from '~/controllers/medias.controllers'
 import { accessTokenValidator, verifyUserValidator } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
-import formidable from 'formidable'
 
 const mediasRouter = Router()
 
@@ -19,6 +23,7 @@ mediasRouter.post(
   verifyUserValidator,
   wrapRequestHandler(uploadImageController)
 )
+
 /**
  * Description: Upload video
  * Path: /upload-video
@@ -31,6 +36,20 @@ mediasRouter.post(
   verifyUserValidator,
   wrapRequestHandler(uploadVideoController)
 )
+
+/**
+ * Description: Upload video
+ * Path: /upload-video
+ * Method: POST
+ * Body: { video: files}
+ */
+mediasRouter.post(
+  PATH.MEDIA.UPLOAD_VIDEO_HLS,
+  accessTokenValidator,
+  verifyUserValidator,
+  wrapRequestHandler(uploadVideoHLSController)
+)
+
 /**
  * Description: Upload medias
  * Path: /upload-medias

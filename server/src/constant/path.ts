@@ -23,6 +23,7 @@ export const PATH = {
   MEDIA: {
     UPLOAD_IMAGE: '/upload-image',
     UPLOAD_VIDEO: '/upload-video',
+    UPLOAD_VIDEO_HLS: '/upload-video-hls',
     UPLOAD_MEDIA: '/upload-media'
   },
   STATIC: {
