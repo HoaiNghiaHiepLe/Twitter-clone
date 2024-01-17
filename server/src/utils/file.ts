@@ -64,12 +64,8 @@ export const uploadVideo = async (req: Request): Promise<formidable.File[]> => {
   const nanoId = (await import('nanoid')).nanoid
   const idName = nanoId()
 
-  const folderPath = path.resolve(DIR.UPLOAD_VIDEO_DIR, idName)
-
-  fs.mkdirSync(folderPath)
-
   const form = formidable({
-    uploadDir: path.resolve(DIR.UPLOAD_VIDEO_DIR, idName),
+    uploadDir: path.resolve(DIR.UPLOAD_TEMP_DIR),
     maxFiles: MAX_FILE,
     maxFileSize: MAX_FILE_SIZE,
     maxTotalFileSize: MAX_FILE_SIZE * MAX_FILE, // 50MB,
@@ -81,8 +77,8 @@ export const uploadVideo = async (req: Request): Promise<formidable.File[]> => {
       }
       return valid
     },
-    filename: () => {
-      return idName
+    filename: (name, ext, part, form) => {
+      return nanoId()
     }
   })
 
@@ -102,14 +98,29 @@ export const uploadVideo = async (req: Request): Promise<formidable.File[]> => {
       const videos = files.video as formidable.File[]
 
       videos.forEach((video) => {
-        //Tách extension của file từ originalFilename
+        //? Lấy extension của file video
         const videoExtension = getFileExtension(video.originalFilename as string)
-        // Đổi filepath cũ (k có ext) và gán thêm extension cho filepath mới trong thư mục uploads
-        fs.renameSync(video.filepath, `${video.filepath}.${videoExtension}`)
-        // Gán lại đường dẫn mới cho file trả về cho client
-        // video.newFilename là đường dẫn tới file mới trả về cho client trong service
-        video.newFilename = `${video.newFilename}.${videoExtension}`
-        video.filepath = `${video.filepath}.${videoExtension}`
+
+        //? Tạo tên mới cho file video
+        const newFileName = `${video.newFilename}.${videoExtension}`
+
+        //? Tạo đường dẫn mới cho file video
+        const folderPath = path.resolve(DIR.UPLOAD_VIDEO_DIR, video.newFilename)
+
+        //? Nếu thư mục chưa tồn tại thì tạo mới
+        if (!fs.existsSync(folderPath)) {
+          fs.mkdirSync(folderPath)
+        }
+
+        //? Tạo đường dẫn mới cho file video
+        const newFilePath = path.resolve(folderPath, newFileName)
+
+        //? Move file video vào thư mục mới
+        fs.renameSync(video.filepath, newFilePath)
+
+        //? Cập nhật lại thông tin cho file video
+        video.newFilename = newFileName
+        video.filepath = newFilePath
       })
 
       resolve(files.video as formidable.File[])

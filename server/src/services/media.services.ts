@@ -71,7 +71,8 @@ class MediaService {
         // Gọi hàm để encode HLS cho từng video
         await encodeHLSWithMultipleVideoStreams(file.filepath)
         const newName = getNameFromFullName(file.newFilename)
-        // await fsPromise.unlink(file.filepath)
+        // Xóa file video gốc sau khi đã convert sang HLS
+        await fsPromise.unlink(file.filepath)
         // Tạo Media object để trả về cho client
         return {
           url: isProduction
