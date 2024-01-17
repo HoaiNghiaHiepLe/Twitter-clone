@@ -29,6 +29,8 @@ export const PATH = {
   STATIC: {
     MEDIA: '/:mediaType/:fileName',
     IMAGE: '/image/:fileName',
-    VIDEO_STREAM: '/video-stream/:fileName'
+    VIDEO_STREAM: '/video-stream/:fileName',
+    VIDEO_M3U8: '/video-hls/:id/:masterM3u8',
+    VIDEO_SEGMENT: '/video-hls/:id/:version/:segment'
   }
 } as const

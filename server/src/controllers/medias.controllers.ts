@@ -177,6 +177,22 @@ export const serveVideoStreamController = async (req: Request, res: Response, ne
   videoSteams.pipe(res)
 }
 
+//? Video streaming m3u8
+export const serveM3u8Controller = async (req: Request, res: Response, next: NextFunction) => {
+  const { id, masterM3u8 } = req.params
+  return res.sendFile(path.resolve(DIR.UPLOAD_VIDEO_DIR, id, masterM3u8), (err) => {
+    if (err) return res.status(404).send('Not found')
+  })
+}
+
+//? Video streaming ts segment
+export const serveSegmentController = async (req: Request, res: Response, next: NextFunction) => {
+  const { id, version, segment } = req.params
+  return res.sendFile(path.resolve(DIR.UPLOAD_VIDEO_DIR, id, version, segment), (err) => {
+    if (err) return res.status(404).send('Not found')
+  })
+}
+
 //? serve both image and video
 export const serveMediaController = (req: Request, res: Response) => {
   const { mediaType, fileName } = req.params
