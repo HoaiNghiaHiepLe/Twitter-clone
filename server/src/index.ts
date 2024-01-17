@@ -9,12 +9,15 @@ import path from 'path'
 import { DIR } from './constant/dir'
 import { PATH } from './constant/path'
 import staticRouter from './routes/static.routes'
+import cors from 'cors'
 
 config()
 
 DatabaseService.connect()
 
 const app = express()
+app.use(cors())
+
 const port = process.env.PORT || 4000
 
 // create folder uploads

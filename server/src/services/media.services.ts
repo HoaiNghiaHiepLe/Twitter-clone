@@ -70,7 +70,7 @@ class MediaService {
       files.map(async (file) => {
         // Gọi hàm để encode HLS cho từng video
         await encodeHLSWithMultipleVideoStreams(file.filepath)
-        const newName = getNameFromFullName(file.newFilename)
+        const newName = getNameFromFullName(file.newFilename) + '/master.m3u8'
         // Xóa file video gốc sau khi đã convert sang HLS
         await fsPromise.unlink(file.filepath)
         // Tạo Media object để trả về cho client
