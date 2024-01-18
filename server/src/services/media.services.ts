@@ -6,12 +6,105 @@ import { getFileExtension, getNameFromFullName, uploadImage, uploadVideo } from 
 import fsPromise from 'fs/promises'
 import { isProduction } from '~/constant/config'
 import { config } from 'dotenv'
-import { MediaType } from '~/constant/enum'
+import { EncodingStatus, MediaType, VideoEncodingNotification } from '~/constant/enum'
 import { Media } from '~/types/Media.type'
 import formidable from 'formidable'
 import { encodeHLSWithMultipleVideoStreams } from '~/utils/video'
+import { findVideoEncoding, insertVideoEncodingStatus } from '~/repository/video.repository'
+import VideoEncodingStatus from '~/models/schemas/videoStatus.chema'
 
 config()
+
+class Queue {
+  // Lưu trữ danh sách các video đang được encode
+  queueList: string[]
+  // Trạng thái encode
+  encoding: boolean
+  // Hàm khởi tạo
+  constructor() {
+    this.queueList = []
+    this.encoding = false
+  }
+  // Hàm thêm video vào queue
+  async enqueue(queueItem: string) {
+    // Thêm video vào cuối queue list
+    this.queueList.push(queueItem)
+    // Cập nhật trạng thái encode của video
+    await this.handleQueueStatus({ queueItem })
+    // Gọi hàm xử lý encode
+    this.processEncode()
+    console.log('this.queueList', this.queueList)
+  }
+
+  async processEncode() {
+    // Nếu đang encode thì return
+    if (this.encoding) return
+    // Nếu queue list có video thì tiến hành encode
+    if (this.queueList.length > 0) {
+      // Set trạng thái đang encode
+      this.encoding = true
+      // Lấy video đầu tiên trong queue list
+      const videoPath = this.queueList[0]
+      // Cập nhật trạng thái encode của video
+      await this.handleQueueStatus({
+        queueItem: videoPath,
+        status: EncodingStatus.Processing,
+        notification: VideoEncodingNotification.Processing
+      })
+      // Tiến hành encode video
+      try {
+        // Gọi hàm để encode HLS cho từng video
+        await encodeHLSWithMultipleVideoStreams(videoPath)
+        // Sau khi encode xong thì xóa video đầu tiên trong queue list
+        this.queueList.shift()
+        // Xóa file video gốc sau khi đã convert sang HLS
+        await fsPromise.unlink(videoPath)
+        // Cập nhật trạng thái encode của video
+        await this.handleQueueStatus({
+          queueItem: videoPath,
+          status: EncodingStatus.Success,
+          notification: VideoEncodingNotification.Success
+        })
+        console.log(`Encode video ${videoPath} successfully`)
+      } catch (error) {
+        // Nếu có lỗi xảy ra thì cập nhật trạng thái encode của video
+        await this.handleQueueStatus({
+          queueItem: videoPath,
+          status: EncodingStatus.Failed,
+          notification: VideoEncodingNotification.Failed
+        }).catch((error) => {
+          // Nếu có lỗi xảy ra trong quá trình cập nhật trạng thái encode thì log ra console
+          console.log('Update video encode status failed', error)
+        })
+        console.log(`Encode video ${videoPath} error`)
+        console.log(error)
+      }
+      this.encoding = false
+      this.processEncode()
+    } else {
+      console.log('Encode video queue is empty')
+    }
+  }
+  // Hàm cập nhật trạng thái encode của video
+  async handleQueueStatus({
+    queueItem,
+    status = EncodingStatus.Pending,
+    notification = VideoEncodingNotification.Pending
+  }: {
+    queueItem: string
+    status?: EncodingStatus
+    notification?: VideoEncodingNotification
+  }) {
+    // Lấy id của video từ đường dẫn
+    const idName = getNameFromFullName(queueItem.split('\\').pop() as string)
+    // Cập nhật trạng thái encode của video vào database
+    await insertVideoEncodingStatus(
+      new VideoEncodingStatus({ name: idName, status: status, notification: notification })
+    )
+  }
+}
+
+const queue = new Queue()
 class MediaService {
   //For upload image only controller
   async handleUploadImage(req: Request): Promise<Media[]> {
@@ -68,11 +161,9 @@ class MediaService {
     // Nếu k dùng Promise.all khi hoàn thành encode của video đầu tiên sẽ trả về kết quả cho client => client sẽ nhận được kết quả trước khi encode xong tất cả video
     const results: Media[] = await Promise.all(
       files.map(async (file) => {
-        // Gọi hàm để encode HLS cho từng video
-        await encodeHLSWithMultipleVideoStreams(file.filepath)
         const newName = getNameFromFullName(file.newFilename) + '/master.m3u8'
-        // Xóa file video gốc sau khi đã convert sang HLS
-        await fsPromise.unlink(file.filepath)
+        // Gọi hàm để queue encode HLS cho từng video
+        queue.enqueue(file.filepath)
         // Tạo Media object để trả về cho client
         return {
           url: isProduction
@@ -139,6 +230,10 @@ class MediaService {
       })
     )
     return results
+  }
+
+  getVideoEncodingStatus(id: Pick<VideoEncodingStatus, 'name'>) {
+    return findVideoEncoding(id)
   }
 }
 

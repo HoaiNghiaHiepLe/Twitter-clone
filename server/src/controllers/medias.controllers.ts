@@ -7,6 +7,9 @@ import mediaServices from '~/services/media.services'
 import fs from 'fs'
 import formidable from 'formidable'
 import HTTP_STATUS from '~/constant/httpStatus'
+import { interpolateMessage } from '~/utils/utils'
+import { MESSAGE } from '~/constant/message'
+import VideoEncodingStatus from '~/models/schemas/videoStatus.chema'
 
 export const uploadImageController = async (req: Request, res: Response) => {
   const url = await mediaServices.handleUploadImage(req)
@@ -86,6 +89,23 @@ export const uploadMediaController = async (req: Request, res: Response) => {
     } else {
       return res.status(400).json({ message: 'No files uploaded' })
     }
+  })
+}
+
+export const videoEncodeStatusController = async (req: Request, res: Response) => {
+  const { id } = req.params
+  const result = await mediaServices.getVideoEncodingStatus(id as unknown as Pick<VideoEncodingStatus, 'name'>)
+
+  if (!result) {
+    throw new ErrorWithStatus({
+      message: interpolateMessage(MESSAGE.NOT_FOUND, { field: 'Video' }),
+      status: HTTP_STATUS.NOT_FOUND
+    })
+  }
+
+  return res.json({
+    status: result?.status,
+    message: result.notification
   })
 }
 

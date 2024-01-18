@@ -4,7 +4,8 @@ import {
   uploadImageController,
   uploadMediaController,
   uploadVideoController,
-  uploadVideoHLSController
+  uploadVideoHLSController,
+  videoEncodeStatusController
 } from '~/controllers/medias.controllers'
 import { accessTokenValidator, verifyUserValidator } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
@@ -57,5 +58,17 @@ mediasRouter.post(
  * Body: { files: files}
  */
 mediasRouter.post(PATH.MEDIA.UPLOAD_MEDIA, accessTokenValidator, verifyUserValidator, uploadMediaController)
+
+/**
+ * Description: Upload medias
+ * Path: /video-encode-status/:id
+ * Method: GET
+ */
+mediasRouter.get(
+  PATH.MEDIA.VIDEO_ENCODE_STATUS,
+  accessTokenValidator,
+  verifyUserValidator,
+  wrapRequestHandler(videoEncodeStatusController)
+)
 
 export default mediasRouter

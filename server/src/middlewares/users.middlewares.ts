@@ -1,7 +1,7 @@
 import { ParamSchema, check, checkSchema } from 'express-validator'
 import { JsonWebTokenError } from 'jsonwebtoken'
 import HTTP_STATUS from '~/constant/httpStatus'
-import { USER_MESSAGE } from '~/constant/message'
+import { MESSAGE } from '~/constant/message'
 import { ErrorWithStatus } from '~/models/Errors'
 import {
   checkExistEmail,
@@ -23,11 +23,11 @@ import { REGEX_USERNAME } from '~/constant/regex'
 import { hashPassword } from '~/utils/crypto'
 
 const passwordSchema: ParamSchema = {
-  notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'password' }) },
-  isString: { errorMessage: interpolateMessage(USER_MESSAGE.MUST_BE_A_STRING, { field: 'password' }) },
+  notEmpty: { errorMessage: interpolateMessage(MESSAGE.IS_REQUIRED, { field: 'password' }) },
+  isString: { errorMessage: interpolateMessage(MESSAGE.MUST_BE_A_STRING, { field: 'password' }) },
   isLength: {
     options: { min: 6, max: 50 },
-    errorMessage: interpolateMessage(USER_MESSAGE.LENGTH, { field: 'password', min: '6', max: '50' })
+    errorMessage: interpolateMessage(MESSAGE.LENGTH, { field: 'password', min: '6', max: '50' })
   },
   isStrongPassword: {
     options: {
@@ -37,7 +37,7 @@ const passwordSchema: ParamSchema = {
       minNumbers: 1,
       minSymbols: 1
     },
-    errorMessage: interpolateMessage(USER_MESSAGE.STRONG, {
+    errorMessage: interpolateMessage(MESSAGE.STRONG, {
       field: 'password',
       minLength: '6',
       additionals: '1 uppercase letter and 1 symbol'
@@ -46,11 +46,11 @@ const passwordSchema: ParamSchema = {
 }
 
 const confirmPasswordSchema: ParamSchema = {
-  notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'confirm password' }) },
-  isString: { errorMessage: interpolateMessage(USER_MESSAGE.MUST_BE_A_STRING, { field: 'confirm password' }) },
+  notEmpty: { errorMessage: interpolateMessage(MESSAGE.IS_REQUIRED, { field: 'confirm password' }) },
+  isString: { errorMessage: interpolateMessage(MESSAGE.MUST_BE_A_STRING, { field: 'confirm password' }) },
   isLength: {
     options: { min: 6, max: 50 },
-    errorMessage: interpolateMessage(USER_MESSAGE.LENGTH, { field: 'confirm password', min: '6', max: '50' })
+    errorMessage: interpolateMessage(MESSAGE.LENGTH, { field: 'confirm password', min: '6', max: '50' })
   },
   isStrongPassword: {
     options: {
@@ -60,7 +60,7 @@ const confirmPasswordSchema: ParamSchema = {
       minNumbers: 1,
       minSymbols: 1
     },
-    errorMessage: interpolateMessage(USER_MESSAGE.STRONG, {
+    errorMessage: interpolateMessage(MESSAGE.STRONG, {
       field: 'confirm password',
       minLength: '6',
       additionals: '1 uppercase letter and 1 symbol'
@@ -69,7 +69,7 @@ const confirmPasswordSchema: ParamSchema = {
   custom: {
     options: (value, { req }) => {
       if (value !== req.body.password) {
-        throw new Error(interpolateMessage(USER_MESSAGE.NOT_MATCH, { field: 'confirm password' }))
+        throw new Error(interpolateMessage(MESSAGE.NOT_MATCH, { field: 'confirm password' }))
       }
       return true
     }
@@ -87,13 +87,13 @@ const createNameSchema = ({
   maxLength?: string
   additionals?: string
 }): ParamSchema => ({
-  notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: field }) },
-  isString: { errorMessage: interpolateMessage(USER_MESSAGE.MUST_BE_A_STRING, { field: field }) },
+  notEmpty: { errorMessage: interpolateMessage(MESSAGE.IS_REQUIRED, { field: field }) },
+  isString: { errorMessage: interpolateMessage(MESSAGE.MUST_BE_A_STRING, { field: field }) },
   custom: {
     options: async (value: string) => {
       if (!REGEX_USERNAME.test(value)) {
         throw new Error(
-          interpolateMessage(USER_MESSAGE.STRONG, {
+          interpolateMessage(MESSAGE.STRONG, {
             field: field,
             minLength: minLength,
             maxLength: maxLength,
@@ -105,7 +105,7 @@ const createNameSchema = ({
       const user = await findUserByUserName(value)
 
       if (user) {
-        throw new Error(interpolateMessage(USER_MESSAGE.ALREADY_EXISTS, { field: field }))
+        throw new Error(interpolateMessage(MESSAGE.ALREADY_EXISTS, { field: field }))
       }
     }
   },
@@ -113,10 +113,10 @@ const createNameSchema = ({
 })
 
 const dateOfBirthSchema: ParamSchema = {
-  notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'date of birth' }) },
+  notEmpty: { errorMessage: interpolateMessage(MESSAGE.IS_REQUIRED, { field: 'date of birth' }) },
   isISO8601: {
     options: { strict: true, strictSeparator: true },
-    errorMessage: interpolateMessage(USER_MESSAGE.INVALID, { field: 'date of birth' })
+    errorMessage: interpolateMessage(MESSAGE.INVALID, { field: 'date of birth' })
   }
 }
 
@@ -125,7 +125,7 @@ const followedUserIdSchema: ParamSchema = {
     options: async (value: string, { req }) => {
       if (!ObjectId.isValid(value)) {
         throw new ErrorWithStatus({
-          message: interpolateMessage(USER_MESSAGE.INVALID, { field: 'User id' }),
+          message: interpolateMessage(MESSAGE.INVALID, { field: 'User id' }),
           status: HTTP_STATUS.NOT_FOUND
         })
       }
@@ -134,7 +134,7 @@ const followedUserIdSchema: ParamSchema = {
 
       if (verifiedUser?.verify !== UserVerifyStatus.Verified) {
         throw new ErrorWithStatus({
-          message: interpolateMessage(USER_MESSAGE.UNVERIFIED, { field: 'User' }),
+          message: interpolateMessage(MESSAGE.UNVERIFIED, { field: 'User' }),
           status: HTTP_STATUS.FORBIDDEN
         })
       }
@@ -151,10 +151,10 @@ const commonSchema = ({
   minLength: number | string
   maxLength: number | string
 }): ParamSchema => ({
-  isString: { errorMessage: interpolateMessage(USER_MESSAGE.MUST_BE_A_STRING, { field: field.toString() }) },
+  isString: { errorMessage: interpolateMessage(MESSAGE.MUST_BE_A_STRING, { field: field.toString() }) },
   isLength: {
     options: { min: Number(minLength), max: Number(maxLength) },
-    errorMessage: interpolateMessage(USER_MESSAGE.LENGTH, {
+    errorMessage: interpolateMessage(MESSAGE.LENGTH, {
       field: field.toString(),
       min: minLength.toString(),
       max: maxLength.toString()
@@ -168,14 +168,14 @@ export const loginValidator = validate(
   checkSchema(
     {
       email: {
-        isEmail: { errorMessage: interpolateMessage(USER_MESSAGE.INVALID, { field: 'email' }) },
+        isEmail: { errorMessage: interpolateMessage(MESSAGE.INVALID, { field: 'email' }) },
         trim: true,
         custom: {
           options: async (value, { req }) => {
             const user = await authenticateUser(value as string, req.body.password as string)
 
             if (user === null) {
-              throw Error(interpolateMessage(USER_MESSAGE.INCORRECT, { field: 'email or password' }))
+              throw Error(interpolateMessage(MESSAGE.INCORRECT, { field: 'email or password' }))
             }
 
             req.user = user
@@ -185,11 +185,11 @@ export const loginValidator = validate(
         }
       },
       password: {
-        notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'password' }) },
-        isString: { errorMessage: interpolateMessage(USER_MESSAGE.MUST_BE_A_STRING, { field: 'password' }) },
+        notEmpty: { errorMessage: interpolateMessage(MESSAGE.IS_REQUIRED, { field: 'password' }) },
+        isString: { errorMessage: interpolateMessage(MESSAGE.MUST_BE_A_STRING, { field: 'password' }) },
         isLength: {
           options: { min: 6, max: 50 },
-          errorMessage: interpolateMessage(USER_MESSAGE.LENGTH, { field: 'password', min: '6', max: '50' })
+          errorMessage: interpolateMessage(MESSAGE.LENGTH, { field: 'password', min: '6', max: '50' })
         }
       }
     },
@@ -202,15 +202,15 @@ export const registerValidator = validate(
     {
       name: createNameSchema({ field: 'name' }),
       email: {
-        isEmail: { errorMessage: interpolateMessage(USER_MESSAGE.INVALID, { field: 'email' }) },
-        notEmpty: { errorMessage: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'email' }) },
+        isEmail: { errorMessage: interpolateMessage(MESSAGE.INVALID, { field: 'email' }) },
+        notEmpty: { errorMessage: interpolateMessage(MESSAGE.IS_REQUIRED, { field: 'email' }) },
         trim: true,
         custom: {
           options: async (value) => {
             const isExistEmail = await checkExistEmail(value as string)
 
             if (isExistEmail) {
-              throw Error(interpolateMessage(USER_MESSAGE.ALREADY_EXISTS, { field: 'email' }))
+              throw Error(interpolateMessage(MESSAGE.ALREADY_EXISTS, { field: 'email' }))
             }
 
             return true
@@ -231,7 +231,7 @@ export const accessTokenValidator = validate(
       Authorization: {
         notEmpty: {
           errorMessage: new ErrorWithStatus({
-            message: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'access token' }),
+            message: interpolateMessage(MESSAGE.IS_REQUIRED, { field: 'access token' }),
             status: HTTP_STATUS.UNAUTHORIZED
           })
         },
@@ -240,7 +240,7 @@ export const accessTokenValidator = validate(
             const access_token = value.split(' ')[1]
             if (!access_token) {
               throw new ErrorWithStatus({
-                message: interpolateMessage(USER_MESSAGE.INVALID, { field: 'access token' }),
+                message: interpolateMessage(MESSAGE.INVALID, { field: 'access token' }),
                 status: HTTP_STATUS.UNAUTHORIZED
               })
             }
@@ -276,7 +276,7 @@ export const refreshTokenValidator = validate(
       refresh_token: {
         notEmpty: {
           errorMessage: new ErrorWithStatus({
-            message: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'refresh token' }),
+            message: interpolateMessage(MESSAGE.IS_REQUIRED, { field: 'refresh token' }),
             status: HTTP_STATUS.UNAUTHORIZED
           })
         },
@@ -290,7 +290,7 @@ export const refreshTokenValidator = validate(
               ])
               if (!refresh_token) {
                 throw new ErrorWithStatus({
-                  message: interpolateMessage(USER_MESSAGE.INVALID, { field: 'refresh token' }),
+                  message: interpolateMessage(MESSAGE.INVALID, { field: 'refresh token' }),
                   status: HTTP_STATUS.UNAUTHORIZED
                 })
               }
@@ -320,7 +320,7 @@ export const verifyEmailTokenValidator = validate(
       email_verify_token: {
         notEmpty: {
           errorMessage: new ErrorWithStatus({
-            message: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'email verify token' }),
+            message: interpolateMessage(MESSAGE.IS_REQUIRED, { field: 'email verify token' }),
             status: HTTP_STATUS.UNAUTHORIZED
           })
         },
@@ -355,7 +355,7 @@ export const forgotPasswordValidator = validate(
   checkSchema(
     {
       email: {
-        isEmail: { errorMessage: interpolateMessage(USER_MESSAGE.INVALID, { field: 'email' }) },
+        isEmail: { errorMessage: interpolateMessage(MESSAGE.INVALID, { field: 'email' }) },
         trim: true,
         custom: {
           options: async (value, { req }) => {
@@ -363,14 +363,14 @@ export const forgotPasswordValidator = validate(
 
             if (!user) {
               throw new ErrorWithStatus({
-                message: interpolateMessage(USER_MESSAGE.NOT_FOUND, { field: 'user' }),
+                message: interpolateMessage(MESSAGE.NOT_FOUND, { field: 'user' }),
                 status: HTTP_STATUS.NOT_FOUND
               })
             }
 
             if (user.verify !== UserVerifyStatus.Verified) {
               throw new ErrorWithStatus({
-                message: interpolateMessage(USER_MESSAGE.UNVERIFIED, { field: 'Your account' }),
+                message: interpolateMessage(MESSAGE.UNVERIFIED, { field: 'Your account' }),
                 status: HTTP_STATUS.UNAUTHORIZED
               })
             }
@@ -395,7 +395,7 @@ export const resetPasswordValidator = validate(
         trim: true,
         notEmpty: {
           errorMessage: new ErrorWithStatus({
-            message: interpolateMessage(USER_MESSAGE.IS_REQUIRED, { field: 'forgot password token' }),
+            message: interpolateMessage(MESSAGE.IS_REQUIRED, { field: 'forgot password token' }),
             status: HTTP_STATUS.UNAUTHORIZED
           })
         },
@@ -432,7 +432,7 @@ export const verifyUserValidator = (req: Request, res: Response, next: NextFunct
   if (verify !== UserVerifyStatus.Verified) {
     return next(
       new ErrorWithStatus({
-        message: interpolateMessage(USER_MESSAGE.UNVERIFIED, { field: 'Your account' }),
+        message: interpolateMessage(MESSAGE.UNVERIFIED, { field: 'Your account' }),
         status: HTTP_STATUS.FORBIDDEN
       })
     )
@@ -488,7 +488,7 @@ export const changePasswordValidator = validate(
 
             if (!user) {
               throw new ErrorWithStatus({
-                message: interpolateMessage(USER_MESSAGE.NOT_FOUND, { field: 'User' }),
+                message: interpolateMessage(MESSAGE.NOT_FOUND, { field: 'User' }),
                 status: HTTP_STATUS.NOT_FOUND
               })
             }
@@ -497,7 +497,7 @@ export const changePasswordValidator = validate(
 
             if (!isMatch) {
               throw new ErrorWithStatus({
-                message: interpolateMessage(USER_MESSAGE.INCORRECT, { field: 'old password' }),
+                message: interpolateMessage(MESSAGE.INCORRECT, { field: 'old password' }),
                 status: HTTP_STATUS.UNAUTHORIZED
               })
             }

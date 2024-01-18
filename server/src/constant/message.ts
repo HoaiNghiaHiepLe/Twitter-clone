@@ -1,4 +1,4 @@
-export const USER_MESSAGE = {
+export const MESSAGE = {
   VALIDATION_ERROR: 'validation error',
   IS_REQUIRED: ':field is required',
   MUST_BE_A_STRING: ':field must be a string',
