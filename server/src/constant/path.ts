@@ -24,7 +24,8 @@ export const PATH = {
     UPLOAD_IMAGE: '/upload-image',
     UPLOAD_VIDEO: '/upload-video',
     UPLOAD_VIDEO_HLS: '/upload-video-hls',
-    UPLOAD_MEDIA: '/upload-media'
+    UPLOAD_MEDIA: '/upload-media',
+    VIDEO_ENCODE_STATUS: '/video-encode-status/:id'
   },
   STATIC: {
     MEDIA: '/:mediaType/:fileName',

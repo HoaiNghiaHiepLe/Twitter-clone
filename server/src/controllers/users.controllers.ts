@@ -16,7 +16,7 @@ import {
   changePasswordReqBody,
   RefreshTokenReqBody
 } from '~/models/requests/User.request'
-import { USER_MESSAGE } from '~/constant/message'
+import { MESSAGE } from '~/constant/message'
 import { interpolateMessage } from '~/utils/utils'
 import User from '~/models/schemas/User.schema'
 import { ObjectId } from 'mongodb'
@@ -37,7 +37,7 @@ export const loginController = async (req: Request<ParamsDictionary, any, LoginR
   const result = await userService.login({ user_id, verify })
 
   return res.json({
-    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'login' }),
+    message: interpolateMessage(MESSAGE.SUCCESSFUL, { work: 'login' }),
     result
   })
 }
@@ -51,7 +51,7 @@ export const oAuthController = async (req: Request, res: Response) => {
 
   if (!result) {
     throw new ErrorWithStatus({
-      message: interpolateMessage(USER_MESSAGE.FAILED, { field: 'Login' }),
+      message: interpolateMessage(MESSAGE.FAILED, { field: 'Login' }),
       status: HTTP_STATUS.BAD_REQUEST
     })
   }
@@ -66,7 +66,7 @@ export const registerController = async (
 ) => {
   const result = await userService.register(req.body as RegisterReqBody)
   return res.json({
-    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'register' }),
+    message: interpolateMessage(MESSAGE.SUCCESSFUL, { work: 'register' }),
     result
   })
 }
@@ -76,7 +76,7 @@ export const logoutController = async (req: Request<ParamsDictionary, any, Logou
   userService.logout(refresh_token)
 
   return res.json({
-    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'logout' })
+    message: interpolateMessage(MESSAGE.SUCCESSFUL, { work: 'logout' })
   })
 }
 
@@ -87,7 +87,7 @@ export const refreshTokenController = async (req: Request, res: Response) => {
   const result = await userService.refreshToken({ user_id, verify, refresh_token })
 
   return res.json({
-    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'refresh token' }),
+    message: interpolateMessage(MESSAGE.SUCCESSFUL, { work: 'refresh token' }),
     result
   })
 }
@@ -100,7 +100,7 @@ export const emailVerifyController = async (req: Request<ParamsDictionary, any, 
   // not found
   if (!user) {
     return res.json({
-      message: interpolateMessage(USER_MESSAGE.NOT_FOUND, { field: 'User' }),
+      message: interpolateMessage(MESSAGE.NOT_FOUND, { field: 'User' }),
       status: HTTP_STATUS.NOT_FOUND
     })
   }
@@ -108,7 +108,7 @@ export const emailVerifyController = async (req: Request<ParamsDictionary, any, 
   // already verified
   if (user.email_verify_token === '') {
     return res.json({
-      message: interpolateMessage(USER_MESSAGE.ALREADY, { field: 'email', work: 'verified' }),
+      message: interpolateMessage(MESSAGE.ALREADY, { field: 'email', work: 'verified' }),
       status: HTTP_STATUS.OK
     })
   }
@@ -117,7 +117,7 @@ export const emailVerifyController = async (req: Request<ParamsDictionary, any, 
 
   // verify email success
   return res.json({
-    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'email verify' }),
+    message: interpolateMessage(MESSAGE.SUCCESSFUL, { work: 'email verify' }),
     result
   })
 }
@@ -130,14 +130,14 @@ export const resendVerifyEmailController = async (req: Request, res: Response) =
   // not found
   if (!user) {
     return res.json({
-      message: interpolateMessage(USER_MESSAGE.NOT_FOUND, { field: 'User' }),
+      message: interpolateMessage(MESSAGE.NOT_FOUND, { field: 'User' }),
       status: HTTP_STATUS.NOT_FOUND
     })
   }
 
   if (user.verify === UserVerifyStatus.Verified) {
     return res.json({
-      message: interpolateMessage(USER_MESSAGE.ALREADY, { field: 'email', work: 'verified' }),
+      message: interpolateMessage(MESSAGE.ALREADY, { field: 'email', work: 'verified' }),
       status: HTTP_STATUS.OK
     })
   }
@@ -145,7 +145,7 @@ export const resendVerifyEmailController = async (req: Request, res: Response) =
   const result = await userService.resendVerifyEmail(user_id)
 
   return res.json({
-    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'resend verify email' }),
+    message: interpolateMessage(MESSAGE.SUCCESSFUL, { work: 'resend verify email' }),
     result
   })
 }
@@ -159,7 +159,7 @@ export const forgotPasswordController = async (
   const result = await userService.forgotPassword({ user_id, verify: (user as User).verify as UserVerifyStatus })
 
   return res.json({
-    message: interpolateMessage(USER_MESSAGE.SEND_EMAIL, { link: 'forgot password link' }),
+    message: interpolateMessage(MESSAGE.SEND_EMAIL, { link: 'forgot password link' }),
     result
   })
 }
@@ -176,14 +176,14 @@ export const resetPasswordController = async (
   // not found
   if (!user) {
     return res.json({
-      message: interpolateMessage(USER_MESSAGE.NOT_FOUND, { field: 'User' }),
+      message: interpolateMessage(MESSAGE.NOT_FOUND, { field: 'User' }),
       status: HTTP_STATUS.NOT_FOUND
     })
   }
 
   if (user.forgot_password_token !== forgot_password_token) {
     throw new ErrorWithStatus({
-      message: interpolateMessage(USER_MESSAGE.INVALID, { field: 'forgot password token' }),
+      message: interpolateMessage(MESSAGE.INVALID, { field: 'forgot password token' }),
       status: HTTP_STATUS.BAD_REQUEST
     })
   }
@@ -192,7 +192,7 @@ export const resetPasswordController = async (
 
   if ((exp as number) < currentTime) {
     throw new ErrorWithStatus({
-      message: interpolateMessage(USER_MESSAGE.EXPIRED, { field: 'forgot password token' }),
+      message: interpolateMessage(MESSAGE.EXPIRED, { field: 'forgot password token' }),
       status: HTTP_STATUS.BAD_REQUEST
     })
   }
@@ -200,7 +200,7 @@ export const resetPasswordController = async (
   await userService.resetPassword(user_id, password)
 
   return res.json({
-    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'Reset password' })
+    message: interpolateMessage(MESSAGE.SUCCESSFUL, { work: 'Reset password' })
   })
 }
 
@@ -208,7 +208,7 @@ export const getMeController = async (req: Request, res: Response) => {
   const { user_id } = req.decoded_authorization as TokenPayload
   const user = await userService.getMe(user_id)
   return res.json({
-    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'Get me' }),
+    message: interpolateMessage(MESSAGE.SUCCESSFUL, { work: 'Get me' }),
     result: user
   })
 }
@@ -232,7 +232,7 @@ export const updateMeController = async (req: Request<ParamsDictionary, any, Upd
   const updatedUser = await userService.updateMe(user_id, body)
 
   return res.json({
-    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'update user' }),
+    message: interpolateMessage(MESSAGE.SUCCESSFUL, { work: 'update user' }),
     result: updatedUser
   })
 }
@@ -244,13 +244,13 @@ export const getUserInfoController = async (req: Request<GetUserProfileParams>, 
 
   if (!user) {
     throw new ErrorWithStatus({
-      message: interpolateMessage(USER_MESSAGE.NOT_FOUND, { field: 'User' }),
+      message: interpolateMessage(MESSAGE.NOT_FOUND, { field: 'User' }),
       status: HTTP_STATUS.NOT_FOUND
     })
   }
 
   return res.json({
-    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'Get user info' }),
+    message: interpolateMessage(MESSAGE.SUCCESSFUL, { work: 'Get user info' }),
     result: user
   })
 }
@@ -263,13 +263,13 @@ export const followUserController = async (req: Request<ParamsDictionary, any, F
 
   if (!user) {
     throw new ErrorWithStatus({
-      message: interpolateMessage(USER_MESSAGE.ALREADY, { field: 'User', work: 'follow' }),
+      message: interpolateMessage(MESSAGE.ALREADY, { field: 'User', work: 'follow' }),
       status: HTTP_STATUS.BAD_REQUEST
     })
   }
 
   return res.json({
-    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'follow user' })
+    message: interpolateMessage(MESSAGE.SUCCESSFUL, { work: 'follow user' })
   })
 }
 
@@ -281,13 +281,13 @@ export const unfollowUserController = async (req: Request<UnFollowReqParams>, re
 
   if (!result) {
     throw new ErrorWithStatus({
-      message: interpolateMessage(USER_MESSAGE.ALREADY, { field: 'User', work: 'unfollowed' }),
+      message: interpolateMessage(MESSAGE.ALREADY, { field: 'User', work: 'unfollowed' }),
       status: HTTP_STATUS.BAD_REQUEST
     })
   }
 
   return res.json({
-    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'unfollow user' })
+    message: interpolateMessage(MESSAGE.SUCCESSFUL, { work: 'unfollow user' })
   })
 }
 
@@ -302,6 +302,6 @@ export const changePasswordController = async (
   await userService.changePassword(user_id, password)
 
   return res.json({
-    message: interpolateMessage(USER_MESSAGE.SUCCESSFUL, { work: 'change password' })
+    message: interpolateMessage(MESSAGE.SUCCESSFUL, { work: 'change password' })
   })
 }

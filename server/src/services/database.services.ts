@@ -3,6 +3,7 @@ import { config } from 'dotenv'
 import User from '~/models/schemas/User.schema'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
 import Follower from '~/models/schemas/Follower.schema'
+import VideoEncodingStatus from '~/models/schemas/videoStatus.chema'
 
 config()
 
@@ -36,6 +37,10 @@ class DatabaseService {
 
   get followers(): Collection<Follower> {
     return this.db.collection(process.env.DB_FOLLOWERS_COLLECTION as string)
+  }
+
+  get videoEncodingStatus(): Collection<VideoEncodingStatus> {
+    return this.db.collection(process.env.DB_VIDEO_ENCODING_STATUS_COLLECTION as string)
   }
 }
 
