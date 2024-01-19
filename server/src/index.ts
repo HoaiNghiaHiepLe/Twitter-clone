@@ -15,7 +15,12 @@ import databaseService from './services/database.services'
 
 config()
 
-DatabaseService.connect().then(() => databaseService.indexUser())
+DatabaseService.connect().then(() => {
+  databaseService.indexUser()
+  databaseService.indexRefreshToken()
+  databaseService.indexVideoStatus()
+  databaseService.indexFollower()
+})
 
 const app = express()
 app.use(cors())
