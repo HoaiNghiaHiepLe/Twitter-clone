@@ -169,15 +169,18 @@ class UserService {
   }
 
   async oAuth(code: string) {
+    // 1. Ở Client config google auth login bằng google
+    // 2. Request lên google và lấy code
     const { id_token, access_token } = await this.getOAuthGoogleToken(code)
+    // 3. Lấy thông tin user từ google bằng code vừa lấy được
     const userInfo = await this.getOAuthGoogleUserInfo(access_token, id_token)
-
+    // 4. Nếu email chưa được xác thực thì trả về null
     if (!userInfo.verified_email) {
       return null
     }
-
+    // 5. Kiểm tra xem email đã được đăng ký chưa
     const user = await checkExistEmail(userInfo.email)
-
+    // 6. Nếu đã đăng ký thì trả về access_token và refresh_token
     if (user) {
       const user_id = user._id.toString()
       const verify = user.verify as UserVerifyStatus
@@ -186,13 +189,15 @@ class UserService {
 
       return { ...result, new_user: 0, verify: verify }
     } else {
+      // 7. Nếu chưa đăng ký thì đăng ký và trả về access_token và refresh_token
       const payload: Omit<RegisterReqBody, 'confirm_password'> = {
         name: userInfo.name,
         email: userInfo.email,
         password: hashPassword(Math.random().toString(36).substring(2, 15))
       }
-
+      // 8. Lưu thông tin user vào database bằng cách gọi hàm register
       const result = await this.register(payload as RegisterReqBody)
+      // 9. Trả thông tin user về cho client bao gồm cả new_user để redirect về đúng trang ở client
       return { ...result, new_user: 1, verify: UserVerifyStatus.Unverified }
     }
   }
