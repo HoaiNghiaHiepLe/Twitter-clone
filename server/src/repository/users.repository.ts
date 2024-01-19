@@ -37,9 +37,9 @@ export const insertUser = async (payload: RegisterReqBody) => {
   return user
 }
 
-export const insertRefreshToken = async (token: string, user_id: string) => {
+export const insertRefreshToken = async (token: string, user_id: string, iat: number, exp: number) => {
   const result = await databaseService.refreshTokens.insertOne(
-    new RefreshToken({ user_id: new ObjectId(user_id), token })
+    new RefreshToken({ user_id: new ObjectId(user_id), token, iat, exp })
   )
 
   return result
