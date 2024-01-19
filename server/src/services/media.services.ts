@@ -10,7 +10,7 @@ import { EncodingStatus, MediaType, VideoEncodingNotification } from '~/constant
 import { Media } from '~/types/Media.type'
 import formidable from 'formidable'
 import { encodeHLSWithMultipleVideoStreams } from '~/utils/video'
-import { findVideoEncoding, insertVideoEncodingStatus } from '~/repository/video.repository'
+import { findVideoEncoding, insertVideoEncodingStatus } from '~/repository/media.repository'
 import VideoEncodingStatus from '~/models/schemas/videoStatus.chema'
 
 config()
