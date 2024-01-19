@@ -10,10 +10,12 @@ import { DIR } from './constant/dir'
 import { PATH } from './constant/path'
 import staticRouter from './routes/static.routes'
 import cors from 'cors'
+import { MongoClient } from 'mongodb'
+import databaseService from './services/database.services'
 
 config()
 
-DatabaseService.connect()
+DatabaseService.connect().then(() => databaseService.indexUser())
 
 const app = express()
 app.use(cors())
@@ -38,3 +40,19 @@ app.use(defaultErrorHandler)
 app.listen(port, () => {
   console.log(`App is listening at http://localhost:${port}`)
 })
+
+//? for test mongodb performance
+// const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@twitter.juksne5.mongodb.net/?retryWrites=true&w=majority`
+// const client = new MongoClient(uri)
+// const db = client.db('MongodbPerformance')
+// const users = db.collection('Users')
+// const data = []
+// for (let i = 0; i < 3000; i++) {
+//   data.push({
+//     name: `user${i}`,
+//     age: Math.floor(Math.random() * 100) + 1,
+//     bio: i % 2 === 0 ? 'male' : 'female'
+//   })
+// }
+
+// users.insertMany(data)

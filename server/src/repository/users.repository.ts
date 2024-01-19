@@ -47,12 +47,14 @@ export const insertRefreshToken = async (token: string, user_id: string, iat: nu
 
 export const checkUserRefreshToken = async (token: string) => {
   const refreshToken = await databaseService.refreshTokens.findOne({ token })
+  const user_id = String(refreshToken?.user_id)
 
   if (refreshToken === null) {
     return null
   }
 
-  const user = await databaseService.users.findOne({ _id: refreshToken.user_id })
+  // const user = await databaseService.users.findOne({ _id: refreshToken.user_id })
+  const user = await findUserById(user_id as string)
 
   if (user === null) {
     return null
