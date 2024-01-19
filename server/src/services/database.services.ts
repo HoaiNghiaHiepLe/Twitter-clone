@@ -27,22 +27,43 @@ class DatabaseService {
     }
   }
 
-  indexUser() {
+  //? Đánh index cho các collection để tăng tốc độ tìm kiếm
+  async indexUser() {
+    // Check nếu đã có index thì return
+    const exist = await this.users.indexExists(['email_1_password_1', 'email_1', 'username_1'])
+    if (exist) {
+      return
+    }
     this.users.createIndex({ email: 1, password: 1 })
     this.users.createIndex({ email: 1 }, { unique: true })
     this.users.createIndex({ username: 1 }, { unique: true })
   }
 
-  indexRefreshToken() {
+  async indexRefreshToken() {
+    // Check nếu đã có index thì return
+    const exist = await this.refreshTokens.indexExists(['token_1', 'exp_1'])
+    if (exist) {
+      return
+    }
     this.refreshTokens.createIndex({ token: 1 })
     this.refreshTokens.createIndex({ exp: 1 }, { expireAfterSeconds: 0 })
   }
 
-  indexVideoStatus() {
+  async indexVideoStatus() {
+    // Check nếu đã có index thì return
+    const exist = await this.videoEncodingStatus.indexExists(['name_1'])
+    if (exist) {
+      return
+    }
     this.videoEncodingStatus.createIndex({ name: 1 })
   }
 
-  indexFollower() {
+  async indexFollower() {
+    // Check nếu đã có index thì return
+    const exist = await this.followers.indexExists(['user_id_1_followed_user_id_1'])
+    if (exist) {
+      return
+    }
     this.followers.createIndex({ user_id: 1, followed_user_id: 1 })
   }
 
