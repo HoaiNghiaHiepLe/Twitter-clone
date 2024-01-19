@@ -1,5 +1,5 @@
-import { RegisterReqBody, UpdateMeReqBody } from '~/models/requests/User.request'
-import { signToken } from '~/utils/jwt'
+import { RegisterReqBody, TokenPayload, UpdateMeReqBody } from '~/models/requests/User.request'
+import { signToken, verifyToken } from '~/utils/jwt'
 import { TokenType, UserVerifyStatus } from '~/constant/enum'
 import {
   findUserById,
@@ -40,7 +40,33 @@ class UserService {
     })
   }
 
-  private signRefreshToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }): Promise<string> {
+  private signRefreshToken({
+    user_id,
+    verify,
+    exp
+  }: {
+    user_id: string
+    verify: UserVerifyStatus
+    exp?: number
+  }): Promise<string> {
+    if (exp) {
+      //? nếu có truyền exp thì sign với exp (dùng cho trường hợp refresh token exp bằng exp của refresh token cũ)
+      //? Để bảo mật hơn sẽ có trường hợp gọi đến hàm refresh Token khi refresh token cũ đã hết hạn nó sẽ tạo ra 1 refresh token mới với exp cũng hết hạn
+      //? User sẽ phải login lại để lấy refresh token mới
+      //? Hoặc thuận tiện hơn cho user nhưng ít bảo mật hơn thì có thể check nếu exp && exp < Date.now() thì mới truyền exp vào payload để signToken
+      //? Lúc này nếu refresh token cũ hết hạn thì sẽ tạo ra 1 refresh token mới với expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN
+      //? Vì vậy khi refresh token bị lộ attacker vẫn có thể dùng refresh token cũ để tiếp tục lấy refresh token mới
+      return signToken({
+        payload: {
+          user_id,
+          token_type: TokenType.RefreshToken,
+          verify: verify,
+          exp
+        },
+        privateKey: process.env.JWT_SECRET_REFRESH_TOKEN as string
+      })
+    }
+    //? nếu không truyền exp thì sign với expiresIn (dùng cho trường hợp refresh token lấy exp mặc định từ env)
     return signToken({
       payload: {
         user_id,
@@ -78,6 +104,10 @@ class UserService {
     return Promise.all([this.signAccessToken({ user_id, verify }), this.signRefreshToken({ user_id, verify })])
   }
 
+  private decodeRefreshToken(refresh_token: string): Promise<TokenPayload> {
+    return verifyToken({ token: refresh_token, secretOrPublicKey: process.env.JWT_SECRET_REFRESH_TOKEN as string })
+  }
+
   private signForgotPasswordToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }): Promise<string> {
     return signToken({
       payload: {
@@ -110,8 +140,9 @@ class UserService {
       user_id: user_id.toString(),
       verify: UserVerifyStatus.Unverified
     })
+    const { iat, exp } = await this.decodeRefreshToken(refresh_token)
 
-    insertRefreshToken(refresh_token, user_id.toString())
+    insertRefreshToken(refresh_token, user_id.toString(), iat, exp)
 
     return {
       access_token,
@@ -129,7 +160,8 @@ class UserService {
     verify: UserVerifyStatus
   }): Promise<{ access_token: string; refresh_token: string }> {
     const [access_token, refresh_token] = await this.signAccessAndRefreshToken({ user_id, verify })
-    insertRefreshToken(refresh_token, user_id)
+    const { iat, exp } = await this.decodeRefreshToken(refresh_token)
+    insertRefreshToken(refresh_token, user_id, iat, exp)
     return {
       access_token,
       refresh_token
@@ -209,19 +241,24 @@ class UserService {
   async refreshToken({
     user_id,
     verify,
-    refresh_token: old_refresh_token
+    refresh_token: old_refresh_token,
+    exp
   }: {
     user_id: string
     verify: UserVerifyStatus
     refresh_token: string
+    exp: number
   }): Promise<{ access_token: string; refresh_token: string }> {
+    //! K nên gọi lại hàm signAccessAndRefreshToken vì ở đây cần xóa refresh token cũ nên dùng cả 3 hàm trong 1 Promise.all để tối ưu
     const [access_token, refresh_token] = await Promise.all([
       this.signAccessToken({ user_id, verify }),
-      this.signRefreshToken({ user_id, verify }),
+      this.signRefreshToken({ user_id, verify, exp }),
       removeRefreshToken(old_refresh_token)
     ])
 
-    insertRefreshToken(refresh_token, user_id)
+    const decodeRefreshToken = await this.decodeRefreshToken(refresh_token)
+
+    insertRefreshToken(refresh_token, user_id, decodeRefreshToken.iat, decodeRefreshToken.exp)
 
     return {
       access_token,

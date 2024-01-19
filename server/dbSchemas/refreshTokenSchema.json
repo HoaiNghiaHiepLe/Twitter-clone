@@ -2,7 +2,7 @@
   "$jsonSchema": {
     "bsonType": "object",
     "title": "Refresh Token object validation",
-    "required": ["_id", "user_id", "token", "created_at"],
+    "required": ["_id", "user_id", "token", "created_at", "iat", "exp"],
     "properties": {
       "_id": {
         "bsonType": "objectId",
@@ -19,6 +19,14 @@
       "created_at": {
         "bsonType": "date",
         "description": "'created_at' must be date and is required"
+      },
+      "iat": {
+        "bsonType": "date",
+        "description": "'iat' must be date and is required"
+      },
+      "exp": {
+        "bsonType": "date",
+        "description": "'exp' must be date and is required"
       }
     },
     "additionalProperties": false
