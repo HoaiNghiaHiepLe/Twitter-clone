@@ -32,8 +32,8 @@ export default class Tweet {
   medias: Media[]
   guest_views?: number
   user_views?: number
-  created_at?: Date
-  updated_at?: Date
+  created_at: Date
+  updated_at: Date
   //? Những thứ class cần xử lý trước khi đưa vào Database
   constructor({
     _id,
