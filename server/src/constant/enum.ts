@@ -30,3 +30,15 @@ export enum VideoEncodingNotification {
   Success = 'Encoding video is success',
   Failed = 'Encoding video is failed'
 }
+
+export enum TweetAudience {
+  Everyone, // 0
+  TwitterCircle // 1
+}
+
+export enum TweetType {
+  Tweet,
+  Retweet,
+  Comment,
+  QuoteTweet
+}
