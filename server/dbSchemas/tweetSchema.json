@@ -1,0 +1,108 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "title": "Tweet object validation",
+    "required": [
+      "_id",
+      "user_id",
+      "type",
+      "audience",
+      "content",
+      "parent_id",
+      "hashtags",
+      "mentions",
+      "medias",
+      "guest_views",
+      "user_views",
+      "created_at",
+      "updated_at"
+    ],
+    "properties": {
+      "_id": {
+        "bsonType": "objectId",
+        "description": "'_id' must be objectId and is required"
+      },
+      "user_id": {
+        "bsonType": "objectId",
+        "description": "'user_id'  must be objectId and is required"
+      },
+      "type": {
+        "bsonType": "int",
+        "enum": [0, 1, 2, 3],
+        "description": "'type' must be TweetType and is required"
+      },
+      "audience": {
+        "bsonType": "int",
+        "enum": [0, 1],
+        "description": "'audience' must be TweetAudience and is required"
+      },
+      "content": {
+        "bsonType": "string",
+        "description": "'content' must be string and is required"
+      },
+      "parent_id": {
+        "bsonType": ["objectId", "null"],
+        "description": "'parent_id' must be a null or objectId and is required"
+      },
+      "hashtags": {
+        "bsonType": "array",
+        "uniqueItems": true,
+        "additionalProperties": false,
+        "items": {
+          "bsonType": "objectId"
+        },
+        "description": "'hashtags' must be a array and is required"
+      },
+      "mentions": {
+        "bsonType": "array",
+        "uniqueItems": true,
+        "additionalProperties": false,
+        "items": {
+          "bsonType": "objectId"
+        },
+        "description": "'mentions' must be a array and is required"
+      },
+      "medias": {
+        "bsonType": "array",
+        "uniqueItems": true,
+        "additionalProperties": false,
+        "items": {
+          "bsonType": "object",
+          "required": ["type", "url"],
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "bsonType": "int",
+              "enum": [0, 1, 2],
+              "description": "'type' must be MediaTypes and is required"
+            },
+            "url": {
+              "bsonType": "string",
+              "description": "'url' must be string and is required"
+            }
+          }
+        },
+        "description": "'medias' must be a array and is required"
+      },
+      "guest_views": {
+        "bsonType": "int",
+        "minimum": 0,
+        "description": "'guest_views' must be int and is required"
+      },
+      "user_views": {
+        "bsonType": "int",
+        "minimum": 0,
+        "description": "'user_views' must be int and is required"
+      },
+      "created_at": {
+        "bsonType": "date",
+        "description": "'created_at' must be date and is required"
+      },
+      "updated_at": {
+        "bsonType": "date",
+        "description": "'updated_at' must be date and is required"
+      }
+    },
+    "additionalProperties": false
+  }
+}
