@@ -4,6 +4,7 @@ import User from '~/models/schemas/User.schema'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
 import Follower from '~/models/schemas/Follower.schema'
 import VideoEncodingStatus from '~/models/schemas/videoStatus.chema'
+import Tweet from '~/models/schemas/Tweet.schema'
 
 config()
 
@@ -81,6 +82,10 @@ class DatabaseService {
 
   get videoEncodingStatus(): Collection<VideoEncodingStatus> {
     return this.db.collection(process.env.DB_VIDEO_ENCODING_STATUS_COLLECTION as string)
+  }
+
+  get tweets(): Collection<Tweet> {
+    return this.db.collection(process.env.DB_TWEETS_COLLECTION as string)
   }
 }
 

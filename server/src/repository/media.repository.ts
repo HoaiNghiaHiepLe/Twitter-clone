@@ -1,4 +1,3 @@
-import { EncodingStatus } from '~/constant/enum'
 import VideoEncodingStatus from '~/models/schemas/videoStatus.chema'
 import databaseService from '~/services/database.services'
 
