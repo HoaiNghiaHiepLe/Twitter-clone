@@ -12,6 +12,7 @@ import staticRouter from './routes/static.routes'
 import cors from 'cors'
 import { MongoClient } from 'mongodb'
 import databaseService from './services/database.services'
+import tweetsRouter from './routes/tweets.routes'
 
 config()
 
@@ -33,6 +34,7 @@ initFolder()
 app.use(express.json())
 app.use(PATH.BASE.USERS, userRouter)
 app.use(PATH.BASE.MEDIAS, mediasRouter)
+app.use(PATH.BASE.TWEETS, tweetsRouter)
 
 // serve static file by router
 app.use(PATH.BASE.STATIC, staticRouter)

@@ -2,7 +2,8 @@ export const PATH = {
   BASE: {
     USERS: '/users',
     MEDIAS: '/medias',
-    STATIC: '/static'
+    STATIC: '/static',
+    TWEETS: '/tweets'
   },
   USER: {
     LOGIN: '/login',
