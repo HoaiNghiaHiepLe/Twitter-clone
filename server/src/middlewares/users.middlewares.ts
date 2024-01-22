@@ -24,7 +24,7 @@ import { hashPassword } from '~/utils/crypto'
 
 const passwordSchema: ParamSchema = {
   notEmpty: { errorMessage: interpolateMessage(MESSAGE.IS_REQUIRED, { field: 'password' }) },
-  isString: { errorMessage: interpolateMessage(MESSAGE.MUST_BE_A_STRING, { field: 'password' }) },
+  isString: { errorMessage: interpolateMessage(MESSAGE.MUST_BE, { field: 'password', type: 'string' }) },
   isLength: {
     options: { min: 6, max: 50 },
     errorMessage: interpolateMessage(MESSAGE.LENGTH, { field: 'password', min: '6', max: '50' })
@@ -47,7 +47,7 @@ const passwordSchema: ParamSchema = {
 
 const confirmPasswordSchema: ParamSchema = {
   notEmpty: { errorMessage: interpolateMessage(MESSAGE.IS_REQUIRED, { field: 'confirm password' }) },
-  isString: { errorMessage: interpolateMessage(MESSAGE.MUST_BE_A_STRING, { field: 'confirm password' }) },
+  isString: { errorMessage: interpolateMessage(MESSAGE.MUST_BE, { field: 'confirm password', type: 'string' }) },
   isLength: {
     options: { min: 6, max: 50 },
     errorMessage: interpolateMessage(MESSAGE.LENGTH, { field: 'confirm password', min: '6', max: '50' })
@@ -88,7 +88,7 @@ const createNameSchema = ({
   additionals?: string
 }): ParamSchema => ({
   notEmpty: { errorMessage: interpolateMessage(MESSAGE.IS_REQUIRED, { field: field }) },
-  isString: { errorMessage: interpolateMessage(MESSAGE.MUST_BE_A_STRING, { field: field }) },
+  isString: { errorMessage: interpolateMessage(MESSAGE.MUST_BE, { field: field, type: 'string' }) },
   custom: {
     options: async (value: string) => {
       if (!REGEX_USERNAME.test(value)) {
@@ -151,7 +151,7 @@ const commonSchema = ({
   minLength: number | string
   maxLength: number | string
 }): ParamSchema => ({
-  isString: { errorMessage: interpolateMessage(MESSAGE.MUST_BE_A_STRING, { field: field.toString() }) },
+  isString: { errorMessage: interpolateMessage(MESSAGE.MUST_BE, { field: field.toString(), type: 'string' }) },
   isLength: {
     options: { min: Number(minLength), max: Number(maxLength) },
     errorMessage: interpolateMessage(MESSAGE.LENGTH, {
@@ -186,7 +186,7 @@ export const loginValidator = validate(
       },
       password: {
         notEmpty: { errorMessage: interpolateMessage(MESSAGE.IS_REQUIRED, { field: 'password' }) },
-        isString: { errorMessage: interpolateMessage(MESSAGE.MUST_BE_A_STRING, { field: 'password' }) },
+        isString: { errorMessage: interpolateMessage(MESSAGE.MUST_BE, { field: 'password', type: 'string' }) },
         isLength: {
           options: { min: 6, max: 50 },
           errorMessage: interpolateMessage(MESSAGE.LENGTH, { field: 'password', min: '6', max: '50' })
