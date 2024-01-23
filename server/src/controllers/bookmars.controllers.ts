@@ -22,3 +22,27 @@ export const bookmarkTweetController = async (
     bookmark
   })
 }
+
+export const unbookmarkByTweetController = async (req: Request, res: Response) => {
+  //? Delete k gửi body nên dùng req.params
+  const { tweet_id } = req.params
+  const { user_id } = req.decoded_authorization as TokenPayload
+
+  await bookmarkServices.unbookmarkByTweet({ user_id, tweet_id })
+
+  return res.json({
+    message: interpolateMessage(MESSAGE.SUCCESSFUL, { action: 'unbookmark tweet' })
+  })
+}
+
+export const unbookmarkByIdController = async (req: Request, res: Response) => {
+  //? Delete k gửi body nên dùng req.params
+  const { bookmark_id } = req.params
+  const { user_id } = req.decoded_authorization as TokenPayload
+
+  await bookmarkServices.unbookmarkById(bookmark_id)
+
+  return res.json({
+    message: interpolateMessage(MESSAGE.SUCCESSFUL, { action: 'unbookmark tweet' })
+  })
+}

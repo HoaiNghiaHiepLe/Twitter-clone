@@ -26,3 +26,18 @@ export const insertOneBookmarkTweet = async ({ user_id, tweet_id }: Bookmark) =>
   )
   return result
 }
+
+export const findAndDeleteBookmarkByTweet = async ({ user_id, tweet_id }: Bookmark) => {
+  const result = await databaseService.bookmarks.findOneAndDelete({
+    user_id: user_id,
+    tweet_id: tweet_id
+  })
+  return result
+}
+
+export const findAndDeleteBookmarkById = async (bookmark_id: string) => {
+  const result = await databaseService.bookmarks.findOneAndDelete({
+    _id: new ObjectId(bookmark_id)
+  })
+  return result
+}
