@@ -4,8 +4,8 @@ import {
   bookmarkTweetController,
   unbookmarkByIdController,
   unbookmarkByTweetController
-} from '~/controllers/bookmars.controllers'
-import { tweetIdValidator } from '~/middlewares/tweet.middlewares'
+} from '~/controllers/bookmarks.controllers'
+import { bookmarkIdValidator, tweetIdValidator } from '~/middlewares/tweet.middlewares'
 import { accessTokenValidator, verifyUserValidator } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
 
@@ -52,7 +52,7 @@ bookmarksRouter.delete(
   PATH.BOOKMARKS.UNBOOKMARK_BY_ID,
   accessTokenValidator,
   verifyUserValidator,
-  tweetIdValidator,
+  bookmarkIdValidator,
   wrapRequestHandler(unbookmarkByIdController)
 )
 
