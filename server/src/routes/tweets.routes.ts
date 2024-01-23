@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { PATH } from '~/constant/path'
 import { likeTweetController, unlikeTweetController } from '~/controllers/likes.controllers'
-import { createTweetController } from '~/controllers/tweets.controllers'
+import { createTweetController, getTweetController } from '~/controllers/tweets.controllers'
 import { createTweetValidator, tweetIdValidator } from '~/middlewares/tweets.middlewares'
 import { accessTokenValidator, verifyUserValidator } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
@@ -16,12 +16,21 @@ const tweetsRouter = Router()
  * Body: TweetRequestBody
  */
 tweetsRouter.post(
-  '/',
+  PATH.TWEET.CREATE_TWEET,
   accessTokenValidator,
   verifyUserValidator,
   createTweetValidator,
   wrapRequestHandler(createTweetController)
 )
+
+/**
+ * Description: Get a tweet
+ * Path: /:tweet_id
+ * Method: GET
+ * Header: {Authorization: Bearer <access_token>}
+ * Params: {tweet_id: string}
+ */
+tweetsRouter.get(PATH.TWEET.GET_TWEET, tweetIdValidator, wrapRequestHandler(getTweetController))
 
 /**
  * Description: Create a bookmark tweet
@@ -41,7 +50,7 @@ tweetsRouter.post(
 /**
  * Description: Delete a bookmark tweet
  * Path: /:tweet_id
- * Method: Delete
+ * Method: DELETE
  * Header: {Authorization: Bearer <access_token>}
  * Params: {tweet_id: string}
  */

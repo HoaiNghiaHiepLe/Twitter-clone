@@ -36,6 +36,11 @@ export const PATH = {
     VIDEO_M3U8: '/video-hls/:id/:masterM3u8',
     VIDEO_SEGMENT: '/video-hls/:id/:version/:segment'
   },
+  TWEET: {
+    CREATE_TWEET: '/',
+    GET_TWEET: '/:tweet_id',
+    GET_TWEETS: '/tweets'
+  },
   BOOKMARKS: {
     ADD_BOOKMARK_TWEET: '/add/tweet',
     REMOVE_BOOKMARK_BY_TWEET: '/remove/tweet_id/:tweet_id',
