@@ -35,5 +35,10 @@ export const PATH = {
     VIDEO_STREAM: '/video-stream/:fileName',
     VIDEO_M3U8: '/video-hls/:id/:masterM3u8',
     VIDEO_SEGMENT: '/video-hls/:id/:version/:segment'
+  },
+  BOOKMARKS: {
+    BOOKMARK_TWEET: '/tweets',
+    UNBOOKMARK_BY_TWEET: '/tweets/:tweet_id',
+    UNBOOKMARK_BY_ID: '/:bookmark_id'
   }
 } as const

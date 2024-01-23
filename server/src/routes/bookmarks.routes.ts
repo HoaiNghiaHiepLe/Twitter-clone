@@ -1,19 +1,55 @@
 import { Router } from 'express'
-import { bookmarkTweetController } from '~/controllers/bookmars.controllers'
-import { createTweetController } from '~/controllers/tweets.controllers'
-import { createTweetValidator } from '~/middlewares/tweet.middlewares'
+import { PATH } from '~/constant/path'
+import {
+  bookmarkTweetController,
+  unbookmarkByIdController,
+  unbookmarkByTweetController
+} from '~/controllers/bookmars.controllers'
 import { accessTokenValidator, verifyUserValidator } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
 
 const bookmarksRouter = Router()
 
 /**
- * Description: Create a bookmark
+ * Description: Create a bookmark tweet
  * Path: /
  * Method: POST
  * Header: {Authorization: Bearer <access_token>}
  * Body: {tweet_id: string}
  */
-bookmarksRouter.post('', accessTokenValidator, verifyUserValidator, wrapRequestHandler(bookmarkTweetController))
+bookmarksRouter.post(
+  PATH.BOOKMARKS.BOOKMARK_TWEET,
+  accessTokenValidator,
+  verifyUserValidator,
+  wrapRequestHandler(bookmarkTweetController)
+)
+
+/**
+ * Description: Delete a bookmark tweet
+ * Path: /:tweet_id
+ * Method: Delete
+ * Header: {Authorization: Bearer <access_token>}
+ * Params: {tweet_id: string}
+ */
+bookmarksRouter.delete(
+  PATH.BOOKMARKS.UNBOOKMARK_BY_TWEET,
+  accessTokenValidator,
+  verifyUserValidator,
+  wrapRequestHandler(unbookmarkByTweetController)
+)
+
+/**
+ * Description: Delete a bookmark tweet
+ * Path: /:tweet_id
+ * Method: Delete
+ * Header: {Authorization: Bearer <access_token>}
+ * Params: {tweet_id: string}
+ */
+bookmarksRouter.delete(
+  PATH.BOOKMARKS.UNBOOKMARK_BY_ID,
+  accessTokenValidator,
+  verifyUserValidator,
+  wrapRequestHandler(unbookmarkByIdController)
+)
 
 export default bookmarksRouter
