@@ -1,8 +1,8 @@
 import { config } from 'dotenv'
 import { TweetRequestBody } from '~/models/requests/Tweet.request'
-import { findTweetById, insertOneTweet } from '~/repository/tweet.repository'
+import { findTweetById, insertOneTweet } from '~/repository/tweets.repository'
 import Tweet from '~/models/schemas/Tweet.schema'
-import { findOneAndUpdateHashtag } from '~/repository/hashtag.repository'
+import { findOneAndUpdateHashtag } from '~/repository/hashtags.repository'
 import Hashtag from '~/models/schemas/Hashtag.schema'
 import { ObjectId } from 'mongodb'
 

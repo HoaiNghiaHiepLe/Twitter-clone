@@ -1,5 +1,5 @@
 import Bookmark, { BookmarkConstructor } from '~/models/schemas/bookmark.schema'
-import { findAndDeleteTweetLike, insertOneTweetLike } from '~/repository/like.repository'
+import { findAndDeleteTweetLike, insertOneTweetLike } from '~/repository/likes.repository'
 
 class likeServices {
   async likeTweet({ user_id, tweet_id }: BookmarkConstructor) {

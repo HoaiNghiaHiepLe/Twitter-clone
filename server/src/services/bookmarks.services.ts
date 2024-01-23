@@ -4,7 +4,7 @@ import {
   findAndDeleteBookmarkById,
   findAndDeleteBookmarkByTweet,
   insertOneBookmarkTweet
-} from '~/repository/bookmark.repository'
+} from '~/repository/bookmarks.repository'
 
 class bookmarkServices {
   async bookmarkTweet({ user_id, tweet_id }: BookmarkConstructor) {
@@ -17,7 +17,7 @@ class bookmarkServices {
     return result
   }
 
-  async unbookmarkByTweet({ user_id, tweet_id }: BookmarkConstructor) {
+  async removeBookmarkByTweet({ user_id, tweet_id }: BookmarkConstructor) {
     if (!tweet_id || !user_id) return false
 
     const result = await findAndDeleteBookmarkByTweet(new Bookmark({ tweet_id, user_id }))
@@ -27,7 +27,7 @@ class bookmarkServices {
     return result
   }
 
-  async unbookmarkById(bookmark_id: string) {
+  async removeBookmarkById(bookmark_id: string) {
     if (!bookmark_id) return false
 
     const result = await findAndDeleteBookmarkById(bookmark_id)
