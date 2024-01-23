@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb'
-import Bookmark, { BookmarkConstructor } from '~/models/schemas/bookmark.schema'
+import Bookmark from '~/models/schemas/bookmark.schema'
 import databaseService from '~/services/database.services'
 
 export const insertOneBookmarkTweet = async ({ user_id, tweet_id }: Bookmark) => {
@@ -37,6 +37,13 @@ export const findAndDeleteBookmarkByTweet = async ({ user_id, tweet_id }: Bookma
 
 export const findAndDeleteBookmarkById = async (bookmark_id: string) => {
   const result = await databaseService.bookmarks.findOneAndDelete({
+    _id: new ObjectId(bookmark_id)
+  })
+  return result
+}
+
+export const findBookmarkById = async (bookmark_id: string) => {
+  const result = await databaseService.bookmarks.findOne({
     _id: new ObjectId(bookmark_id)
   })
   return result

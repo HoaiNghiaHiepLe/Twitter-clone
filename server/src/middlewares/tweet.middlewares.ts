@@ -5,6 +5,7 @@ import { MediaType, TweetAudience, TweetType } from '~/constant/enum'
 import HTTP_STATUS from '~/constant/httpStatus'
 import { MESSAGE } from '~/constant/message'
 import { ErrorWithStatus } from '~/models/Errors'
+import { findBookmarkById } from '~/repository/bookmark.repository'
 import { findTweetById } from '~/repository/tweet.repository'
 import { convertEnumToArray } from '~/utils/common'
 import { interpolateMessage } from '~/utils/utils'
@@ -177,7 +178,7 @@ export const tweetIdValidator = validate(
             if (!ObjectId.isValid(value)) {
               throw new ErrorWithStatus({
                 message: interpolateMessage(MESSAGE.INVALID, {
-                  field: 'tweet'
+                  field: 'tweet id'
                 }),
                 status: HTTP_STATUS.BAD_REQUEST
               })
@@ -187,6 +188,38 @@ export const tweetIdValidator = validate(
               throw new ErrorWithStatus({
                 message: interpolateMessage(MESSAGE.NOT_FOUND, {
                   field: 'tweet'
+                }),
+                status: HTTP_STATUS.NOT_FOUND
+              })
+            }
+            return true
+          }
+        }
+      }
+    },
+    ['params', 'body']
+  )
+)
+
+export const bookmarkIdValidator = validate(
+  checkSchema(
+    {
+      bookmark_id: {
+        custom: {
+          options: async (value, { req }) => {
+            if (!ObjectId.isValid(value)) {
+              throw new ErrorWithStatus({
+                message: interpolateMessage(MESSAGE.INVALID, {
+                  field: 'bookmark id'
+                }),
+                status: HTTP_STATUS.BAD_REQUEST
+              })
+            }
+            const isValidBookmark = await findBookmarkById(value as string)
+            if (!isValidBookmark) {
+              throw new ErrorWithStatus({
+                message: interpolateMessage(MESSAGE.NOT_FOUND, {
+                  field: 'bookmark'
                 }),
                 status: HTTP_STATUS.NOT_FOUND
               })
