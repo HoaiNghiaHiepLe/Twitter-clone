@@ -1,5 +1,5 @@
 export const MESSAGE = {
-  VALIDATION_ERROR: 'validation error',
+  ERROR: ':action error',
   IS_REQUIRED: ':field is required',
   MUST_BE: ':field must be a :type',
   LENGTH: ':field must be between :min and :max characters',
@@ -9,10 +9,10 @@ export const MESSAGE = {
   NOT_MATCH: ':field does not match',
   NOT_FOUND: ':field not found',
   INCORRECT: ':field is incorrect',
-  SUCCESSFUL: ':work successful',
-  ALREADY: ':field already :work before',
+  SUCCESSFUL: ':action successful',
+  ALREADY: ':field already :action before',
   SEND_EMAIL: 'A :link has been sent to your email',
   UNVERIFIED: ':field is unverified',
   EXPIRED: ':field is expired',
-  FAILED: ':work failed'
+  FAILED: ':action failed'
 } as const
