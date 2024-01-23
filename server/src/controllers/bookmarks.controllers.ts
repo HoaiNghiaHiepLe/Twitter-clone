@@ -5,7 +5,7 @@ import { MESSAGE } from '~/constant/message'
 import { ErrorWithStatus } from '~/models/Errors'
 import { BookmarkTweetRequestBody } from '~/models/requests/Common.request'
 import { TokenPayload } from '~/models/requests/User.request'
-import bookmarkServices from '~/services/bookmark.services'
+import bookmarkServices from '~/services/bookmarks.services'
 import { interpolateMessage } from '~/utils/utils'
 
 export const bookmarkTweetController = async (
@@ -23,24 +23,24 @@ export const bookmarkTweetController = async (
   })
 }
 
-export const unbookmarkByTweetController = async (req: Request, res: Response) => {
+export const removeBookmarkByTweetController = async (req: Request, res: Response) => {
   //? Delete k gửi body nên dùng req.params
   const { tweet_id } = req.params
   const { user_id } = req.decoded_authorization as TokenPayload
 
-  await bookmarkServices.unbookmarkByTweet({ user_id, tweet_id })
+  await bookmarkServices.removeBookmarkByTweet({ user_id, tweet_id })
 
   return res.json({
     message: interpolateMessage(MESSAGE.SUCCESSFUL, { action: 'unbookmark tweet' })
   })
 }
 
-export const unbookmarkByIdController = async (req: Request, res: Response) => {
+export const removeBookmarkByIdController = async (req: Request, res: Response) => {
   //? Delete k gửi body nên dùng req.params
   const { bookmark_id } = req.params
   const { user_id } = req.decoded_authorization as TokenPayload
 
-  await bookmarkServices.unbookmarkById(bookmark_id)
+  await bookmarkServices.removeBookmarkById(bookmark_id)
 
   return res.json({
     message: interpolateMessage(MESSAGE.SUCCESSFUL, { action: 'unbookmark tweet' })

@@ -37,9 +37,9 @@ export const PATH = {
     VIDEO_SEGMENT: '/video-hls/:id/:version/:segment'
   },
   BOOKMARKS: {
-    BOOKMARK_TWEET: '/add/tweet',
-    UNBOOKMARK_BY_TWEET: '/remove/tweet_id/:tweet_id',
-    UNBOOKMARK_BY_ID: '/remove/bookmark_id/:bookmark_id'
+    ADD_BOOKMARK_TWEET: '/add/tweet',
+    REMOVE_BOOKMARK_BY_TWEET: '/remove/tweet_id/:tweet_id',
+    REMOVE_BOOKMARK_BY_ID: '/remove/bookmark_id/:bookmark_id'
   },
   LIKE: {
     LIKE_TWEET: '/like',

@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { PATH } from '~/constant/path'
 import { likeTweetController, unlikeTweetController } from '~/controllers/likes.controllers'
 import { createTweetController } from '~/controllers/tweets.controllers'
-import { createTweetValidator, tweetIdValidator } from '~/middlewares/tweet.middlewares'
+import { createTweetValidator, tweetIdValidator } from '~/middlewares/tweets.middlewares'
 import { accessTokenValidator, verifyUserValidator } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
 

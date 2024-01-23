@@ -2,10 +2,10 @@ import { Router } from 'express'
 import { PATH } from '~/constant/path'
 import {
   bookmarkTweetController,
-  unbookmarkByIdController,
-  unbookmarkByTweetController
+  removeBookmarkByIdController,
+  removeBookmarkByTweetController
 } from '~/controllers/bookmarks.controllers'
-import { bookmarkIdValidator, tweetIdValidator } from '~/middlewares/tweet.middlewares'
+import { bookmarkIdValidator, tweetIdValidator } from '~/middlewares/tweets.middlewares'
 import { accessTokenValidator, verifyUserValidator } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
 
@@ -19,7 +19,7 @@ const bookmarksRouter = Router()
  * Body: {tweet_id: string}
  */
 bookmarksRouter.post(
-  PATH.BOOKMARKS.BOOKMARK_TWEET,
+  PATH.BOOKMARKS.ADD_BOOKMARK_TWEET,
   accessTokenValidator,
   verifyUserValidator,
   tweetIdValidator,
@@ -34,11 +34,11 @@ bookmarksRouter.post(
  * Params: {tweet_id: string}
  */
 bookmarksRouter.delete(
-  PATH.BOOKMARKS.UNBOOKMARK_BY_TWEET,
+  PATH.BOOKMARKS.REMOVE_BOOKMARK_BY_TWEET,
   accessTokenValidator,
   verifyUserValidator,
   tweetIdValidator,
-  wrapRequestHandler(unbookmarkByTweetController)
+  wrapRequestHandler(removeBookmarkByTweetController)
 )
 
 /**
@@ -49,11 +49,11 @@ bookmarksRouter.delete(
  * Params: {tweet_id: string}
  */
 bookmarksRouter.delete(
-  PATH.BOOKMARKS.UNBOOKMARK_BY_ID,
+  PATH.BOOKMARKS.REMOVE_BOOKMARK_BY_ID,
   accessTokenValidator,
   verifyUserValidator,
   bookmarkIdValidator,
-  wrapRequestHandler(unbookmarkByIdController)
+  wrapRequestHandler(removeBookmarkByIdController)
 )
 
 export default bookmarksRouter

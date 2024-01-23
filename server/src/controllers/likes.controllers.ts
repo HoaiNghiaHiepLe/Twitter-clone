@@ -3,7 +3,7 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { MESSAGE } from '~/constant/message'
 import { BookmarkTweetRequestBody } from '~/models/requests/Common.request'
 import { TokenPayload } from '~/models/requests/User.request'
-import likeServices from '~/services/like.services'
+import likeServices from '~/services/likes.services'
 import { interpolateMessage } from '~/utils/utils'
 
 export const likeTweetController = async (

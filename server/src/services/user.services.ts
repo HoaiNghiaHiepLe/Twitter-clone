@@ -22,7 +22,7 @@ import { DeleteResult, ObjectId, UpdateResult, WithId } from 'mongodb'
 import User from '~/models/schemas/User.schema'
 import axios from 'axios'
 import { hashPassword } from '~/utils/crypto'
-import { googleOAuthPayload, googleOAuthToken } from '~/types/oAuth.type'
+import { googleOAuthPayload, googleOAuthToken } from '~/types/OpenAuth.type'
 
 config()
 class UserService {
