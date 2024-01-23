@@ -13,6 +13,7 @@
       "email_verify_token",
       "forgot_password_token",
       "verify",
+      "twitterCircle",
       "bio",
       "location",
       "website",
@@ -62,6 +63,15 @@
         "bsonType": "int",
         "enum": [0, 1, 2],
         "description": "'verify' must be int and is required"
+      },
+      "twitterCircle": {
+        "bsonType": "array",
+        "uniqueItems": true,
+        "additionalProperties": false,
+        "items": {
+          "bsonType": "objectId"
+        },
+        "description": "'twitterCircle' must be a array and is required"
       },
       "bio": {
         "bsonType": "string",

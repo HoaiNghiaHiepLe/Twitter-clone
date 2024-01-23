@@ -18,3 +18,11 @@ export const createTweetController = async (req: Request<ParamsDictionary, any, 
     result
   })
 }
+
+export const getTweetController = async (req: Request<ParamsDictionary, any, TweetRequestBody>, res: Response) => {
+  const { tweet_id } = req.params
+  return res.json({
+    message: interpolateMessage(MESSAGE.SUCCESSFUL, { action: 'Get tweet' }),
+    result: tweet_id
+  })
+}

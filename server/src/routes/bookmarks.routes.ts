@@ -29,7 +29,7 @@ bookmarksRouter.post(
 /**
  * Description: Delete a bookmark tweet
  * Path: /:tweet_id
- * Method: Delete
+ * Method: DELETE
  * Header: {Authorization: Bearer <access_token>}
  * Params: {tweet_id: string}
  */
@@ -44,7 +44,7 @@ bookmarksRouter.delete(
 /**
  * Description: Delete a bookmark tweet
  * Path: /:tweet_id
- * Method: Delete
+ * Method: DELETE
  * Header: {Authorization: Bearer <access_token>}
  * Params: {tweet_id: string}
  */
