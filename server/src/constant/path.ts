@@ -3,7 +3,8 @@ export const PATH = {
     USERS: '/users',
     MEDIAS: '/medias',
     STATIC: '/static',
-    TWEETS: '/tweets'
+    TWEETS: '/tweets',
+    BOOKMARKS: '/bookmarks'
   },
   USER: {
     LOGIN: '/login',

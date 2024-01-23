@@ -14,7 +14,7 @@ import VideoEncodingStatus from '~/models/schemas/videoStatus.chema'
 export const uploadImageController = async (req: Request, res: Response) => {
   const url = await mediaServices.handleUploadImage(req)
   return res.json({
-    message: 'Upload image successfully',
+    message: interpolateMessage(MESSAGE.SUCCESSFUL, { action: 'upload image' }),
     url
   })
 }
@@ -22,7 +22,7 @@ export const uploadImageController = async (req: Request, res: Response) => {
 export const uploadVideoController = async (req: Request, res: Response) => {
   const url = await mediaServices.handleUploadVideo(req)
   return res.json({
-    message: 'Upload video successfully',
+    message: interpolateMessage(MESSAGE.SUCCESSFUL, { action: 'upload video' }),
     url
   })
 }
@@ -30,7 +30,7 @@ export const uploadVideoController = async (req: Request, res: Response) => {
 export const uploadVideoHLSController = async (req: Request, res: Response) => {
   const url = await mediaServices.handleUploadVideoHLS(req)
   return res.json({
-    message: 'Upload video successfully',
+    message: interpolateMessage(MESSAGE.SUCCESSFUL, { action: 'upload video hls' }),
     url
   })
 }
@@ -79,7 +79,7 @@ export const uploadMediaController = async (req: Request, res: Response) => {
         const videoResults = videos.length > 0 ? await mediaServices.handleUploadVideoFiles(videos) : []
 
         return res.json({
-          message: 'Upload media successfully',
+          message: interpolateMessage(MESSAGE.SUCCESSFUL, { action: 'upload medias' }),
           images: imageResults,
           videos: videoResults
         })

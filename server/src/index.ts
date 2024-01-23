@@ -1,8 +1,8 @@
 import express from 'express'
-import userRouter from './routes/user.routes'
+import userRouter from './routes/users.routes'
 import DatabaseService from './services/database.services'
 import { defaultErrorHandler } from './middlewares/error.middlewares'
-import mediasRouter from './routes/media.routes'
+import mediasRouter from './routes/medias.routes'
 import { initFolder } from './utils/file'
 import { config } from 'dotenv'
 import path from 'path'
@@ -13,6 +13,7 @@ import cors from 'cors'
 import { MongoClient } from 'mongodb'
 import databaseService from './services/database.services'
 import tweetsRouter from './routes/tweets.routes'
+import bookmarksRouter from './routes/bookmarks.routes'
 
 config()
 
@@ -35,6 +36,7 @@ app.use(express.json())
 app.use(PATH.BASE.USERS, userRouter)
 app.use(PATH.BASE.MEDIAS, mediasRouter)
 app.use(PATH.BASE.TWEETS, tweetsRouter)
+app.use(PATH.BASE.BOOKMARKS, bookmarksRouter)
 
 // serve static file by router
 app.use(PATH.BASE.STATIC, staticRouter)
