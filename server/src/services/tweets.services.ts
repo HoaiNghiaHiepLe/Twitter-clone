@@ -1,10 +1,10 @@
 import { config } from 'dotenv'
 import { TweetRequestBody } from '~/models/requests/Tweet.request'
-import { findTweetById, insertOneTweet } from '~/repository/tweets.repository'
+import { findAndUpdateTweetById, findTweetById, insertOneTweet } from '~/repository/tweets.repository'
 import Tweet from '~/models/schemas/Tweet.schema'
 import { findOneAndUpdateHashtag } from '~/repository/hashtags.repository'
 import Hashtag from '~/models/schemas/Hashtag.schema'
-import { ObjectId } from 'mongodb'
+import { IntegerType, ObjectId, OnlyFieldsOfType } from 'mongodb'
 
 config()
 
@@ -41,6 +41,15 @@ class TweetServices {
   async getTweetById(tweet_id: string) {
     const result = await findTweetById(tweet_id)
     return result
+  }
+  async increaseTweetView(tweet_id: string, user_id: string) {
+    // inc là object chứa các field cần tăng giá trị
+    // Nếu user_id tồn tại thì tăng giá trị user_views, ngược lại tăng giá trị guest_views
+    const inc: OnlyFieldsOfType<Tweet, IntegerType> = user_id ? { user_views: 1 } : { guest_views: 1 }
+    // Gọi hàm findAndUpdateTweetById để tăng giá trị view
+    const result = await findAndUpdateTweetById(tweet_id, inc, { guest_views: 1, user_views: 1 })
+
+    return result as Pick<Tweet, 'guest_views' | 'user_views'>
   }
 }
 
