@@ -14,5 +14,6 @@ export const MESSAGE = {
   SEND_EMAIL: 'A :link has been sent to your email',
   UNVERIFIED: ':field is unverified',
   EXPIRED: ':field is expired',
-  FAILED: ':action failed'
+  FAILED: ':action failed',
+  IS_NOT: ':action is not :permission'
 } as const

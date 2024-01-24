@@ -512,3 +512,18 @@ export const changePasswordValidator = validate(
     ['body']
   )
 )
+
+// middleware wrap middleware khác để check user đã đăng nhập hay chưa bằng req.headers.authorization
+export const isUserLoggedInValidator = (middleware: (req: Request, res: Response, next: NextFunction) => void) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    //req.header vs req.headers
+    //req.header: Không phân biệt hoa thường ví dụ: req.header('Authorization') === req.header('authorization')
+    // req.headers của express js: Phân biệt hoa thường ví dụ: req.headers chỉ có req.headers.authorization
+    if (req.headers.authorization) {
+      // nếu có authorization thì mới chạy middleware
+      return middleware(req, res, next)
+    }
+    // nếu không có authorization thì next()
+    next()
+  }
+}

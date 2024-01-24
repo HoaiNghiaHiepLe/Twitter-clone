@@ -1,13 +1,17 @@
+import { NextFunction, Request, Response } from 'express'
 import { checkSchema } from 'express-validator'
 import { isEmpty } from 'lodash'
 import { ObjectId } from 'mongodb'
-import { MediaType, TweetAudience, TweetType } from '~/constant/enum'
+import { MediaType, TweetAudience, TweetType, UserVerifyStatus } from '~/constant/enum'
 import HTTP_STATUS from '~/constant/httpStatus'
 import { MESSAGE } from '~/constant/message'
 import { ErrorWithStatus } from '~/models/Errors'
+import Tweet from '~/models/schemas/Tweet.schema'
 import { findBookmarkById } from '~/repository/bookmarks.repository'
 import { findTweetById } from '~/repository/tweets.repository'
+import { findUserById } from '~/repository/users.repository'
 import { convertEnumToArray } from '~/utils/common'
+import { wrapRequestHandler } from '~/utils/handlers'
 import { interpolateMessage } from '~/utils/utils'
 import { validate } from '~/utils/validation'
 
@@ -192,6 +196,8 @@ export const tweetIdValidator = validate(
                 status: HTTP_STATUS.NOT_FOUND
               })
             }
+            //? Lưu tweet vào req.tweet để sử dụng ở middleware audienceValidator
+            ;(req as Request).tweet = isValidTweet
             return true
           }
         }
@@ -232,3 +238,50 @@ export const bookmarkIdValidator = validate(
     ['params', 'body']
   )
 )
+
+// Muốn sử dụng async await trong handler express thì phải có try catch, nếu k dùng try catch thì phải dùng middleware wrapRequestHandler
+export const audienceValidator = wrapRequestHandler(async (req: Request, res: Response, next: NextFunction) => {
+  const tweet = req.tweet as Tweet
+  // Nếu tweet này là tweet private thì kiểm tra người xem tweet này có nằm trong Twitter Circle của người đăng tweet hay không
+  if (tweet.audience === TweetAudience.TwitterCircle) {
+    //Kiểm tra người xem tweet này đăng nhập hay chưa
+    if (!req.decoded_authorization) {
+      throw new ErrorWithStatus({
+        message: interpolateMessage(MESSAGE.IS_REQUIRED, {
+          field: 'access token'
+        }),
+        status: HTTP_STATUS.UNAUTHORIZED
+      })
+    }
+    // Kiểm tra tài khoản của người đăng tweet có ổn không (bị khóa hay bị xóa chưa)
+    const author = await findUserById(String(tweet.user_id))
+
+    if (!author || author.verify === UserVerifyStatus.Banned) {
+      throw new ErrorWithStatus({
+        message: interpolateMessage(MESSAGE.NOT_FOUND, {
+          field: 'user'
+        }),
+        status: HTTP_STATUS.NOT_FOUND
+      })
+    }
+    //Kiểm tra người xem tweet này có trong Twitter Circle của người đăng tweet hay không
+    const { user_id } = req.decoded_authorization
+
+    // Check xem người xem tweet này có trong Twitter Circle của người đăng tweet hay không
+    const isInTwitterCircle = author.twitterCircle?.some((userCircleId) => new ObjectId(userCircleId).equals(user_id))
+
+    // Nếu người xem tweet này k phải là người đăng tweet thì k cho phép xem
+    // Nếu người xem tweet này không có trong Twitter Circle của người đăng tweet thì không cho xem
+    if (!isInTwitterCircle && !author._id.equals(user_id)) {
+      throw new ErrorWithStatus({
+        message: interpolateMessage(MESSAGE.IS_NOT, {
+          action: 'this tweet',
+          permission: 'viewable'
+        }),
+        status: HTTP_STATUS.FORBIDDEN
+      })
+    }
+  }
+  // Nếu tweet này là tweet public thì cho phép xem
+  next()
+})
