@@ -20,9 +20,11 @@ export const createTweetController = async (req: Request<ParamsDictionary, any, 
 }
 
 export const getTweetController = async (req: Request<ParamsDictionary, any, TweetRequestBody>, res: Response) => {
-  const { tweet_id } = req.params
+  // Nếu thực hiện query database ở đây là chúng ta đang thực hiện lần query lần thứ 2 vì trước đó đã query ở middleware tweetIdValidator
+  // Thực hiện query tại middleware tweetIdValidator và lưu tweet vào req.tweet để sử dụng ở đây
+  const { tweet } = req as Request
   return res.json({
     message: interpolateMessage(MESSAGE.SUCCESSFUL, { action: 'Get tweet' }),
-    result: tweet_id
+    result: tweet
   })
 }

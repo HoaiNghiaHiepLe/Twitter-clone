@@ -187,8 +187,11 @@ export const tweetIdValidator = validate(
                 status: HTTP_STATUS.BAD_REQUEST
               })
             }
-            const isValidTweet = await findTweetById(value as string)
-            if (!isValidTweet) {
+
+            // Vì findTweetById sẽ trả về Tweet[] nên ta chỉ lấy phần tử đầu tiên của mảng
+            const [validTweet] = await findTweetById(value as string)
+
+            if (!validTweet) {
               throw new ErrorWithStatus({
                 message: interpolateMessage(MESSAGE.NOT_FOUND, {
                   field: 'tweet'
@@ -196,8 +199,9 @@ export const tweetIdValidator = validate(
                 status: HTTP_STATUS.NOT_FOUND
               })
             }
+
             //? Lưu tweet vào req.tweet để sử dụng ở middleware audienceValidator
-            ;(req as Request).tweet = isValidTweet
+            ;(req as Request).tweet = validTweet
             return true
           }
         }
