@@ -6,6 +6,7 @@ import tweetServices from '~/services/tweets.services'
 import { TokenPayload } from '~/models/requests/User.request'
 import { interpolateMessage } from '~/utils/utils'
 import { MESSAGE } from '~/constant/message'
+import Tweet from '~/models/schemas/Tweet.schema'
 
 config()
 
@@ -22,7 +23,16 @@ export const createTweetController = async (req: Request<ParamsDictionary, any, 
 export const getTweetController = async (req: Request<ParamsDictionary, any, TweetRequestBody>, res: Response) => {
   // Nếu thực hiện query database ở đây là chúng ta đang thực hiện lần query lần thứ 2 vì trước đó đã query ở middleware tweetIdValidator
   // Thực hiện query tại middleware tweetIdValidator và lưu tweet vào req.tweet để sử dụng ở đây
-  const { tweet } = req as Request
+  const { user_id } = req.decoded_authorization as TokenPayload
+
+  // Tăng giá trị view của tweet khi get tweet
+  const tweetViews = await tweetServices.increaseTweetView(String((req.tweet as Tweet)._id), String(user_id))
+
+  const tweet = {
+    ...req.tweet,
+    ...tweetViews
+  }
+
   return res.json({
     message: interpolateMessage(MESSAGE.SUCCESSFUL, { action: 'Get tweet' }),
     result: tweet

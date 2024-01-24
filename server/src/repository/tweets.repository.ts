@@ -1,4 +1,4 @@
-import { Document, ObjectId } from 'mongodb'
+import { Document, IntegerType, ObjectId, OnlyFieldsOfType } from 'mongodb'
 import Tweet from '~/models/schemas/Tweet.schema'
 import databaseService from '~/services/database.services'
 
@@ -17,10 +17,35 @@ export const findTweetById = async (tweet_id: string) => {
   return result
 }
 
+export const findAndUpdateTweetById = async (
+  tweet_id: string,
+  inc: OnlyFieldsOfType<Tweet, IntegerType>,
+  projection?: Document
+) => {
+  const result = await databaseService.tweets.findOneAndUpdate(
+    {
+      _id: new ObjectId(tweet_id)
+    },
+    //$inc là operator của mongodb, dùng để tăng giá trị của field truyền vào khi gọi function
+    {
+      $inc: inc,
+      $currentDate: {
+        updated_at: true
+      }
+    },
+    {
+      returnDocument: 'after',
+      projection: projection
+    }
+  )
+
+  return result
+}
+
 const tweetDetailAggregate = (tweet_id: string): Document[] => [
   {
     $match: {
-      _id: new ObjectId(tweet_id)
+      _id: new ObjectId('65b0c0f63b146d66a58c4e1f')
     }
   },
   {
@@ -86,7 +111,7 @@ const tweetDetailAggregate = (tweet_id: string): Document[] => [
       from: 'tweets',
       localField: '_id',
       foreignField: 'parent_id',
-      as: 'tweet_children'
+      as: 'tweet_childrent'
     }
   },
   {
@@ -100,7 +125,7 @@ const tweetDetailAggregate = (tweet_id: string): Document[] => [
       retweets: {
         $size: {
           $filter: {
-            input: '$tweet_children',
+            input: '$tweet_childrent',
             as: 'item',
             cond: {
               $eq: ['$$item.type', 1]
@@ -111,7 +136,7 @@ const tweetDetailAggregate = (tweet_id: string): Document[] => [
       comments: {
         $size: {
           $filter: {
-            input: '$tweet_children',
+            input: '$tweet_childrent',
             as: 'item',
             cond: {
               $eq: ['$$item.type', 2]
@@ -122,22 +147,19 @@ const tweetDetailAggregate = (tweet_id: string): Document[] => [
       quotes: {
         $size: {
           $filter: {
-            input: '$tweet_children',
+            input: '$tweet_childrent',
             as: 'item',
             cond: {
               $eq: ['$$item.type', 3]
             }
           }
         }
-      },
-      total_view: {
-        $add: ['$guest_views', '$user_views']
       }
     }
   },
   {
     $project: {
-      tweet_children: 0
+      tweet_childrent: 0
     }
   }
 ]
