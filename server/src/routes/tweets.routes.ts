@@ -2,9 +2,9 @@ import { Router } from 'express'
 import { PATH } from '~/constant/path'
 import { likeTweetController, unlikeTweetController } from '~/controllers/likes.controllers'
 import { createTweetController, getTweetController } from '~/controllers/tweets.controllers'
-import { createTweetValidator, tweetIdValidator } from '~/middlewares/tweets.middlewares'
-import { accessTokenValidator, verifyUserValidator } from '~/middlewares/users.middlewares'
-import { isUserLoggedInValidator, wrapRequestHandler } from '~/utils/handlers'
+import { audienceValidator, createTweetValidator, tweetIdValidator } from '~/middlewares/tweets.middlewares'
+import { accessTokenValidator, isUserLoggedInValidator, verifyUserValidator } from '~/middlewares/users.middlewares'
+import { wrapRequestHandler } from '~/utils/handlers'
 
 const tweetsRouter = Router()
 
@@ -32,9 +32,10 @@ tweetsRouter.post(
  */
 tweetsRouter.get(
   PATH.TWEET.GET_TWEET,
+  tweetIdValidator,
   isUserLoggedInValidator(accessTokenValidator),
   isUserLoggedInValidator(verifyUserValidator),
-  tweetIdValidator,
+  audienceValidator,
   wrapRequestHandler(getTweetController)
 )
 
