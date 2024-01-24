@@ -4,7 +4,7 @@ import { likeTweetController, unlikeTweetController } from '~/controllers/likes.
 import { createTweetController, getTweetController } from '~/controllers/tweets.controllers'
 import { createTweetValidator, tweetIdValidator } from '~/middlewares/tweets.middlewares'
 import { accessTokenValidator, verifyUserValidator } from '~/middlewares/users.middlewares'
-import { wrapRequestHandler } from '~/utils/handlers'
+import { isUserLoggedInValidator, wrapRequestHandler } from '~/utils/handlers'
 
 const tweetsRouter = Router()
 
@@ -30,7 +30,13 @@ tweetsRouter.post(
  * Header: {Authorization: Bearer <access_token>}
  * Params: {tweet_id: string}
  */
-tweetsRouter.get(PATH.TWEET.GET_TWEET, tweetIdValidator, wrapRequestHandler(getTweetController))
+tweetsRouter.get(
+  PATH.TWEET.GET_TWEET,
+  isUserLoggedInValidator(accessTokenValidator),
+  isUserLoggedInValidator(verifyUserValidator),
+  tweetIdValidator,
+  wrapRequestHandler(getTweetController)
+)
 
 /**
  * Description: Create a bookmark tweet
