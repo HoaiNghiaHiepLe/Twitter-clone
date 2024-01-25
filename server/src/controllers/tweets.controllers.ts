@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { config } from 'dotenv'
-import { TweetRequestBody } from '~/models/requests/Tweet.request'
+import { TweetRequestBody, TweetRequestParams, TweetRequestQuery } from '~/models/requests/Tweet.request'
 import tweetServices from '~/services/tweets.services'
 import { TokenPayload } from '~/models/requests/User.request'
 import { interpolateMessage } from '~/utils/utils'
@@ -21,7 +21,7 @@ export const createTweetController = async (req: Request<ParamsDictionary, any, 
   })
 }
 
-export const getTweetController = async (req: Request<ParamsDictionary, any, TweetRequestBody>, res: Response) => {
+export const getTweetController = async (req: Request<ParamsDictionary, any, TweetRequestParams>, res: Response) => {
   // Nếu thực hiện query database ở đây là chúng ta đang thực hiện lần query lần thứ 2 vì trước đó đã query ở middleware tweetIdValidator
   // Thực hiện query tại middleware tweetIdValidator và lưu tweet vào req.tweet để sử dụng ở đây
   const { user_id } = req.decoded_authorization as TokenPayload
@@ -43,7 +43,7 @@ export const getTweetController = async (req: Request<ParamsDictionary, any, Twe
 }
 
 export const getTweetChildrenController = async (
-  req: Request<ParamsDictionary, any, TweetRequestBody>,
+  req: Request<TweetRequestParams, any, any, TweetRequestQuery>,
   res: Response
 ) => {
   const { user_id } = req.decoded_authorization as TokenPayload

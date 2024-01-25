@@ -211,6 +211,65 @@ export const tweetIdValidator = validate(
   )
 )
 
+export const getTweetChildrenValidator = validate(
+  checkSchema(
+    {
+      tweet_type: {
+        isIn: {
+          options: [convertEnumToArray(TweetType, 'number')],
+          errorMessage: interpolateMessage(MESSAGE.INVALID, {
+            field: 'tweet type'
+          })
+        }
+      },
+      page: {
+        // query gửi lên dạng string nhưng checkSchema sẽ tự động convert sang number Number(query.page) nên vẫn dùng isNumeric để check được
+        isNumeric: {
+          errorMessage: interpolateMessage(MESSAGE.MUST_BE, {
+            field: 'page',
+            type: 'number'
+          })
+        },
+        custom: {
+          options: (value, { req }) => {
+            if (Number(value) < 0) {
+              throw new Error(
+                interpolateMessage(MESSAGE.MUST_BE, {
+                  field: 'page',
+                  type: 'number greater 0'
+                })
+              )
+            }
+            return true
+          }
+        }
+      },
+      limit: {
+        isNumeric: {
+          errorMessage: interpolateMessage(MESSAGE.MUST_BE, {
+            field: 'limit',
+            type: 'number'
+          })
+        },
+        custom: {
+          options: (value, { req }) => {
+            if (Number(value) < 0 || Number(value) > 100) {
+              throw new Error(
+                interpolateMessage(MESSAGE.MUST_BE, {
+                  field: 'limit',
+                  type: 'number from 0 to 100'
+                })
+              )
+            }
+            return true
+          }
+        }
+      }
+    },
+    ['query']
+  )
+)
+
 export const bookmarkIdValidator = validate(
   checkSchema(
     {
