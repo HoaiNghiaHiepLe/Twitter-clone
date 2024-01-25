@@ -1,6 +1,8 @@
 import { config } from 'dotenv'
 import { TweetRequestBody } from '~/models/requests/Tweet.request'
 import {
+  countTweetChildrenByParentIds,
+  findAndUpdateManyTweetById,
   findAndUpdateTweetById,
   findTweetById,
   findTweetChildrenByParentId,
@@ -11,6 +13,7 @@ import { findOneAndUpdateHashtag } from '~/repository/hashtags.repository'
 import Hashtag from '~/models/schemas/Hashtag.schema'
 import { IntegerType, ObjectId, OnlyFieldsOfType } from 'mongodb'
 import { TweetType } from '~/constant/enum'
+import databaseService from './database.services'
 
 config()
 
@@ -55,24 +58,58 @@ class TweetServices {
     // Nếu user_id tồn tại thì tăng giá trị user_views, ngược lại tăng giá trị guest_views
     const inc: OnlyFieldsOfType<Tweet, IntegerType> = user_id ? { user_views: 1 } : { guest_views: 1 }
     // Gọi hàm findAndUpdateTweetById để tăng giá trị view
-    const result = await findAndUpdateTweetById(tweet_id, inc, { guest_views: 1, user_views: 1 })
+    const result = await findAndUpdateTweetById(tweet_id, inc, { guest_views: 1, user_views: 1, updated_at: 1 })
 
-    return result as Pick<Tweet, 'guest_views' | 'user_views'>
+    return result as Pick<Tweet, 'guest_views' | 'user_views' | 'updated_at'>
+  }
+
+  async increaseManyTweetView(tweets: Tweet[], user_id: string) {
+    const tweetIds = tweets.map((tweet) => tweet._id as ObjectId)
+
+    const inc: OnlyFieldsOfType<Tweet, IntegerType> = user_id ? { user_views: 1 } : { guest_views: 1 }
+
+    const date = new Date()
+
+    // Vì updateMany của mongodb không trả về document sau khi update và để lấy lại tất cả tweets đã đc update view thì phải quey lại 1 lần nữa -> tốn tài nguyên nên:
+
+    // Update lại giá trị của tweets truyền vào và trả ra cho client
+    tweets.forEach((tweet: Tweet) => {
+      tweet.updated_at = date
+      if (user_id) {
+        ;(tweet.user_views as number) += 1
+      } else {
+        ;(tweet.guest_views as number) += 1
+      }
+    })
+
+    // Update view của tất cả tweets trong db
+    await findAndUpdateManyTweetById(tweetIds, inc)
+
+    // Trả về tweets đã update view
+    return tweets
   }
 
   async getTweetChildrenByParentId({
     parent_id,
     tweet_type,
     page,
-    limit
+    limit,
+    user_id
   }: {
     parent_id: string
     tweet_type: TweetType
     page: number
     limit: number
+    user_id: string
   }) {
-    const result = await findTweetChildrenByParentId({ parent_id, tweet_type, page, limit })
-    return result
+    const tweets = await findTweetChildrenByParentId({ parent_id, tweet_type, page, limit })
+
+    const [tweetChildren, totalTweets] = await Promise.all([
+      this.increaseManyTweetView(tweets, String(user_id)),
+      countTweetChildrenByParentIds({ parent_id, tweet_type })
+    ])
+
+    return { tweets: tweetChildren, totalTweets }
   }
 }
 
