@@ -152,6 +152,7 @@ export const findAndUpdateTweetById = async (
     //$inc là operator của mongodb, dùng để tăng giá trị của field truyền vào khi gọi function
     {
       $inc: inc,
+      //$currentDate đc tính từ lúc mongodb chạy
       $currentDate: {
         updated_at: true
       }
@@ -163,6 +164,28 @@ export const findAndUpdateTweetById = async (
   )
 
   return result
+}
+
+export const findAndUpdateManyTweetById = async (tweet_ids: ObjectId[], inc: OnlyFieldsOfType<Tweet, IntegerType>) => {
+  // date đc tính từ lúc code server chạy
+  const date = new Date()
+  const results = await databaseService.tweets.updateMany(
+    {
+      _id: {
+        $in: tweet_ids
+      }
+    },
+    {
+      $inc: inc,
+      // Phải dùng $set để set giá trị cho updated_at của các documents thay vì dùng $currentDate vì hàm updateMany k returnDocument nên k thể lấy ra đc updated_at của các documents sau khi update
+      // Vì vậy tạo date bằng new Date() và set cho updated_at của các documents đồng thời date này cũng sẽ dùng để update lại giá trị updated_at của tweet trả về cho client
+      $set: {
+        updated_at: date
+      }
+    }
+  )
+
+  return results
 }
 
 export const findTweetChildrenByParentId = async ({
@@ -182,12 +205,22 @@ export const findTweetChildrenByParentId = async ({
     // chuyển AggregationCursor<Document> thành Document[]
     .toArray()
 
-  const total = await databaseService.tweets.countDocuments({
+  return tweets
+}
+
+export const countTweetChildrenByParentIds = async ({
+  parent_id,
+  tweet_type
+}: {
+  parent_id: string
+  tweet_type: TweetType
+}) => {
+  const result = await databaseService.tweets.countDocuments({
     parent_id: new ObjectId(parent_id),
     type: tweet_type
   })
 
-  return { tweets, total }
+  return result
 }
 
 const tweetChildrenAggregate = ({

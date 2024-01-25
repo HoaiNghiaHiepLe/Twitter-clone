@@ -31,7 +31,9 @@ export const getTweetController = async (req: Request<ParamsDictionary, any, Twe
 
   const tweet = {
     ...req.tweet,
-    ...tweetViews
+    guest_views: tweetViews.guest_views,
+    user_views: tweetViews.user_views,
+    updated_at: tweetViews.updated_at
   }
 
   return res.json({
@@ -44,26 +46,28 @@ export const getTweetChildrenController = async (
   req: Request<ParamsDictionary, any, TweetRequestBody>,
   res: Response
 ) => {
+  const { user_id } = req.decoded_authorization as TokenPayload
   const parent_id = req.params.tweet_id as string
   const tweet_type = Number(req.query.tweet_type as string) as TweetType
   const page = Number(req.query.page as string)
   const limit = Number(req.query.limit as string)
 
-  const tweetChildrens = await tweetServices.getTweetChildrenByParentId({
+  const tweetChildren = await tweetServices.getTweetChildrenByParentId({
     parent_id,
     tweet_type,
     page,
-    limit
+    limit,
+    user_id
   })
 
   return res.json({
     message: interpolateMessage(MESSAGE.SUCCESSFUL, { action: 'Get tweet children' }),
     result: {
-      tweets: tweetChildrens.tweets,
+      tweets: tweetChildren.tweets,
       tweet_type,
       page,
       limit,
-      total_page: Math.ceil(tweetChildrens.total / limit)
+      total_page: Math.ceil(tweetChildren.totalTweets / limit)
     }
   })
 }
