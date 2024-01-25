@@ -13,6 +13,8 @@ import cors from 'cors'
 import databaseService from './services/database.services'
 import tweetsRouter from './routes/tweets.routes'
 import bookmarksRouter from './routes/bookmarks.routes'
+// fake data
+// import '~/utils/faker'
 
 config()
 

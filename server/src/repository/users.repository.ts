@@ -8,6 +8,7 @@ import databaseService from '~/services/database.services'
 import { hashPassword } from '~/utils/crypto'
 
 export const checkExistEmail = async (email: string) => {
+  console.log("checking user's email ...")
   const user = await databaseService.users.findOne({ email })
   return user
 }
@@ -209,5 +210,11 @@ export const changeUserPassword = async (user_id: string, password: string): Pro
       }
     }
   )
+  return result
+}
+
+export const countUsers = async () => {
+  console.log('counting users ...')
+  const result = await databaseService.users.countDocuments({})
   return result
 }
