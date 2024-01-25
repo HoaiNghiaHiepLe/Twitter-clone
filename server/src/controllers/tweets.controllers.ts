@@ -7,6 +7,7 @@ import { TokenPayload } from '~/models/requests/User.request'
 import { interpolateMessage } from '~/utils/utils'
 import { MESSAGE } from '~/constant/message'
 import Tweet from '~/models/schemas/Tweet.schema'
+import { TweetType } from '~/constant/enum'
 
 config()
 
@@ -36,5 +37,33 @@ export const getTweetController = async (req: Request<ParamsDictionary, any, Twe
   return res.json({
     message: interpolateMessage(MESSAGE.SUCCESSFUL, { action: 'Get tweet' }),
     result: tweet
+  })
+}
+
+export const getTweetChildrenController = async (
+  req: Request<ParamsDictionary, any, TweetRequestBody>,
+  res: Response
+) => {
+  const parent_id = req.params.tweet_id as string
+  const tweet_type = Number(req.query.tweet_type as string) as TweetType
+  const page = Number(req.query.page as string)
+  const limit = Number(req.query.limit as string)
+
+  const tweetChildrens = await tweetServices.getTweetChildrenByParentId({
+    parent_id,
+    tweet_type,
+    page,
+    limit
+  })
+
+  return res.json({
+    message: interpolateMessage(MESSAGE.SUCCESSFUL, { action: 'Get tweet children' }),
+    result: {
+      tweets: tweetChildrens.tweets,
+      tweet_type,
+      page,
+      limit,
+      total_page: Math.ceil(tweetChildrens.total / limit)
+    }
   })
 }

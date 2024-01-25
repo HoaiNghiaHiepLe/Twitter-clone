@@ -1,10 +1,16 @@
 import { config } from 'dotenv'
 import { TweetRequestBody } from '~/models/requests/Tweet.request'
-import { findAndUpdateTweetById, findTweetById, insertOneTweet } from '~/repository/tweets.repository'
+import {
+  findAndUpdateTweetById,
+  findTweetById,
+  findTweetChildrenByParentId,
+  insertOneTweet
+} from '~/repository/tweets.repository'
 import Tweet from '~/models/schemas/Tweet.schema'
 import { findOneAndUpdateHashtag } from '~/repository/hashtags.repository'
 import Hashtag from '~/models/schemas/Hashtag.schema'
 import { IntegerType, ObjectId, OnlyFieldsOfType } from 'mongodb'
+import { TweetType } from '~/constant/enum'
 
 config()
 
@@ -38,10 +44,12 @@ class TweetServices {
 
     return tweet
   }
+
   async getTweetById(tweet_id: string) {
     const result = await findTweetById(tweet_id)
     return result
   }
+
   async increaseTweetView(tweet_id: string, user_id: string) {
     // inc là object chứa các field cần tăng giá trị
     // Nếu user_id tồn tại thì tăng giá trị user_views, ngược lại tăng giá trị guest_views
@@ -50,6 +58,21 @@ class TweetServices {
     const result = await findAndUpdateTweetById(tweet_id, inc, { guest_views: 1, user_views: 1 })
 
     return result as Pick<Tweet, 'guest_views' | 'user_views'>
+  }
+
+  async getTweetChildrenByParentId({
+    parent_id,
+    tweet_type,
+    page,
+    limit
+  }: {
+    parent_id: string
+    tweet_type: TweetType
+    page: number
+    limit: number
+  }) {
+    const result = await findTweetChildrenByParentId({ parent_id, tweet_type, page, limit })
+    return result
   }
 }
 
