@@ -1,13 +1,14 @@
 import { NextFunction, Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { config } from 'dotenv'
-import { TweetRequestBody, TweetRequestParams, TweetRequestQuery } from '~/models/requests/Tweet.request'
+import { Pagination, TweetRequestBody, TweetRequestParams, TweetRequestQuery } from '~/models/requests/Tweet.request'
 import tweetServices from '~/services/tweets.services'
 import { TokenPayload } from '~/models/requests/User.request'
 import { interpolateMessage } from '~/utils/utils'
 import { MESSAGE } from '~/constant/message'
 import Tweet from '~/models/schemas/Tweet.schema'
 import { TweetType } from '~/constant/enum'
+import userService from '~/services/user.services'
 
 config()
 
@@ -68,6 +69,33 @@ export const getTweetChildrenController = async (
       page,
       limit,
       total_page: Math.ceil(tweetChildren.totalTweets / limit)
+    }
+  })
+}
+
+export const getNewsFeedController = async (req: Request<ParamsDictionary, any, any, Pagination>, res: Response) => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const page = Number(req.query.page as string)
+  const limit = Number(req.query.limit as string)
+
+  const userIdsArray = await userService.getFollowedUserIds(user_id, {
+    _id: 0,
+    followed_user_id: 1
+  })
+
+  const newsFeed = await tweetServices.getNewsFeed({
+    user_id: user_id,
+    user_ids: userIdsArray,
+    page,
+    limit
+  })
+
+  return res.json({
+    message: interpolateMessage(MESSAGE.SUCCESSFUL, { action: 'Get newsfeed' }),
+    result: {
+      newsFeed,
+      page,
+      limit
     }
   })
 }

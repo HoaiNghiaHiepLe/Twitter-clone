@@ -39,8 +39,8 @@ export const PATH = {
   TWEET: {
     CREATE_TWEET: '/',
     GET_TWEET: '/:tweet_id',
-    GET_TWEETS: '/tweets',
-    GET_TWEET_CHILDREN: '/:tweet_id/children'
+    GET_TWEET_CHILDREN: '/:tweet_id/children',
+    GET_NEW_FEEDS: '/new-feeds'
   },
   BOOKMARKS: {
     ADD_BOOKMARK_TWEET: '/add/tweet',

@@ -78,7 +78,11 @@ export const findUserById = async (user_id: string, projection?: Document) => {
   return user
 }
 
-export const findFollowerById = async (user_id: string, followed_user_id: string, projection?: Document) => {
+export const findFollowerById = async (
+  user_id: string,
+  followed_user_id: string,
+  projection?: Document
+): Promise<Follower | null> => {
   const follower = await databaseService.followers.findOne(
     {
       user_id: new ObjectId(user_id),
@@ -88,6 +92,19 @@ export const findFollowerById = async (user_id: string, followed_user_id: string
   )
 
   return follower
+}
+
+export const getFollowedUsersByUserId = async (user_id: string, projection?: Document) => {
+  // Tìm tất cả user_id mà user đang đăng nhập đã follow
+  const followedUserIds = await databaseService.followers
+    .find(
+      { user_id: new ObjectId(user_id) },
+      {
+        projection: projection
+      }
+    )
+    .toArray()
+  return followedUserIds
 }
 
 export const findUserByUserName = async (username: string, projection?: Document) => {
