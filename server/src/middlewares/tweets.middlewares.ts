@@ -221,7 +221,15 @@ export const getTweetChildrenValidator = validate(
             field: 'tweet type'
           })
         }
-      },
+      }
+    },
+    ['query']
+  )
+)
+
+export const paginationValidator = validate(
+  checkSchema(
+    {
       page: {
         // query gửi lên dạng string nhưng checkSchema sẽ tự động convert sang number Number(query.page) nên vẫn dùng isNumeric để check được
         isNumeric: {
@@ -303,6 +311,7 @@ export const bookmarkIdValidator = validate(
 )
 
 // Muốn sử dụng async await trong handler express thì phải có try catch, nếu k dùng try catch thì phải dùng middleware wrapRequestHandler
+// Check xem người dùng có đc xem tweet này hay không
 export const audienceValidator = wrapRequestHandler(async (req: Request, res: Response, next: NextFunction) => {
   const tweet = req.tweet as Tweet
   // Nếu tweet này là tweet private thì kiểm tra người xem tweet này có nằm trong Twitter Circle của người đăng tweet hay không

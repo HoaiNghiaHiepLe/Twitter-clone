@@ -6,6 +6,7 @@ import {
   findAndUpdateTweetById,
   findTweetById,
   findTweetChildrenByParentId,
+  getTweetsByFollowedUserIds,
   insertOneTweet
 } from '~/repository/tweets.repository'
 import Tweet from '~/models/schemas/Tweet.schema'
@@ -110,6 +111,21 @@ class TweetServices {
     ])
 
     return { tweets: tweetChildren, totalTweets }
+  }
+
+  async getNewsFeed({
+    user_id,
+    user_ids,
+    page,
+    limit
+  }: {
+    user_id: string
+    user_ids: ObjectId[]
+    page: number
+    limit: number
+  }) {
+    const newsFeed = await getTweetsByFollowedUserIds({ user_id, user_ids, page, limit })
+    return newsFeed
   }
 }
 

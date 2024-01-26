@@ -513,7 +513,7 @@ export const changePasswordValidator = validate(
   )
 )
 
-// middleware wrap middleware khác để check user đã đăng nhập hay chưa bằng req.headers.authorization
+// middleware wrap middleware khác để check user đã đăng nhập hay chưa bằng req.headers.authorization để phân loại user và guest view
 export const isUserLoggedInValidator = (middleware: (req: Request, res: Response, next: NextFunction) => void) => {
   return (req: Request, res: Response, next: NextFunction) => {
     //req.header vs req.headers

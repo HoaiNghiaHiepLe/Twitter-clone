@@ -15,14 +15,16 @@ import {
   findFollowerById,
   deleteFollower,
   changeUserPassword,
-  checkExistEmail
+  checkExistEmail,
+  getFollowedUsersByUserId
 } from '~/repository/users.repository'
 import { config } from 'dotenv'
-import { DeleteResult, ObjectId, UpdateResult, WithId } from 'mongodb'
+import { DeleteResult, Document, ObjectId, UpdateResult, WithId } from 'mongodb'
 import User from '~/models/schemas/User.schema'
 import axios from 'axios'
 import { hashPassword } from '~/utils/crypto'
 import { googleOAuthPayload, googleOAuthToken } from '~/types/OpenAuth.type'
+import Follower from '~/models/schemas/Follower.schema'
 
 config()
 class UserService {
@@ -337,7 +339,7 @@ class UserService {
   }
 
   async followUser(user_id: string, followed_user_id: string) {
-    const followedUser = await findFollowerById(user_id, followed_user_id)
+    const followedUser = await this.getFollowerUser(user_id, followed_user_id)
 
     if (followedUser) {
       return null
@@ -349,7 +351,7 @@ class UserService {
   }
 
   async unfollowUser(user_id: string, followed_user_id: string): Promise<DeleteResult | null> {
-    const followedUser = await findFollowerById(user_id, followed_user_id)
+    const followedUser = await this.getFollowerUser(user_id, followed_user_id)
 
     if (!followedUser) {
       return null
@@ -362,6 +364,23 @@ class UserService {
 
   async changePassword(user_id: string, password: string): Promise<UpdateResult<User>> {
     return await changeUserPassword(user_id, password)
+  }
+
+  async getFollowerUser(user_id: string, followed_user_id: string, projection?: Document): Promise<Follower | null> {
+    const followed_user_ids = await findFollowerById(user_id, followed_user_id, projection)
+
+    return followed_user_ids
+  }
+
+  async getFollowedUserIds(user_id: string, projection?: Document) {
+    // Tìm tất cả user_id mà user đang đăng nhập đã follow
+    const followedUserIds = await getFollowedUsersByUserId(user_id, projection)
+    // Map các user_id đã follow thành mảng
+    const followedUserIdsArray = followedUserIds.map((item) => item.followed_user_id)
+    // Push user_id của user đang đăng nhập vào mảng để new feed có thể hiển thị tweet của user đang đăng nhập và các user mà user đang đăng nhập đã follow
+    followedUserIdsArray.push(new ObjectId(user_id))
+
+    return followedUserIdsArray
   }
 }
 

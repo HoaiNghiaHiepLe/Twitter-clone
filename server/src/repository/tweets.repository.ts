@@ -1,144 +1,24 @@
 import { Document, IntegerType, ObjectId, OnlyFieldsOfType } from 'mongodb'
 import { TweetType } from '~/constant/enum'
 import Tweet from '~/models/schemas/Tweet.schema'
+import User from '~/models/schemas/User.schema'
 import databaseService from '~/services/database.services'
+import { NewFeed, TweetDetail } from '~/types/Tweet.type'
 
 export const insertOneTweet = async (tweet: Tweet) => {
   const result = await databaseService.tweets.insertOne(tweet)
   return result
 }
 
-export const findTweetById = async (tweet_id: string) => {
+export const findTweetById = async (tweet_id: string): Promise<TweetDetail[]> => {
   const result = await databaseService.tweets
     // Truyền Tweet vào generic type của aggregate để trả về Tweet[]
-    .aggregate<Tweet>(tweetDetailAggregate(tweet_id))
+    .aggregate<TweetDetail>(tweetDetailAggregate(tweet_id))
     // chuyển AggregationCursor<Document> thành Document[]
     .toArray()
 
   return result
 }
-
-const tweetDetailAggregate = (tweet_id: string): Document[] => [
-  {
-    $match: {
-      _id: new ObjectId(tweet_id)
-    }
-  },
-  {
-    $lookup: {
-      from: 'hashtags',
-      localField: 'hashtags',
-      foreignField: '_id',
-      as: 'hashtags'
-    }
-  },
-  {
-    $lookup: {
-      from: 'users',
-      localField: 'mentions',
-      foreignField: '_id',
-      as: 'mentions'
-    }
-  },
-  {
-    $addFields: {
-      mentions: {
-        $map: {
-          input: '$mentions',
-          as: 'mention',
-          in: {
-            _id: '$$mention._id',
-            name: '$$mention.name',
-            username: '$$mention.name',
-            email: '$$mention.email'
-          }
-        }
-      },
-      hashtags: {
-        $map: {
-          input: '$hashtags',
-          as: 'hashtag',
-          in: {
-            _id: '$$hashtag._id',
-            name: '$$hashtag.name'
-          }
-        }
-      }
-    }
-  },
-  {
-    $lookup: {
-      from: 'bookmarks',
-      localField: '_id',
-      foreignField: 'tweet_id',
-      as: 'bookmarks'
-    }
-  },
-  {
-    $lookup: {
-      from: 'likes',
-      localField: '_id',
-      foreignField: 'tweet_id',
-      as: 'likes'
-    }
-  },
-  {
-    $lookup: {
-      from: 'tweets',
-      localField: '_id',
-      foreignField: 'parent_id',
-      as: 'tweet_children'
-    }
-  },
-  {
-    $addFields: {
-      likes: {
-        $size: '$likes'
-      },
-      bookmarks: {
-        $size: '$bookmarks'
-      },
-      retweets: {
-        $size: {
-          $filter: {
-            input: '$tweet_children',
-            as: 'item',
-            cond: {
-              $eq: ['$$item.type', TweetType.Retweet]
-            }
-          }
-        }
-      },
-      comments: {
-        $size: {
-          $filter: {
-            input: '$tweet_children',
-            as: 'item',
-            cond: {
-              $eq: ['$$item.type', TweetType.Comment]
-            }
-          }
-        }
-      },
-      quotes: {
-        $size: {
-          $filter: {
-            input: '$tweet_children',
-            as: 'item',
-            cond: {
-              $eq: ['$$item.type', TweetType.QuoteTweet]
-            }
-          }
-        }
-      }
-    }
-  },
-  {
-    $project: {
-      tweet_children: 0
-    }
-  }
-]
 
 export const findAndUpdateTweetById = async (
   tweet_id: string,
@@ -198,14 +78,14 @@ export const findTweetChildrenByParentId = async ({
   tweet_type: TweetType
   page: number
   limit: number
-}) => {
-  const tweets = await databaseService.tweets
+}): Promise<TweetDetail[]> => {
+  const tweetChildren = await databaseService.tweets
     // Truyền Tweet vào generic type của aggregate để trả về Tweet[]
-    .aggregate<Tweet>(tweetChildrenAggregate({ parent_id, tweet_type, page, limit }))
+    .aggregate<TweetDetail>(tweetChildrenAggregate({ parent_id, tweet_type, page, limit }))
     // chuyển AggregationCursor<Document> thành Document[]
     .toArray()
 
-  return tweets
+  return tweetChildren
 }
 
 export const countTweetChildrenByParentIds = async ({
@@ -222,6 +102,40 @@ export const countTweetChildrenByParentIds = async ({
 
   return result
 }
+
+export const getTweetsByFollowedUserIds = async ({
+  user_id,
+  user_ids,
+  page,
+  limit
+}: {
+  user_id: string
+  user_ids: ObjectId[]
+  page: number
+  limit: number
+}): Promise<NewFeed[]> => {
+  const tweets = await databaseService.tweets
+    // Truyền Tweet vào generic type của aggregate để trả về Tweet[]
+    .aggregate<NewFeed>(newsFeedAggregate({ user_id: new ObjectId(user_id), user_ids, page, limit }))
+    // chuyển AggregationCursor<Document> thành Document[]
+    .toArray()
+
+  return tweets
+}
+
+const tweetDetailAggregate = (tweet_id: string): Document[] => [
+  {
+    $match: {
+      _id: new ObjectId(tweet_id)
+    }
+  },
+  ...compileTweetDetails(),
+  {
+    $project: {
+      tweet_children: 0
+    }
+  }
+]
 
 const tweetChildrenAggregate = ({
   parent_id,
@@ -240,6 +154,98 @@ const tweetChildrenAggregate = ({
       type: tweet_type
     }
   },
+  // Phân trang
+  // Nên để phân trang ở đây để tối ưu data cần phải thực hiện ở các stage sau, lưu ý phải để phân trang sau khi thực hiện $match cuối cùng để đảm bảo đúng số lượng tweet trả về
+  ...paginationStage({ page, limit }),
+  // Modify lại field của tweet
+  ...compileTweetDetails(),
+  {
+    $project: {
+      tweet_children: 0
+    }
+  }
+]
+
+const newsFeedAggregate = ({
+  user_id,
+  user_ids,
+  page,
+  limit
+}: {
+  user_id: ObjectId
+  user_ids: ObjectId[]
+  page: number
+  limit: number
+}): Document[] => [
+  // Tìm tất cả tweet của user đang đăng nhập và user mà user đang đăng nhập đã follow
+  {
+    $match: {
+      user_id: {
+        $in: user_ids
+      }
+    }
+  },
+  // Tìm user của các tweet trên
+  {
+    $lookup: {
+      from: 'users',
+      localField: 'user_id',
+      foreignField: '_id',
+      as: 'user'
+    }
+  },
+  // Convert user từ array thành object
+  {
+    $unwind: {
+      path: '$user'
+    }
+  },
+  // Check điều kiện của các tweet
+  // Nếu audiance = 0 thì tweet này dành cho tất cả mọi người
+  // Nếu audiance = 1 thì check xem user đang đăng nhập có nằm trong twitterCircle của user đăng tweet hay không
+  {
+    $match: {
+      $or: [
+        {
+          audience: 0
+        },
+        {
+          $and: [
+            {
+              audience: 1
+            },
+            {
+              'user.twitterCircle': {
+                $in: [user_id]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  // Phân trang
+  // Nên để phân trang ở đây để tối ưu data cần phải thực hiện ở các stage sau, lưu ý phải để phân trang sau khi thực hiện $match cuối cùng để đảm bảo đúng số lượng tweet trả về
+  ...paginationStage({ page, limit }),
+  // Modify lại field của tweet
+  ...compileTweetDetails(),
+  {
+    $project: {
+      // Loai bỏ các field không cần thiết
+      tweet_children: 0,
+      user: {
+        password: 0,
+        email_verify_token: 0,
+        forgot_password_token: 0,
+        twitterCircle: 0,
+        date_of_birth: 0
+      }
+    }
+  }
+]
+
+const compileTweetDetails = (): Document[] => [
+  // Tìm hashtag của tweet bằng _id của hashtag
   {
     $lookup: {
       from: 'hashtags',
@@ -248,6 +254,7 @@ const tweetChildrenAggregate = ({
       as: 'hashtags'
     }
   },
+  // Tìm mention của tweet bằng _id của user
   {
     $lookup: {
       from: 'users',
@@ -259,6 +266,7 @@ const tweetChildrenAggregate = ({
   {
     $addFields: {
       mentions: {
+        // Map để thay đổi lại field của mảng mentions, chỉ lấy những field cần thiết
         $map: {
           input: '$mentions',
           as: 'mention',
@@ -271,6 +279,7 @@ const tweetChildrenAggregate = ({
         }
       },
       hashtags: {
+        // Map để thay đổi lại field của mảng hashtags, chỉ lấy những field cần thiết
         $map: {
           input: '$hashtags',
           as: 'hashtag',
@@ -283,14 +292,19 @@ const tweetChildrenAggregate = ({
     }
   },
   {
+    // Tìm tweet được lưu vào bookmark bằng tweet_id
     $lookup: {
+      // Tìm từ collection bookmarks
       from: 'bookmarks',
+      // Lấy ra những document có tweet_id = _id của tweet
       localField: '_id',
       foreignField: 'tweet_id',
+      // Lưu kết quả vào field bookmarks
       as: 'bookmarks'
     }
   },
   {
+    // Tìm tweet được like bằng tweet_id
     $lookup: {
       from: 'likes',
       localField: '_id',
@@ -299,6 +313,7 @@ const tweetChildrenAggregate = ({
     }
   },
   {
+    // Tìm tweet được retweet bằng tweet_id
     $lookup: {
       from: 'tweets',
       localField: '_id',
@@ -308,12 +323,15 @@ const tweetChildrenAggregate = ({
   },
   {
     $addFields: {
+      // Replace field likes và chỉ lấy số lượng phần tử của mảng likes
       likes: {
         $size: '$likes'
       },
+      // Replace field bookmarks và chỉ lấy số lượng phần tử của mảng bookmarks
       bookmarks: {
         $size: '$bookmarks'
       },
+      // Replace field retweets và chỉ lấy số lượng phần tử của mảng tweet_children có type là retweet
       retweets: {
         $size: {
           $filter: {
@@ -325,6 +343,7 @@ const tweetChildrenAggregate = ({
           }
         }
       },
+      // Replace field comments và chỉ lấy số lượng phần tử của mảng tweet_children có type là comment
       comments: {
         $size: {
           $filter: {
@@ -336,6 +355,7 @@ const tweetChildrenAggregate = ({
           }
         }
       },
+      // Replace field quotes và chỉ lấy số lượng phần tử của mảng tweet_children có type là quote
       quotes: {
         $size: {
           $filter: {
@@ -348,12 +368,23 @@ const tweetChildrenAggregate = ({
         }
       }
     }
+  }
+]
+
+const paginationStage = ({
+  page,
+  limit
+}: {
+  page: number
+  limit: number
+}): [
+  {
+    $skip: number
   },
   {
-    $project: {
-      tweet_children: 0
-    }
-  },
+    $limit: number
+  }
+] => [
   {
     // Trang hiện tại
     $skip: limit * (page - 1) // Công thưc phân trang
