@@ -103,6 +103,20 @@ export const countTweetChildrenByParentIds = async ({
   return result
 }
 
+export const countNewsFeedByAggregate = async ({ user_ids, user_id }: { user_ids: ObjectId[]; user_id: ObjectId }) => {
+  const result = await databaseService.tweets
+    .aggregate([
+      ...newsFeedFilter({ user_ids, user_id }),
+      {
+        // Đếm số lượng tweet bằng aggregation
+        $count: 'total_tweets'
+      }
+    ])
+    .toArray()
+
+  return result
+}
+
 export const getTweetsByFollowedUserIds = async ({
   user_id,
   user_ids,
@@ -178,6 +192,28 @@ const newsFeedAggregate = ({
   limit: number
 }): Document[] => [
   // Tìm tất cả tweet của user đang đăng nhập và user mà user đang đăng nhập đã follow
+  ...newsFeedFilter({ user_ids, user_id }),
+  // Phân trang
+  // Nên để phân trang ở đây để tối ưu data cần phải thực hiện ở các stage sau, lưu ý phải để phân trang sau khi thực hiện $match cuối cùng để đảm bảo đúng số lượng tweet trả về
+  ...paginationStage({ page, limit }),
+  // Modify lại field của tweet
+  ...compileTweetDetails(),
+  {
+    $project: {
+      // Loai bỏ các field không cần thiết
+      tweet_children: 0,
+      user: {
+        password: 0,
+        email_verify_token: 0,
+        forgot_password_token: 0,
+        twitterCircle: 0,
+        date_of_birth: 0
+      }
+    }
+  }
+]
+
+const newsFeedFilter = ({ user_ids, user_id }: { user_ids: ObjectId[]; user_id: ObjectId }): Document[] => [
   {
     $match: {
       user_id: {
@@ -222,24 +258,6 @@ const newsFeedAggregate = ({
           ]
         }
       ]
-    }
-  },
-  // Phân trang
-  // Nên để phân trang ở đây để tối ưu data cần phải thực hiện ở các stage sau, lưu ý phải để phân trang sau khi thực hiện $match cuối cùng để đảm bảo đúng số lượng tweet trả về
-  ...paginationStage({ page, limit }),
-  // Modify lại field của tweet
-  ...compileTweetDetails(),
-  {
-    $project: {
-      // Loai bỏ các field không cần thiết
-      tweet_children: 0,
-      user: {
-        password: 0,
-        email_verify_token: 0,
-        forgot_password_token: 0,
-        twitterCircle: 0,
-        date_of_birth: 0
-      }
     }
   }
 ]
