@@ -95,7 +95,8 @@ export const getNewsFeedController = async (req: Request<ParamsDictionary, any, 
     result: {
       newsFeed,
       page,
-      limit
+      limit,
+      total_page: Math.ceil(newsFeed.totalTweets / limit)
     }
   })
 }

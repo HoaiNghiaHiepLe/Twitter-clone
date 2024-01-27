@@ -1,6 +1,7 @@
 import { config } from 'dotenv'
 import { TweetRequestBody } from '~/models/requests/Tweet.request'
 import {
+  countNewsFeedByAggregate,
   countTweetChildrenByParentIds,
   findAndUpdateManyTweetById,
   findAndUpdateTweetById,
@@ -64,10 +65,8 @@ class TweetServices {
     return result as Pick<Tweet, 'guest_views' | 'user_views' | 'updated_at'>
   }
 
-  async increaseManyTweetView(tweets: Tweet[], user_id: string) {
+  async increaseManyTweetView(tweets: Tweet[], user_id: string, newsFeed?: boolean) {
     const tweetIds = tweets.map((tweet) => tweet._id as ObjectId)
-
-    const inc: OnlyFieldsOfType<Tweet, IntegerType> = user_id ? { user_views: 1 } : { guest_views: 1 }
 
     const date = new Date()
 
@@ -76,15 +75,27 @@ class TweetServices {
     // Update lại giá trị của tweets truyền vào và trả ra cho client
     tweets.forEach((tweet: Tweet) => {
       tweet.updated_at = date
-      if (user_id) {
+      if (newsFeed) {
+        // Nếu là newsFeed thì tất cả tweets đều có user_views vì user phải login mới xem đc newsFeed
         ;(tweet.user_views as number) += 1
       } else {
-        ;(tweet.guest_views as number) += 1
+        if (user_id) {
+          ;(tweet.user_views as number) += 1
+        } else {
+          ;(tweet.guest_views as number) += 1
+        }
       }
     })
 
     // Update view của tất cả tweets trong db
-    await findAndUpdateManyTweetById(tweetIds, inc)
+    if (newsFeed) {
+      // Nếu là newsFeed thì tất cả tweets đều có user_views vì user phải login mới xem đc newsFeed
+      const inc: OnlyFieldsOfType<Tweet, IntegerType> = { user_views: 1 }
+      await findAndUpdateManyTweetById(tweetIds, inc)
+    } else {
+      const inc: OnlyFieldsOfType<Tweet, IntegerType> = user_id ? { user_views: 1 } : { guest_views: 1 }
+      await findAndUpdateManyTweetById(tweetIds, inc)
+    }
 
     // Trả về tweets đã update view
     return tweets
@@ -124,8 +135,16 @@ class TweetServices {
     page: number
     limit: number
   }) {
-    const newsFeed = await getTweetsByFollowedUserIds({ user_id, user_ids, page, limit })
-    return newsFeed
+    // Vì thuật toán lấy newsfeed và totalTweets sẽ phải chạy mất nhiều thời gian nên ta sẽ dùng Promise.all để chạy song song 2 hàm này
+    // Như vậy sẽ tối ưu thời gian đợi của 2 thuật toán phức tạp này
+    const [newsFeed, totalTweets] = await Promise.all([
+      getTweetsByFollowedUserIds({ user_id, user_ids, page, limit }),
+      countNewsFeedByAggregate({ user_ids, user_id: new ObjectId(user_id) })
+    ])
+    // Sau khi lấy đc newsFeed và totalTweets thì ta sẽ tăng giá trị view của tất cả tweets trong newsFeed
+    const newsFeedUpdatedViews = await this.increaseManyTweetView(newsFeed, String(user_id), true)
+
+    return { tweets: newsFeedUpdatedViews, totalTweets: totalTweets[0]?.total_tweets || 0 }
   }
 }
 
