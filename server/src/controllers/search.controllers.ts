@@ -12,11 +12,12 @@ import { countTweetsByAggregate } from '~/repository/search.repository'
 config()
 
 export const searchController = async (req: Request<ParamsDictionary, any, any, SearchRequestQuery>, res: Response) => {
-  const { q, f, page, limit } = req.query
+  const { q, f, pf, page, limit } = req.query
   const user_id = req.decoded_authorization?.user_id as string
-  const tweets = await searchService.searchTweetsByContent({
+  const tweets = await searchService.searchTweets({
     q,
     f,
+    pf,
     page,
     limit,
     user_id

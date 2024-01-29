@@ -13,6 +13,6 @@ const searchRouter = Router()
  * Header: {Authorization: Bearer <access_token>}
  * Body: TweetRequestBody
  */
-searchRouter.get('/', searchController)
+searchRouter.get('/', accessTokenValidator, verifyUserValidator, searchController)
 
 export default searchRouter
