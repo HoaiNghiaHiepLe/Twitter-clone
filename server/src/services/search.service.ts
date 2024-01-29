@@ -6,8 +6,8 @@ import { findTweetsByContent } from '~/repository/search.repository'
 config()
 
 class SearchServices {
-  async searchTweetsByContent({ q, page, limit, user_id }: SearchRequestQuery & { user_id: string }) {
-    const result = await findTweetsByContent({ q, page, limit, user_id })
+  async searchTweetsByContent({ q, f, page, limit, user_id }: SearchRequestQuery & { user_id: string }) {
+    const result = await findTweetsByContent({ q, f, page, limit, user_id })
 
     if (isEmpty(result)) {
       return null
