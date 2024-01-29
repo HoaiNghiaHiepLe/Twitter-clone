@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 import Like from '~/models/schemas/like.schema'
-import databaseService from '~/services/database.services'
+import databaseService from '~/services/database.service'
 
 export const insertOneTweetLike = async ({ user_id, tweet_id }: Like) => {
   const result = await databaseService.likes.findOneAndUpdate(

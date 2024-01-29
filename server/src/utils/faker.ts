@@ -8,7 +8,7 @@ import Hashtag from '~/models/schemas/Hashtag.schema'
 import Tweet from '~/models/schemas/Tweet.schema'
 import User from '~/models/schemas/User.schema'
 import { checkExistEmail, countUsers } from '~/repository/users.repository'
-import databaseService from '~/services/database.services'
+import databaseService from '~/services/database.service'
 import { hashPassword } from '~/utils/crypto'
 
 /**
