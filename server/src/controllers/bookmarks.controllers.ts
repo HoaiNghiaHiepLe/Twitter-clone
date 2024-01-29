@@ -5,7 +5,7 @@ import { MESSAGE } from '~/constant/message'
 import { ErrorWithStatus } from '~/models/Errors'
 import { BookmarkTweetRequestBody } from '~/models/requests/Common.request'
 import { TokenPayload } from '~/models/requests/User.request'
-import bookmarkServices from '~/services/bookmarks.services'
+import bookmarkServices from '~/services/bookmarks.service'
 import { interpolateMessage } from '~/utils/utils'
 
 export const bookmarkTweetController = async (

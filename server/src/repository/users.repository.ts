@@ -4,7 +4,7 @@ import { RegisterReqBody, UpdateMeReqBody } from '~/models/requests/User.request
 import Follower from '~/models/schemas/Follower.schema'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
 import User from '~/models/schemas/User.schema'
-import databaseService from '~/services/database.services'
+import databaseService from '~/services/database.service'
 import { hashPassword } from '~/utils/crypto'
 
 export const checkExistEmail = async (email: string) => {

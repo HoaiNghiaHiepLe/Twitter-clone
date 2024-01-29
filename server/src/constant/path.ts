@@ -4,7 +4,8 @@ export const PATH = {
     MEDIAS: '/medias',
     STATIC: '/static',
     TWEETS: '/tweets',
-    BOOKMARKS: '/bookmarks'
+    BOOKMARKS: '/bookmarks',
+    SEARCH: '/search'
   },
   USER: {
     LOGIN: '/login',

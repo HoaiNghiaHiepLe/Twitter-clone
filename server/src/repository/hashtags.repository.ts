@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 import Hashtag from '~/models/schemas/Hashtag.schema'
-import databaseService from '~/services/database.services'
+import databaseService from '~/services/database.service'
 
 export const findOneAndUpdateHashtag = async (hashtag: Hashtag) => {
   // Tìm hashtag trong database, nếu không có thì tạo mới

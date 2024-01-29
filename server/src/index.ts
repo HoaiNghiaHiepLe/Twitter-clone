@@ -1,6 +1,6 @@
 import express from 'express'
 import userRouter from './routes/users.routes'
-import DatabaseService from './services/database.services'
+import DatabaseService from './services/database.service'
 import { defaultErrorHandler } from './middlewares/error.middlewares'
 import mediasRouter from './routes/medias.routes'
 import { initFolder } from './utils/file'
@@ -10,9 +10,10 @@ import { DIR } from './constant/dir'
 import { PATH } from './constant/path'
 import staticRouter from './routes/static.routes'
 import cors from 'cors'
-import databaseService from './services/database.services'
+import databaseService from './services/database.service'
 import tweetsRouter from './routes/tweets.routes'
 import bookmarksRouter from './routes/bookmarks.routes'
+import searchRouter from './routes/search.routes'
 // fake data
 // import '~/utils/faker'
 
@@ -24,6 +25,7 @@ DatabaseService.connect().then(() => {
   databaseService.indexRefreshToken()
   databaseService.indexVideoStatus()
   databaseService.indexFollower()
+  databaseService.indexTweet()
 })
 
 const app = express()
@@ -43,6 +45,8 @@ app.use(PATH.BASE.USERS, userRouter)
 app.use(PATH.BASE.MEDIAS, mediasRouter)
 app.use(PATH.BASE.TWEETS, tweetsRouter)
 app.use(PATH.BASE.BOOKMARKS, bookmarksRouter)
+app.use(PATH.BASE.SEARCH, searchRouter)
+
 // serve static file by router
 app.use(PATH.BASE.STATIC, staticRouter)
 

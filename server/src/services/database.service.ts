@@ -70,6 +70,21 @@ class DatabaseService {
     this.followers.createIndex({ user_id: 1, followed_user_id: 1 })
   }
 
+  async indexTweet() {
+    // Check nếu đã có index thì return
+    const exist = await this.tweets.indexExists(['content_text'])
+    if (exist) {
+      return
+    }
+    this.tweets.createIndex(
+      { content: 'text' },
+      {
+        // Loại bỏ các stopword trong tiếng anh của mongodb
+        default_language: 'none'
+      }
+    )
+  }
+
   get users(): Collection<User> {
     return this.db.collection(process.env.DB_USERS_COLLECTION as string)
   }

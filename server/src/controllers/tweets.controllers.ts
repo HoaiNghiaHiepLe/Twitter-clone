@@ -2,13 +2,13 @@ import { NextFunction, Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { config } from 'dotenv'
 import { Pagination, TweetRequestBody, TweetRequestParams, TweetRequestQuery } from '~/models/requests/Tweet.request'
-import tweetServices from '~/services/tweets.services'
+import tweetServices from '~/services/tweets.service'
 import { TokenPayload } from '~/models/requests/User.request'
 import { interpolateMessage } from '~/utils/utils'
 import { MESSAGE } from '~/constant/message'
 import Tweet from '~/models/schemas/Tweet.schema'
 import { TweetType } from '~/constant/enum'
-import userService from '~/services/user.services'
+import userService from '~/services/user.service'
 
 config()
 

@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 import Bookmark from '~/models/schemas/bookmark.schema'
-import databaseService from '~/services/database.services'
+import databaseService from '~/services/database.service'
 
 export const insertOneBookmarkTweet = async ({ user_id, tweet_id }: Bookmark) => {
   const result = await databaseService.bookmarks.findOneAndUpdate(

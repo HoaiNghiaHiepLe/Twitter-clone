@@ -15,7 +15,6 @@ import { findOneAndUpdateHashtag } from '~/repository/hashtags.repository'
 import Hashtag from '~/models/schemas/Hashtag.schema'
 import { IntegerType, ObjectId, OnlyFieldsOfType } from 'mongodb'
 import { TweetType } from '~/constant/enum'
-import databaseService from './database.services'
 
 config()
 

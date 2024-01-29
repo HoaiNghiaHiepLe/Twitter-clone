@@ -2,7 +2,7 @@ import { Document, IntegerType, ObjectId, OnlyFieldsOfType } from 'mongodb'
 import { TweetType } from '~/constant/enum'
 import Tweet from '~/models/schemas/Tweet.schema'
 import User from '~/models/schemas/User.schema'
-import databaseService from '~/services/database.services'
+import databaseService from '~/services/database.service'
 import { NewFeed, TweetDetail } from '~/types/Tweet.type'
 
 export const insertOneTweet = async (tweet: Tweet) => {
@@ -104,15 +104,15 @@ export const countTweetChildrenByParentIds = async ({
 }
 
 export const countNewsFeedByAggregate = async ({ user_ids, user_id }: { user_ids: ObjectId[]; user_id: ObjectId }) => {
-  const result = await databaseService.tweets
-    .aggregate([
-      ...newsFeedFilter({ user_ids, user_id }),
-      {
-        // Đếm số lượng tweet bằng aggregation
-        $count: 'total_tweets'
-      }
-    ])
-    .toArray()
+  const pipeline = [
+    ...newsFeedFilter({ user_ids, user_id }),
+    {
+      // Đếm số lượng tweet bằng aggregation
+      $count: 'total_tweets'
+    }
+  ]
+
+  const result = await databaseService.tweets.aggregate(pipeline).toArray()
 
   return result
 }
@@ -262,7 +262,7 @@ const newsFeedFilter = ({ user_ids, user_id }: { user_ids: ObjectId[]; user_id: 
   }
 ]
 
-const compileTweetDetails = (): Document[] => [
+export const compileTweetDetails = (): Document[] => [
   // Tìm hashtag của tweet bằng _id của hashtag
   {
     $lookup: {
@@ -389,7 +389,7 @@ const compileTweetDetails = (): Document[] => [
   }
 ]
 
-const paginationStage = ({
+export const paginationStage = ({
   page,
   limit
 }: {

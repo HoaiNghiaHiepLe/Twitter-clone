@@ -1,5 +1,5 @@
 import VideoEncodingStatus from '~/models/schemas/videoStatus.chema'
-import databaseService from '~/services/database.services'
+import databaseService from '~/services/database.service'
 
 export const insertVideoEncodingStatus = async ({
   name,
