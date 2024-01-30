@@ -1,7 +1,7 @@
 export const MESSAGE = {
   ERROR: ':action error',
   IS_REQUIRED: ':field is required',
-  MUST_BE: ':field must be a :type',
+  MUST_BE: ':field must be :type',
   LENGTH: ':field must be between :min and :max characters',
   ALREADY_EXISTS: ':field already exists',
   INVALID: ':field is invalid',
