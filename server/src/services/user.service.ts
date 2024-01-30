@@ -25,6 +25,7 @@ import axios from 'axios'
 import { hashPassword } from '~/utils/crypto'
 import { googleOAuthPayload, googleOAuthToken } from '~/types/OpenAuth.type'
 import Follower from '~/models/schemas/Follower.schema'
+import { sendVerifyEmail } from '~/utils/email'
 
 config()
 class UserService {
@@ -146,10 +147,16 @@ class UserService {
 
     insertRefreshToken(refresh_token, user_id.toString(), iat, exp)
 
+    await sendVerifyEmail(
+      payload.email,
+      'Verify Email',
+      `<a href="${process.env.CLIENT_URL}/verify-email?token=${payload.email_verify_token}">Click here to verify your email</a>`
+    )
+
     return {
       access_token,
       refresh_token,
-      // tạm thời trả ra cho client để test khi chưa có mail server
+      // Trả ra cho client để test khi chưa có mail server
       email_verify_token: payload.email_verify_token
     }
   }
