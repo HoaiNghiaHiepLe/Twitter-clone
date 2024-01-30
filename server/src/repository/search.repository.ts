@@ -3,7 +3,7 @@ import { SearchRequestQuery } from '~/models/requests/Search.request'
 import Tweet from '~/models/schemas/Tweet.schema'
 import databaseService from '~/services/database.service'
 import { compileTweetDetails, getTweetsByFollowedUserIds, paginationStage } from './tweets.repository'
-import { MediaRequestQuery, MediaType } from '~/constant/enum'
+import { MediaRequestQuery, MediaType, PeopleFollowType } from '~/constant/enum'
 import userService from '~/services/user.service'
 
 export const combinedSearchTweets = async ({
@@ -61,7 +61,7 @@ const combinedFilterTweets = async ({
   }
 
   // Nếu có pf (lấy tweets từ user đang đăng nhập đã follow) truyền vào bằng request thì thêm điều kiện cho $match
-  if (pf && String(pf) === '1') {
+  if (pf && String(pf) === PeopleFollowType.Followed) {
     const user_ids = await userService.getFollowedUserIds(user_id, {
       _id: 0,
       followed_user_id: 1

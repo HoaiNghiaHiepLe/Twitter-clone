@@ -6,7 +6,6 @@ import { interpolateMessage } from '~/utils/utils'
 import { SearchRequestQuery } from '~/models/requests/Search.request'
 import searchService from '~/services/search.service'
 import tweetServices from '~/services/tweets.service'
-import { countNewsFeedByAggregate } from '~/repository/tweets.repository'
 import { countTweetsByAggregate } from '~/repository/search.repository'
 
 config()
@@ -14,6 +13,7 @@ config()
 export const searchController = async (req: Request<ParamsDictionary, any, any, SearchRequestQuery>, res: Response) => {
   const { q, f, pf, page, limit } = req.query
   const user_id = req.decoded_authorization?.user_id as string
+
   const tweets = await searchService.searchTweets({
     q,
     f,
@@ -31,7 +31,7 @@ export const searchController = async (req: Request<ParamsDictionary, any, any, 
 
   const [updatedTweetsViews, totalTweets] = await Promise.all([
     tweetServices.increaseManyTweetView(tweets, user_id),
-    countTweetsByAggregate({ q, f, user_id })
+    countTweetsByAggregate({ q, f, pf, user_id })
   ])
 
   return res.json({
