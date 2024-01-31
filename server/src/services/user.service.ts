@@ -25,7 +25,7 @@ import axios from 'axios'
 import { hashPassword } from '~/utils/crypto'
 import { googleOAuthPayload, googleOAuthToken } from '~/types/OpenAuth.type'
 import Follower from '~/models/schemas/Follower.schema'
-import { sendVerifyEmail } from '~/utils/email'
+import { sendForgotPasswordEmail, sendVerifyEmail } from '~/utils/email'
 
 config()
 class UserService {
@@ -125,9 +125,11 @@ class UserService {
     })
   }
 
-  async register(
-    payload: RegisterReqBody
-  ): Promise<{ access_token: string; refresh_token: string; email_verify_token: string }> {
+  async register(payload: RegisterReqBody): Promise<{
+    access_token: string
+    refresh_token: string
+    email_verify_token: string
+  }> {
     const user_id = new ObjectId()
 
     payload.user_id = user_id
@@ -147,11 +149,7 @@ class UserService {
 
     insertRefreshToken(refresh_token, user_id.toString(), iat, exp)
 
-    await sendVerifyEmail(
-      payload.email,
-      'Verify Email',
-      `<a href="${process.env.CLIENT_URL}/verify-email?token=${payload.email_verify_token}">Click here to verify your email</a>`
-    )
+    await sendVerifyEmail(payload.email, payload.email_verify_token)
 
     return {
       access_token,
@@ -289,26 +287,34 @@ class UserService {
     }
   }
 
-  async resendVerifyEmail(user_id: string): Promise<{ email_verify_token: string }> {
+  async resendVerifyEmail(
+    email: string,
+    user_id: string,
+    status: UserVerifyStatus
+  ): Promise<{ email_verify_token: string }> {
     const emailVerifyToken = await this.signEmailVerifyToken({ user_id, verify: UserVerifyStatus.Unverified })
 
-    await verifyUser(user_id, emailVerifyToken)
+    await verifyUser(user_id, emailVerifyToken, status)
 
-    return {
-      email_verify_token: emailVerifyToken
-    }
+    await sendVerifyEmail(email, emailVerifyToken)
+
+    // khi muốn return ra response email_verify_token
+    return { email_verify_token: emailVerifyToken }
   }
 
   async forgotPassword({
+    email,
     user_id,
     verify
   }: {
+    email: string
     user_id: string
     verify: UserVerifyStatus
   }): Promise<{ forgot_password_token: string }> {
     const forgotPasswordToken = await this.signForgotPasswordToken({ user_id, verify })
 
     await updateForgotPasswordToken(user_id, forgotPasswordToken)
+    await sendForgotPasswordEmail(email, forgotPasswordToken)
 
     return {
       forgot_password_token: forgotPasswordToken

@@ -106,7 +106,7 @@ export const emailVerifyController = async (req: Request<ParamsDictionary, any, 
   }
 
   // already verified
-  if (user.email_verify_token === '') {
+  if (user.email_verify_token === '' && user.verify === UserVerifyStatus.Verified) {
     return res.json({
       message: interpolateMessage(MESSAGE.ALREADY, { field: 'email', action: 'verified' }),
       status: HTTP_STATUS.OK
@@ -142,7 +142,7 @@ export const resendVerifyEmailController = async (req: Request, res: Response) =
     })
   }
 
-  const result = await userService.resendVerifyEmail(user_id)
+  const result = await userService.resendVerifyEmail(user.email, user_id, user.verify as UserVerifyStatus)
 
   return res.json({
     message: interpolateMessage(MESSAGE.SUCCESSFUL, { action: 'resend verify email' }),
@@ -155,8 +155,14 @@ export const forgotPasswordController = async (
   res: Response
 ) => {
   const { user } = req as ForgotPasswordReqBody
+
   const user_id = ((user as User)._id as ObjectId).toString()
-  const result = await userService.forgotPassword({ user_id, verify: (user as User).verify as UserVerifyStatus })
+
+  const result = await userService.forgotPassword({
+    email: user.email,
+    user_id,
+    verify: (user as User).verify as UserVerifyStatus
+  })
 
   return res.json({
     message: interpolateMessage(MESSAGE.SEND_EMAIL, { link: 'forgot password link' }),

@@ -111,10 +111,10 @@ export const findUserByUserName = async (username: string, projection?: Document
   return await databaseService.users.findOne({ username }, { projection: projection })
 }
 
-export const verifyUser = async (user_id: string, emailVerifyToken?: string) => {
+export const verifyUser = async (user_id: string, emailVerifyToken?: string, status?: UserVerifyStatus) => {
   let result = null
 
-  if (emailVerifyToken && emailVerifyToken !== '') {
+  if (emailVerifyToken && emailVerifyToken !== '' && status === UserVerifyStatus.Unverified) {
     result = await databaseService.users.updateOne(
       { _id: new ObjectId(user_id) },
       {
