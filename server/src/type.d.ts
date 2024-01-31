@@ -29,6 +29,7 @@ declare global {
       DB_BOOKMARKS_COLLECTION: string
       DB_LIKES_COLLECTION: string
 
+      PASSWORD_SECRET: string
       JWT_SECRET_ACCESS_TOKEN: string
       JWT_SECRET_REFRESH_TOKEN: string
       JWT_SECRET_EMAIL_VERIFY_TOKEN: string
@@ -42,6 +43,12 @@ declare global {
       GOOGLE_CLIENT_SECRET: string
       GOOGLE_REDIRECT_URI: string
       CLIENT_REDIRECT_URI: string
+      CLIENT_URL: string
+
+      AWS_ACCESS_KEY_ID: string
+      AWS_SECRET_ACCESS_KEY: string
+      AWS_REGION: string
+      SES_FROM_ADDRESS: string
     }
   }
 }

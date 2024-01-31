@@ -4,8 +4,6 @@ import { MESSAGE } from '~/constant/message'
 import { interpolateMessage } from '~/utils/utils'
 import { validate } from '~/utils/validation'
 
-console.log(Object.values(MediaRequestQuery).join(' or '))
-
 export const searchTweetsValidator = validate(
   checkSchema(
     {
