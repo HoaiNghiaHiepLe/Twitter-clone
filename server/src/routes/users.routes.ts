@@ -97,7 +97,6 @@ usersRouter.post(PATH.USER.VERIFY_EMAIL, verifyEmailTokenValidator, wrapRequestH
  * Method: POST
  * Header: {Authorization: Bearer <access_token>}
  * Body: {}
- *
  */
 
 usersRouter.post(PATH.USER.RESEND_VERIFY_EMAIL, accessTokenValidator, wrapRequestHandler(resendVerifyEmailController))
