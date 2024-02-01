@@ -4,6 +4,7 @@ import fs from 'fs'
 import { replace } from 'lodash'
 import path from 'path'
 import { replaceHtmlTemplateVariables } from './utils'
+import { PATH } from '~/constant/path'
 
 config()
 // Create SES service object.
@@ -93,7 +94,7 @@ export const sendVerifyEmail = (
       title: 'Please verify your email address',
       content: 'Please verify your email address by clicking the link below.',
       titleLink: 'Verify Email',
-      link: `${process.env.CLIENT_URL}/verify-email?token=${email_verify_token}`
+      link: `${process.env.CLIENT_URL}${PATH.USER.VERIFY_EMAIL}?token=${email_verify_token}`
     })
   )
 }

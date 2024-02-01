@@ -4,14 +4,15 @@ import MainLayout from 'src/layouts/MainLayout'
 import { Login } from 'src/pages'
 import Home from 'src/pages/Home'
 import NotFound from 'src/pages/NotFound'
+import VerifyEmail from 'src/pages/VerifyEmail'
 
-function RejectedRoute() {
+function UnAuthenticatedRoute() {
   const isAuthenticated = false
   const location = useLocation()
   return !isAuthenticated ? <Outlet /> : <Navigate to='/' state={{ from: location }} replace />
 }
 
-function ProtectedRoute() {
+function AuthenticatedRoute() {
   const isAuthenticated = true
   const location = useLocation()
   return isAuthenticated ? <Outlet /> : <Navigate to={PATH.LOGIN} state={{ from: location }} replace />
@@ -25,7 +26,7 @@ const useRouteElement = () => {
       children: [
         {
           path: '',
-          element: <RejectedRoute />,
+          element: <UnAuthenticatedRoute />,
           children: [
             {
               path: PATH.HOME,
@@ -34,12 +35,16 @@ const useRouteElement = () => {
             {
               path: PATH.LOGIN,
               element: <Login />
+            },
+            {
+              path: PATH.VERIFY_EMAIL,
+              element: <VerifyEmail />
             }
           ]
         },
         {
           path: '',
-          element: <ProtectedRoute />,
+          element: <AuthenticatedRoute />,
           children: []
         },
         {

@@ -1,4 +1,5 @@
 export const PATH = {
   HOME: '/',
-  LOGIN: '/login'
+  LOGIN: '/login',
+  VERIFY_EMAIL: '/verify-email'
 } as const
