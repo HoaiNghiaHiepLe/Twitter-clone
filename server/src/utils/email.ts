@@ -5,6 +5,7 @@ import { replace } from 'lodash'
 import path from 'path'
 import { replaceHtmlTemplateVariables } from './utils'
 import { PATH } from '~/constant/path'
+import { TokenType } from '~/constant/enum'
 
 config()
 // Create SES service object.
@@ -94,7 +95,10 @@ export const sendVerifyEmail = (
       title: 'Please verify your email address',
       content: 'Please verify your email address by clicking the link below.',
       titleLink: 'Verify Email',
-      link: `${process.env.CLIENT_URL}${PATH.USER.VERIFY_EMAIL}?token=${email_verify_token}`
+      // Dùng khi verify token với route verify-email ở client
+      // link: `${process.env.CLIENT_URL}${PATH.USER.VERIFY_EMAIL}?token=${email_verify_token}`
+      // Dùng khi verify token với route chung verify tất cả token ở client: verify-token
+      link: `${process.env.CLIENT_URL}${PATH.USER.VERIFY_TOKEN}?token=${email_verify_token}&tokenType=${TokenType.EmailVerifyToken}&endPoint=${PATH.BASE.USERS}${PATH.USER.VERIFY_EMAIL}`
     })
   )
 }
@@ -111,7 +115,10 @@ export const sendForgotPasswordEmail = (
       title: 'Reset your password',
       content: 'Please reset your password by clicking the link below.',
       titleLink: 'Reset Password',
-      link: `${process.env.CLIENT_URL}/reset-password?token=${forgot_password_token}`
+      // Dùng khi verify token với route verify-forgot-password ở client
+      // link: `${process.env.CLIENT_URL}${PATH.USER.VERIFY_FORGOT_PASSWORD}?token=${forgot_password_token}`
+      // Dùng khi verify token với route chung verify tất cả token ở client: verify-token
+      link: `${process.env.CLIENT_URL}${PATH.USER.VERIFY_TOKEN}?token=${forgot_password_token}&tokenType=${TokenType.ForgotPasswordToken}&endPoint=${PATH.BASE.USERS}${PATH.USER.VERIFY_FORGOT_PASSWORD}`
     })
   )
 }

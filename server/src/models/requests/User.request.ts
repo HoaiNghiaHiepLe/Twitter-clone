@@ -52,7 +52,7 @@ export type ForgotPasswordReqBody = {
   user: User
 }
 export type ResetPasswordReqBody = {
-  forgot_password_token: string
+  token: string
   password: string
   confirm_password: string
 }

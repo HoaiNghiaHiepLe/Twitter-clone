@@ -17,7 +17,7 @@ const VerifyEmail = () => {
         .post(
           // url verify email của api server
           `users/verify-email`,
-          { email_verify_token: token },
+          { token },
           {
             // baseURL: url của api server
             baseURL: VITE_API_URL,
