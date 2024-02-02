@@ -14,7 +14,8 @@ import {
   resendVerifyEmailController,
   resetPasswordController,
   unfollowUserController,
-  updateMeController
+  updateMeController,
+  verifyForgotPasswordController
 } from '~/controllers/users.controllers'
 import { filterDataMiddleware } from '~/middlewares/common.middlewares'
 import {
@@ -29,7 +30,8 @@ import {
   updateMeValidator,
   followValidator,
   unFollowValidator,
-  changePasswordValidator
+  changePasswordValidator,
+  forgotPasswordTokenValidator
 } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
 import { UpdateMeReqBody } from '~/models/requests/User.request'
@@ -110,6 +112,20 @@ usersRouter.post(PATH.USER.RESEND_VERIFY_EMAIL, accessTokenValidator, wrapReques
  */
 
 usersRouter.post(PATH.USER.FORGOT_PASSWORD, forgotPasswordValidator, wrapRequestHandler(forgotPasswordController))
+
+/**
+ * Description: Verify forgot password token
+ * Path: /verify-forgot-password
+ * Method: POST
+ * Header: {}
+ * Body: {forgot_password_token: string}
+ */
+
+usersRouter.post(
+  PATH.USER.VERIFY_FORGOT_PASSWORD,
+  forgotPasswordTokenValidator,
+  wrapRequestHandler(verifyForgotPasswordController)
+)
 
 /**
  * Description: Reset password
