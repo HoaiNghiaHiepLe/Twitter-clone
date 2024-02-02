@@ -170,12 +170,50 @@ export const forgotPasswordController = async (
   })
 }
 
+export const verifyForgotPasswordController = async (
+  req: Request<ParamsDictionary, any, ResetPasswordReqBody>,
+  res: Response
+) => {
+  const { user_id, exp } = req.decoded_forgot_password_token as TokenPayload
+  const { token: forgot_password_token } = req.body
+
+  const user = await findUserById(user_id)
+
+  // not found
+  if (!user) {
+    return res.json({
+      message: interpolateMessage(MESSAGE.NOT_FOUND, { field: 'User' }),
+      status: HTTP_STATUS.NOT_FOUND
+    })
+  }
+
+  if (user.forgot_password_token !== forgot_password_token) {
+    throw new ErrorWithStatus({
+      message: interpolateMessage(MESSAGE.INVALID, { field: 'forgot password token' }),
+      status: HTTP_STATUS.BAD_REQUEST
+    })
+  }
+
+  const currentTime = Math.floor(Date.now() / 1000)
+
+  if ((exp as number) < currentTime) {
+    throw new ErrorWithStatus({
+      message: interpolateMessage(MESSAGE.EXPIRED, { field: 'forgot password token' }),
+      status: HTTP_STATUS.BAD_REQUEST
+    })
+  }
+
+  return res.json({
+    message: interpolateMessage(MESSAGE.SUCCESSFUL, { action: 'verify forgot password token' })
+  })
+}
+
 export const resetPasswordController = async (
   req: Request<ParamsDictionary, any, ResetPasswordReqBody>,
   res: Response
 ) => {
   const { user_id, exp } = req.decoded_forgot_password_token as TokenPayload
-  const { forgot_password_token, password } = req.body
+  const { token: forgot_password_token, password } = req.body
 
   const user = await findUserById(user_id)
 
