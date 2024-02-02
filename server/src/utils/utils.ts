@@ -9,15 +9,25 @@ export function interpolateMessage(template: string, replacements: { [key: strin
   }, template)
 }
 
-export function defineProperty<T extends object, K extends keyof T>(
-  obj: T,
-  key: K | string = 'message',
-  propertyOptions: { [key: string]: any } = { enumerable: true }
-): void {
+export function redefineObjectProperty<T extends object, K extends keyof T>(obj: T, key: K | string = 'message'): void {
   Object.getOwnPropertyNames(obj).forEach((propertyKey) => {
-    if (propertyKey === key) {
-      Object.defineProperty(obj, propertyKey, propertyOptions)
+    // Vì một số Object lỗi không cho phép configurable và writable nên thay vì dùng Object.defineProperty để thay đổi thuộc tính của nó
+    // thì ta tạo một object mới để chứa giá trị của key , gán giá trị của key đó vào object mới đó và return object mới về cho client
+    // Tạo một object rỗng để chứa giá trị của key
+    const finalError: any = {}
+    // Nếu object không cho phép thay đổi thuộc tính hoặc không cho phép ghi đè thì return
+    if (
+      !Object.getOwnPropertyDescriptor(obj, key)?.configurable ||
+      !Object.getOwnPropertyDescriptor(obj, key)?.writable
+    ) {
+      return
     }
+    // Nếu key truyền vào bằng key của object thì gán giá trị của key đó vào finalError
+    if (propertyKey === key) {
+      // Gán giá trị của key vào finalError
+      finalError[key] = obj[key as K]
+    }
+    return finalError
   })
 }
 
