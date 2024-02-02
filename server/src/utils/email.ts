@@ -66,14 +66,14 @@ const sendEmail = async (toAddress: string, subject: string, body: string) => {
     body,
     subject
   })
-
-  try {
-    console.log('Email sent to: ', toAddress)
-    return await sesClient.send(sendEmailCommand)
-  } catch (e) {
-    console.error('Failed to send email.')
-    return e
-  }
+  await sesClient.send(sendEmailCommand)
+  // try {
+  //   console.log('Email sent to: ', toAddress)
+  //   return await sesClient.send(sendEmailCommand)
+  // } catch (e) {
+  //   console.error('Failed to send email.')
+  //   return e
+  // }
 }
 
 // Test gửi email bằng command
