@@ -164,6 +164,37 @@ const commonSchema = ({
   optional: true
 })
 
+const forgotPasswordTokenSchema: ParamSchema = {
+  trim: true,
+  notEmpty: {
+    errorMessage: new ErrorWithStatus({
+      message: interpolateMessage(MESSAGE.IS_REQUIRED, { field: 'forgot password token' }),
+      status: HTTP_STATUS.UNAUTHORIZED
+    })
+  },
+  custom: {
+    options: async (value, { req }) => {
+      try {
+        const decoded_forgot_password_token = await verifyToken({
+          token: value,
+          secretOrPublicKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN as string
+        })
+        ;(req as Request).decoded_forgot_password_token = decoded_forgot_password_token
+      } catch (error) {
+        if (error instanceof JsonWebTokenError) {
+          throw new ErrorWithStatus({
+            message: capitalize((error as JsonWebTokenError).message),
+            status: HTTP_STATUS.UNAUTHORIZED
+          })
+        } else {
+          throw error
+        }
+      }
+      return true
+    }
+  }
+}
+
 export const loginValidator = validate(
   checkSchema(
     {
@@ -317,7 +348,7 @@ export const refreshTokenValidator = validate(
 export const verifyEmailTokenValidator = validate(
   checkSchema(
     {
-      email_verify_token: {
+      token: {
         notEmpty: {
           errorMessage: new ErrorWithStatus({
             message: interpolateMessage(MESSAGE.IS_REQUIRED, { field: 'email verify token' }),
@@ -386,41 +417,21 @@ export const forgotPasswordValidator = validate(
   )
 )
 
+export const forgotPasswordTokenValidator = validate(
+  checkSchema(
+    {
+      token: forgotPasswordTokenSchema
+    },
+    ['body']
+  )
+)
+
 export const resetPasswordValidator = validate(
   checkSchema(
     {
       password: passwordSchema,
       confirm_password: confirmPasswordSchema,
-      forgot_password_token: {
-        trim: true,
-        notEmpty: {
-          errorMessage: new ErrorWithStatus({
-            message: interpolateMessage(MESSAGE.IS_REQUIRED, { field: 'forgot password token' }),
-            status: HTTP_STATUS.UNAUTHORIZED
-          })
-        },
-        custom: {
-          options: async (value, { req }) => {
-            try {
-              const decoded_forgot_password_token = await verifyToken({
-                token: value,
-                secretOrPublicKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN as string
-              })
-              ;(req as Request).decoded_forgot_password_token = decoded_forgot_password_token
-            } catch (error) {
-              if (error instanceof JsonWebTokenError) {
-                throw new ErrorWithStatus({
-                  message: capitalize((error as JsonWebTokenError).message),
-                  status: HTTP_STATUS.UNAUTHORIZED
-                })
-              } else {
-                throw error
-              }
-            }
-            return true
-          }
-        }
-      }
+      forgot_password_token: forgotPasswordTokenSchema
     },
     ['body']
   )

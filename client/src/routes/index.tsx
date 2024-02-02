@@ -3,8 +3,12 @@ import { PATH } from 'src/constants/path'
 import MainLayout from 'src/layouts/MainLayout'
 import { Login } from 'src/pages'
 import Home from 'src/pages/Home'
-import NotFound from 'src/pages/NotFound'
+import Notification from 'src/pages/Notification'
+import NotFound from 'src/pages/Notification'
+import ResetPassword from 'src/pages/ResetPassword'
 import VerifyEmail from 'src/pages/VerifyEmail'
+import VerifyForgotPassword from 'src/pages/VerifyForgotPassword'
+import VerifyToken from 'src/pages/VerifyToken'
 
 function UnAuthenticatedRoute() {
   const isAuthenticated = false
@@ -13,7 +17,11 @@ function UnAuthenticatedRoute() {
 }
 
 function AuthenticatedRoute() {
-  const isAuthenticated = true
+  const access_token = localStorage.getItem('access_token')
+  const refresh_token = localStorage.getItem('refresh_token')
+
+  const isAuthenticated = access_token && refresh_token ? true : false
+
   const location = useLocation()
   return isAuthenticated ? <Outlet /> : <Navigate to={PATH.LOGIN} state={{ from: location }} replace />
 }
@@ -37,8 +45,20 @@ const useRouteElement = () => {
               element: <Login />
             },
             {
+              path: PATH.VERIFY_TOKEN,
+              element: <VerifyToken />
+            },
+            {
               path: PATH.VERIFY_EMAIL,
               element: <VerifyEmail />
+            },
+            {
+              path: PATH.VERIFY_FORGOT_PASSWORD,
+              element: <VerifyForgotPassword />
+            },
+            {
+              path: PATH.RESET_PASSWORD,
+              element: <ResetPassword />
             }
           ]
         },
@@ -48,8 +68,8 @@ const useRouteElement = () => {
           children: []
         },
         {
-          path: '*',
-          element: <NotFound />
+          path: PATH.NOTIFICATION,
+          element: <Notification />
         }
       ]
     }

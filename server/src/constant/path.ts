@@ -16,6 +16,8 @@ export const PATH = {
     VERIFY_EMAIL: '/verify-email',
     RESEND_VERIFY_EMAIL: '/resend-verify-email',
     FORGOT_PASSWORD: '/forgot-password',
+    VERIFY_TOKEN: '/verify-token',
+    VERIFY_FORGOT_PASSWORD: '/verify-forgot-password',
     RESET_PASSWORD: '/reset-password',
     CHANGE_PASSWORD: '/change-password',
     ME: '/me',
