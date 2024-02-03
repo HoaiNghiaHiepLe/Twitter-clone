@@ -14,7 +14,8 @@ import databaseService from './services/database.service'
 import tweetsRouter from './routes/tweets.routes'
 import bookmarksRouter from './routes/bookmarks.routes'
 import searchRouter from './routes/search.routes'
-import '~/utils/s3'
+// test upload file to s3
+// import '~/utils/s3'
 // fake data
 // import '~/utils/faker'
 
