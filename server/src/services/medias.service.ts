@@ -12,6 +12,8 @@ import formidable from 'formidable'
 import { encodeHLSWithMultipleVideoStreams } from '~/utils/video'
 import { findVideoEncoding, insertVideoEncodingStatus } from '~/repository/medias.repository'
 import VideoEncodingStatus from '~/models/schemas/videoStatus.chema'
+import { uploadFileToS3 } from '~/utils/s3'
+import { CompleteMultipartUploadCommandOutput } from '@aws-sdk/client-s3'
 
 config()
 
@@ -108,26 +110,44 @@ const queue = new Queue()
 class MediaService {
   //For upload image only controller
   async handleUploadImage(req: Request): Promise<Media[]> {
+    //import mime fix ES Module import trong CommonJS
+    const mime = (await import('mime')).default
     const files = await uploadImage(req)
     //? return nhiều file
     const results: Media[] = await Promise.all(
       files.map(async (file) => {
         const newName = getNameFromFullName(file.newFilename)
         //? Lưu file vào thư mục uploads kèm theo phần mở rộng .jpg
+        const newFullFileName = `${newName}.jpg`
 
-        const newPath = path.resolve(DIR.UPLOAD_IMAGE_DIR, `${newName}.jpg`)
+        const newPath = path.resolve(DIR.UPLOAD_IMAGE_DIR, newFullFileName)
 
         await sharp(file.filepath).jpeg().toFile(newPath)
 
+        const s3Result = await uploadFileToS3({
+          fileName: newFullFileName,
+          filePath: newPath,
+          ContentType: mime.getType(newFullFileName) as string
+        })
+
         sharp.cache(false)
 
-        fsPromise.unlink(file.filepath)
+        // Sử dụng khi lưu ảnh trong server, chỉ xóa file ảnh ở thư mục temp sau khi đã lưu vào thư mục uploads
+        // fsPromise.unlink(file.filepath)
+
+        // Sử dụng khi lưu ảnh ở aws s3, xóa file ảnh ở thư mục temp và thư mục uploads sau khi đã lưu vào s3
+        await Promise.all([fsPromise.unlink(file.filepath), fsPromise.unlink(newPath)])
 
         //? Trả về đường dẫn tới file k kèm theo phần mở rộng
+        // return {
+        //   url: isProduction
+        //     ? `${process.env.HOST}/static/image/${newName}`
+        //     : `http://localhost:${process.env.PORT}/static/image/${newName}`,
+        //   type: MediaType.Image
+        // }
+        //? Trả về đường dẫn trên aws s3 sau khi đã upload
         return {
-          url: isProduction
-            ? `${process.env.HOST}/static/image/${newName}`
-            : `http://localhost:${process.env.PORT}/static/image/${newName}`,
+          url: (s3Result as CompleteMultipartUploadCommandOutput).Location as string,
           type: MediaType.Image
         }
       })
