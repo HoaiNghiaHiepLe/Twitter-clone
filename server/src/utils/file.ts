@@ -62,7 +62,6 @@ export const uploadVideo = async (req: Request): Promise<formidable.File[]> => {
   const MAX_FILE = 2
   const MAX_FILE_SIZE = 300 * 1024 * 1024 // 300MB
   const nanoId = (await import('nanoid')).nanoid
-  const idName = nanoId()
 
   const form = formidable({
     uploadDir: path.resolve(DIR.UPLOAD_TEMP_DIR),
@@ -78,15 +77,19 @@ export const uploadVideo = async (req: Request): Promise<formidable.File[]> => {
       return valid
     },
     filename: (name, ext, part, form) => {
+      // Tạo tên mới cho file video bằng nanoid
       return nanoId()
     }
   })
 
+  //? Trả về một promise
   return new Promise((resolve, reject) => {
     form.parse(req, (err, fields, files) => {
+      //? Nếu có lỗi thì reject
       if (err) {
         reject(err)
       }
+      //? Nếu không có file video thì reject
       if (!files.video) {
         return reject(
           new ErrorWithStatus({
@@ -95,34 +98,38 @@ export const uploadVideo = async (req: Request): Promise<formidable.File[]> => {
           })
         )
       }
+      //? Lấy ra mảng các file video
       const videos = files.video as formidable.File[]
 
+      //? Lặp qua từng file video
       videos.forEach((video) => {
+        //! Lưu ý: video.filepath, video.newfilename, video.filepath lúc này là đường dẫn tạm thời của file video: DIR.UPLOAD_TEMP_DIR
+
         //? Lấy extension của file video
         const videoExtension = getFileExtension(video.originalFilename as string)
 
-        //? Tạo tên mới cho file video
+        //? 1. Tạo tên mới cho file video từ tên dã lưu bằng nanoid và extension
         const newFileName = `${video.newFilename}.${videoExtension}`
 
-        //? Tạo đường dẫn mới cho file video
+        //? 2. Tạo đường dẫn mới cho file video từ tên đã tạo bằng nanoid
         const folderPath = path.resolve(DIR.UPLOAD_VIDEO_DIR, video.newFilename)
 
-        //? Nếu thư mục chưa tồn tại thì tạo mới
+        //? Nếu thư mục chứa file video không tồn tại thì tạo mới
         if (!fs.existsSync(folderPath)) {
           fs.mkdirSync(folderPath)
         }
 
-        //? Tạo đường dẫn mới cho file video
+        //? 3. Tạo đường dẫn mới cho file video
         const newFilePath = path.resolve(folderPath, newFileName)
 
-        //? Move file video vào thư mục mới
+        //? 4. Move file video từ thư mục cũ khi vừa upload lên và xử lý bằng formidable vào thư mục mới đã tạo ở trên
         fs.renameSync(video.filepath, newFilePath)
 
-        //? Cập nhật lại thông tin cho file video
+        //? 5. Cập nhật lại thông tin cho file video
         video.newFilename = newFileName
         video.filepath = newFilePath
       })
-
+      //? Trả về mảng các file video
       resolve(files.video as formidable.File[])
     })
   })

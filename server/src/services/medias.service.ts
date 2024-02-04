@@ -125,7 +125,8 @@ class MediaService {
         await sharp(file.filepath).jpeg().toFile(newPath)
 
         const s3Result = await uploadFileToS3({
-          fileName: newFullFileName,
+          // Tạo folder images và lưu file ảnh vào folder images
+          fileName: `images/${newFullFileName}`,
           filePath: newPath,
           ContentType: mime.getType(newFullFileName) as string
         })
@@ -138,7 +139,7 @@ class MediaService {
         // Sử dụng khi lưu ảnh ở aws s3, xóa file ảnh ở thư mục temp và thư mục uploads sau khi đã lưu vào s3
         await Promise.all([fsPromise.unlink(file.filepath), fsPromise.unlink(newPath)])
 
-        //? Trả về đường dẫn tới file k kèm theo phần mở rộng
+        //? Trả về đường dẫn tới file ở server k kèm theo phần mở rộng
         // return {
         //   url: isProduction
         //     ? `${process.env.HOST}/static/image/${newName}`
@@ -158,16 +159,39 @@ class MediaService {
   //For upload video only controller
   async handleUploadVideo(req: Request) {
     const files = await uploadVideo(req)
+    const mime = (await import('mime')).default
 
     //? return nhiều file
-    const results: Media[] = files.map((file) => {
-      return {
-        url: isProduction
-          ? `${process.env.HOST}/static/${file.newFilename}`
-          : `http://localhost:${process.env.PORT}/static/${file.newFilename}`,
-        type: MediaType.Video
-      }
-    })
+    const results: Media[] = await Promise.all(
+      files.map(async (file) => {
+        const s3Result = await uploadFileToS3({
+          fileName: `videos/${file.newFilename}`,
+          filePath: file.filepath,
+          ContentType: mime.getType(file.newFilename) as string
+        })
+        //? Xóa file video ở thư mục uploads/videos sau khi đã upload lên s3
+        await fsPromise.unlink(file.filepath)
+
+        // Xóa thư mục chứa file video sau khi đã upload lên s3
+        const directoryPath = path.dirname(file.filepath)
+
+        await fsPromise.rm(directoryPath, { recursive: true, force: true })
+
+        //? Trả về đường dẫn tới file ở aws s3 sau khi đã upload
+        return {
+          url: (s3Result as CompleteMultipartUploadCommandOutput).Location as string,
+          type: MediaType.Video
+        }
+        //? Trả về đường dẫn tới file ở server sau khi đã upload
+        // return {
+        //   url: isProduction
+        //     ? `${process.env.HOST}/static/${file.newFilename}`
+        //     : `http://localhost:${process.env.PORT}/static/${file.newFilename}`,
+        //   type: MediaType.Video
+        // }
+      })
+    )
+
     return results
   }
 
