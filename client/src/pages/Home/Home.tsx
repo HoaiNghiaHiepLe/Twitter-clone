@@ -26,7 +26,7 @@ const Home = () => {
           <h2>HLS Streaming</h2>
           <MediaPlayer
             title='Sprite Fight'
-            src='http://localhost:4000/static/video-hls/3XVcbaBaySQE0SUJuRmgS/master.m3u8'
+            src='http://localhost:4000/static/video-hls/qsWIHlRtoQm9PsI8vdhoH/master.m3u8'
           >
             <MediaProvider />
             <DefaultVideoLayout

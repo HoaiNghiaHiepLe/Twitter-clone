@@ -10,6 +10,7 @@ import HTTP_STATUS from '~/constant/httpStatus'
 import { interpolateMessage } from '~/utils/utils'
 import { MESSAGE } from '~/constant/message'
 import VideoEncodingStatus from '~/models/schemas/videoStatus.chema'
+import { sendFileFromS3 } from '~/utils/s3'
 
 export const uploadImageController = async (req: Request, res: Response) => {
   const url = await mediaServices.handleUploadImage(req)
@@ -200,17 +201,31 @@ export const serveVideoStreamController = async (req: Request, res: Response, ne
 //? Video streaming m3u8
 export const serveM3u8Controller = async (req: Request, res: Response, next: NextFunction) => {
   const { id, masterM3u8 } = req.params
-  return res.sendFile(path.resolve(DIR.UPLOAD_VIDEO_DIR, id, masterM3u8), (err) => {
-    if (err) return res.status(404).send('Not found')
-  })
+
+  // Trả về file từ s3 bằng hàm sendFileFromS3 vơi đường dẫn là `video-hls/${id}/${masterM3u8}`
+  // video-hls là folder chứa file master m3u8 và các file segment trên s3
+  // masterM3u8 đc gửi lên từ req.params luôn có định dạng là master.m3u8
+  return sendFileFromS3(res, `video-hls/${id}/${masterM3u8}`)
+  // trả về file từ local khi không sử dụng s3
+  // return res.sendFile(path.resolve(DIR.UPLOAD_VIDEO_DIR, id, masterM3u8), (err) => {
+  //   if (err) return res.status(404).send('Not found')
+  // })
 }
 
 //? Video streaming ts segment
 export const serveSegmentController = async (req: Request, res: Response, next: NextFunction) => {
   const { id, version, segment } = req.params
-  return res.sendFile(path.resolve(DIR.UPLOAD_VIDEO_DIR, id, version, segment), (err) => {
-    if (err) return res.status(404).send('Not found')
-  })
+
+  // Trả về file từ s3 bằng hàm sendFileFromS3 vơi đường dẫn là `video-hls/${id}/${version}/${segment}`
+  // video-hls là folder chứa file master m3u8 và các file segment trên s3
+  // version là folder chứa các file segment
+  // segment là file segment
+  return sendFileFromS3(res, `video-hls/${id}/${version}/${segment}`)
+
+  // trả về file từ local khi không sử dụng s3
+  // return res.sendFile(path.resolve(DIR.UPLOAD_VIDEO_DIR, id, version, segment), (err) => {
+  //   if (err) return res.status(404).send('Not found')
+  // })
 }
 
 //? serve both image and video
