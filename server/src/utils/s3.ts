@@ -32,7 +32,7 @@ export const uploadFileToS3 = async ({
     client: s3,
     params: {
       // Tên bucket s3 trên aws
-      Bucket: process.env.AWS_BUCKET_NAME as string,
+      Bucket: process.env.S3_BUCKET_NAME as string,
       // Tên file sẽ lưu trên s3
       Key: fileName,
       // Nội dung file sẽ gửi lên s3
@@ -50,7 +50,25 @@ export const uploadFileToS3 = async ({
   return parallelUploads3.done()
 }
 
-export const sendFileFromS3 = (res: Response, filePath: string) => {}
+// Mục đích: k để cho client truy cập trực tiếp vào s3 mà phải thông qua server của mình làm trung gian (proxy) để truy cập s3 và trả về file
+// Phương thức này giúp kiểm soát quyền truy cập file trên s3, giúp ẩn thông tin file trên s3
+// Chỉ cho phép truy cập file thông qua server của mình
+// Trên s3 có thể tạo policy để giới hạn quyền truy cập file chỉ từ server của mình
+export const sendFileFromS3 = async (res: Response, filePath: string) => {
+  try {
+    //? Lấy file từ s3 bằng getobject
+    const data = await s3.getObject({
+      // Tên bucket s3 trên aws
+      Bucket: process.env.S3_BUCKET_NAME as string,
+      // Tên file sẽ lưu trên s3
+      Key: filePath
+    }) //? Trả về file dưới dạng stream
+    // vì thư viện k khai báo type của data.Body nên phải ép kiểu any
+    ;(data.Body as any).pipe(res)
+  } catch (error) {
+    res.status(404).send('Not found')
+  }
+}
 
 // parallelUploads3.on('httpUploadProgress', (progress) => {
 //   console.log(progress)

@@ -15,6 +15,7 @@ import VideoEncodingStatus from '~/models/schemas/videoStatus.chema'
 import { uploadFileToS3 } from '~/utils/s3'
 import { CompleteMultipartUploadCommandOutput } from '@aws-sdk/client-s3'
 import { normalizePath } from '~/utils/common'
+import { rimrafSync } from 'rimraf'
 
 config()
 
@@ -98,8 +99,10 @@ class Queue {
           })
         )
 
-        // Xóa thư mục chứa file video HLS sau khi đã upload lên s3
-        await fsPromise.rm(path.resolve(DIR.UPLOAD_VIDEO_DIR, fileDirName), { recursive: true, force: true })
+        // Xóa thư mục chứa file video HLS sau khi đã upload lên s3 bằng cách sử dụng fsPromise.rm
+        // await fsPromise.rm(path.resolve(DIR.UPLOAD_VIDEO_DIR, fileDirName), { recursive: true, force: true })
+        // Xóa thư mục chứa file video HLS sau khi đã upload lên s3 bằng cách sử dụng rimrafSync
+        rimrafSync(path.resolve(DIR.UPLOAD_VIDEO_DIR, fileDirName))
 
         // Cập nhật trạng thái encode của video
         await this.handleQueueStatus({
