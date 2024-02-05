@@ -2,7 +2,7 @@ import { Request } from 'express'
 import path from 'path'
 import sharp from 'sharp'
 import { DIR } from '~/constant/dir'
-import { getFileExtension, getNameFromFullName, uploadImage, uploadVideo } from '~/utils/file'
+import { getFileExtension, getFilesInDir, getNameFromFullName, uploadImage, uploadVideo } from '~/utils/file'
 import fsPromise from 'fs/promises'
 import { isProduction } from '~/constant/config'
 import { config } from 'dotenv'
@@ -14,6 +14,7 @@ import { findVideoEncoding, insertVideoEncodingStatus } from '~/repository/media
 import VideoEncodingStatus from '~/models/schemas/videoStatus.chema'
 import { uploadFileToS3 } from '~/utils/s3'
 import { CompleteMultipartUploadCommandOutput } from '@aws-sdk/client-s3'
+import { normalizePath } from '~/utils/common'
 
 config()
 
@@ -29,7 +30,7 @@ class Queue {
   }
   // Hàm thêm video vào queue
   async enqueue(queueItem: string) {
-    // Thêm video vào cuối queue list
+    // Thêm video upload vào cuối queue list
     this.queueList.push(queueItem)
     // Cập nhật trạng thái encode của video
     await this.handleQueueStatus({ queueItem })
@@ -55,18 +56,58 @@ class Queue {
       })
       // Tiến hành encode video
       try {
+        // import mime fix ES Module import trong CommonJS
+        const mime = (await import('mime')).default
+
         // Gọi hàm để encode HLS cho từng video
         await encodeHLSWithMultipleVideoStreams(videoPath)
         // Sau khi encode xong thì xóa video đầu tiên trong queue list
         this.queueList.shift()
+
         // Xóa file video gốc sau khi đã convert sang HLS
         await fsPromise.unlink(videoPath)
+
+        //? Lấy ra đường dẫn của thư mục chứa file video từ videoPath đi ra 1 cấp (../)
+        const fileDirName = path.dirname(videoPath)
+
+        //? Hoặc dùng hàm getNameFromFullName để lấy tên file từ đường dẫn từ array split của videoPath
+        // const directoryPath = getNameFromFullName(videoPath.split('\\').pop() as string)
+
+        //? Lấy ra danh sách các file trong thư mục chứa file video
+        const files = await getFilesInDir(path.resolve(DIR.UPLOAD_VIDEO_DIR, fileDirName))
+
+        //? Upload các file trong folder chứa file video HLS lên s3
+
+        await Promise.all(
+          files.map((filePath) => {
+            // Chuyển đổi đường dẫn file thành dạng chuẩn cho windows và ios
+            const normalizedFilePath = normalizePath(filePath)
+
+            // Thay thế đường dẫn thư mục upload video đã chuẩn hóa bằng chuỗi rỗng
+            const relativePath = normalizedFilePath.replace(normalizePath(path.resolve(DIR.UPLOAD_VIDEO_DIR)), '')
+
+            // Check xem đường dẫn có bắt đầu bằng dấu / không, nếu có thì bỏ đi dấu / đó
+            const s3FilePath = `video-hls/${relativePath.startsWith('/') ? relativePath.substring(1) : relativePath}`
+
+            // Upload file video lên S3
+            return uploadFileToS3({
+              fileName: s3FilePath,
+              filePath: normalizedFilePath, // Use the normalized file path
+              ContentType: mime.getType(normalizedFilePath) as string
+            })
+          })
+        )
+
+        // Xóa thư mục chứa file video HLS sau khi đã upload lên s3
+        await fsPromise.rm(path.resolve(DIR.UPLOAD_VIDEO_DIR, fileDirName), { recursive: true, force: true })
+
         // Cập nhật trạng thái encode của video
         await this.handleQueueStatus({
           queueItem: videoPath,
           status: EncodingStatus.Success,
           notification: VideoEncodingNotification.Success
         })
+
         console.log(`Encode video ${videoPath} successfully`)
       } catch (error) {
         // Nếu có lỗi xảy ra thì cập nhật trạng thái encode của video

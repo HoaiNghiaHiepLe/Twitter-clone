@@ -2,6 +2,7 @@ import { Upload } from '@aws-sdk/lib-storage'
 import { S3 } from '@aws-sdk/client-s3'
 import { config } from 'dotenv'
 import fs from 'fs'
+import { Response } from 'express'
 
 config()
 
@@ -31,7 +32,7 @@ export const uploadFileToS3 = async ({
     client: s3,
     params: {
       // Tên bucket s3 trên aws
-      Bucket: 'twitter-clone-2024',
+      Bucket: process.env.AWS_BUCKET_NAME as string,
       // Tên file sẽ lưu trên s3
       Key: fileName,
       // Nội dung file sẽ gửi lên s3
@@ -48,6 +49,8 @@ export const uploadFileToS3 = async ({
   })
   return parallelUploads3.done()
 }
+
+export const sendFileFromS3 = (res: Response, filePath: string) => {}
 
 // parallelUploads3.on('httpUploadProgress', (progress) => {
 //   console.log(progress)

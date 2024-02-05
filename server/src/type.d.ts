@@ -49,6 +49,7 @@ declare global {
       AWS_SECRET_ACCESS_KEY: string
       AWS_REGION: string
       SES_FROM_ADDRESS: string
+      S3_BUCKET_NAME: string
     }
   }
 }
