@@ -146,3 +146,24 @@ export const getFileExtension = (fullName: string) => {
   const extension = nameArray[nameArray.length - 1]
   return extension
 }
+
+export const getFilesInDir = (dir: string, files: string[] = []) => {
+  //? Lấy ra danh sách các file trong thư mục
+  const filesInDir = fs.readdirSync(dir)
+  //? Lặp qua từng file trong thư mục
+  for (const file of filesInDir) {
+    //? Tạo đường dẫn đầy đủ cho file trong thư mục chứa nó
+    const pathToFile = `${dir}/${file}`
+    //? Nếu file đó là thư mục thì lặp lại hàm getFilesInDir với tham số là đường dẫn của thư mục đó
+    if (fs.statSync(pathToFile).isDirectory()) {
+      //? Lặp lại hàm getFilesInDir với tham số là đường dẫn của thư mục đó
+      getFilesInDir(pathToFile, files)
+    } else {
+      //? Nếu file đó không phải là thư mục thì push vào mảng files
+      files.push(pathToFile)
+    }
+  }
+  //? Trả về mảng files
+  //? Mảng files này sẽ chứa đường dẫn đầy đủ của tất cả các file trong thư mục và các thư mục con của nó
+  return files
+}
