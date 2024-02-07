@@ -2,6 +2,7 @@ import { Navigate, Outlet, useLocation, useRoutes } from 'react-router-dom'
 import { PATH } from 'src/constants/path'
 import MainLayout from 'src/layouts/MainLayout'
 import { Login } from 'src/pages'
+import Chat from 'src/pages/Chat'
 import Home from 'src/pages/Home'
 import Notification from 'src/pages/Notification'
 import NotFound from 'src/pages/Notification'
@@ -65,7 +66,12 @@ const useRouteElement = () => {
         {
           path: '',
           element: <AuthenticatedRoute />,
-          children: []
+          children: [
+            {
+              path: PATH.CHAT,
+              element: <Chat />
+            }
+          ]
         },
         {
           path: PATH.NOTIFICATION,

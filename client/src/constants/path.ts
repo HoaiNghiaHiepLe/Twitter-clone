@@ -5,5 +5,6 @@ export const PATH = {
   VERIFY_EMAIL: '/verify-email',
   VERIFY_FORGOT_PASSWORD: '/verify-forgot-password',
   RESET_PASSWORD: '/reset-password',
+  CHAT: '/chat',
   NOTIFICATION: '*'
 } as const
