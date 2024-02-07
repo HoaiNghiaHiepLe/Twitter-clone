@@ -14,6 +14,8 @@ import databaseService from './services/database.service'
 import tweetsRouter from './routes/tweets.routes'
 import bookmarksRouter from './routes/bookmarks.routes'
 import searchRouter from './routes/search.routes'
+import { createServer } from 'http'
+import { Server } from 'socket.io'
 // test upload file to s3
 // import '~/utils/s3'
 // fake data
@@ -31,6 +33,8 @@ DatabaseService.connect().then(() => {
 })
 
 const app = express()
+// Tạo server để sử dụng socket.io
+const httpServer = createServer(app)
 // enable cors
 app.use(cors())
 
@@ -58,7 +62,29 @@ app.use(PATH.BASE.STATIC, express.static(path.resolve(DIR.UPLOAD_VIDEO_DIR)))
 // error handler global
 app.use(defaultErrorHandler)
 
-app.listen(port, () => {
+// Khởi tạo instance io
+const io = new Server(httpServer, {
+  /* options */
+  // Cho phép client kết nối tới server
+  cors: {
+    // origin: domain của client
+    // Ngoài domain này sẽ không cho phép kết nối khác đến server
+    origin: process.env.CLIENT_URL
+  }
+})
+
+// Lắng nghe sự kiện trên instance io
+io.on('connection', (socket) => {
+  //socket là instance của client kết nối tới server nằm trong instance io
+  // log khi có người dùng kết nối tới server
+  console.log(`user ${socket.id} connected`)
+  // log khi có người dùng ngắt kết nối tới server
+  socket.on('disconnect', () => {
+    console.log(`user ${socket.id} disconnected`)
+  })
+})
+
+httpServer.listen(port, () => {
   console.log(`App is listening at http://localhost:${port}`)
 })
 

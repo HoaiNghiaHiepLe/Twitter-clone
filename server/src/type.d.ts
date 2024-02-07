@@ -16,40 +16,36 @@ declare module 'express' {
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
-      DB_USERNAME: string
-      DB_PASSWORD: string
-      DB_NAME: string
-
-      DB_USERS_COLLECTION: string
-      DB_REFRESH_TOKEN_COLLECTION: string
-      DB_FOLLOWERS_COLLECTION: string
-      DB_VIDEO_ENCODING_STATUS_COLLECTION: string
-      DB_TWEETS_COLLECTION: string
-      DB_HASHTAGS_COLLECTION: string
-      DB_BOOKMARKS_COLLECTION: string
-      DB_LIKES_COLLECTION: string
-
-      PASSWORD_SECRET: string
-      JWT_SECRET_ACCESS_TOKEN: string
-      JWT_SECRET_REFRESH_TOKEN: string
-      JWT_SECRET_EMAIL_VERIFY_TOKEN: string
-      JWT_SECRET_FORGOT_PASSWORD_TOKEN: string
-
-      REFRESH_TOKEN_EXPIRES_IN: string
-      ACCESS_TOKEN_EXPIRES_IN: string
-      EMAIL_VERIFY_TOKEN_EXPIRES_IN: string
-      FORGOT_PASSWORD_TOKEN_EXPIRES_IN: string
-      GOOGLE_CLIENT_ID: string
-      GOOGLE_CLIENT_SECRET: string
-      GOOGLE_REDIRECT_URI: string
-      CLIENT_REDIRECT_URI: string
-      CLIENT_URL: string
-
-      AWS_ACCESS_KEY_ID: string
-      AWS_SECRET_ACCESS_KEY: string
-      AWS_REGION: string
-      SES_FROM_ADDRESS: string
-      S3_BUCKET_NAME: string
+      readonly DB_USERNAME: string
+      readonly DB_PASSWORD: string
+      readonly DB_NAME: string
+      readonly DB_USERS_COLLECTION: string
+      readonly DB_REFRESH_TOKEN_COLLECTION: string
+      readonly DB_FOLLOWERS_COLLECTION: string
+      readonly DB_VIDEO_ENCODING_STATUS_COLLECTION: string
+      readonly DB_TWEETS_COLLECTION: string
+      readonly DB_HASHTAGS_COLLECTION: string
+      readonly DB_BOOKMARKS_COLLECTION: string
+      readonly DB_LIKES_COLLECTION: string
+      readonly PASSWORD_SECRET: string
+      readonly JWT_SECRET_ACCESS_TOKEN: string
+      readonly JWT_SECRET_REFRESH_TOKEN: string
+      readonly JWT_SECRET_EMAIL_VERIFY_TOKEN: string
+      readonly JWT_SECRET_FORGOT_PASSWORD_TOKEN: string
+      readonly REFRESH_TOKEN_EXPIRES_IN: string
+      readonly ACCESS_TOKEN_EXPIRES_IN: string
+      readonly EMAIL_VERIFY_TOKEN_EXPIRES_IN: string
+      readonly FORGOT_PASSWORD_TOKEN_EXPIRES_IN: string
+      readonly GOOGLE_CLIENT_ID: string
+      readonly GOOGLE_CLIENT_SECRET: string
+      readonly GOOGLE_REDIRECT_URI: string
+      readonly CLIENT_REDIRECT_URI: string
+      readonly CLIENT_URL: string
+      readonly AWS_ACCESS_KEY_ID: string
+      readonly AWS_SECRET_ACCESS_KEY: string
+      readonly AWS_REGION: string
+      readonly SES_FROM_ADDRESS: string
+      readonly S3_BUCKET_NAME: string
     }
   }
 }

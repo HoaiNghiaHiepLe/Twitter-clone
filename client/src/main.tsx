@@ -5,9 +5,10 @@ import './styles/index.css'
 import { BrowserRouter } from 'react-router-dom'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  </React.StrictMode>
+  // Tắt React.StrictMode để biết chính xác lượng user connect vào server
+  // <React.StrictMode>
+  <BrowserRouter>
+    <App />
+  </BrowserRouter>
+  // </React.StrictMode>
 )
