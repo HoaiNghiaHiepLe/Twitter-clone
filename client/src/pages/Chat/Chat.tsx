@@ -12,6 +12,14 @@ const Chat = () => {
     // log ra khi có user connect vào server
     socket.on('connect', () => {
       console.log(`user ${socket.id} connected`)
+
+      // gửi event chat với nội dung là "Hello from client"
+      socket.emit('chat', `Hello from client ${socket.id}`)
+    })
+
+    // lắng nghe event hello từ server và log ra nội dung
+    socket.on('hello', (data) => {
+      console.log('chat from server:', data)
     })
 
     // log ra khi có user disconnect khỏi server
