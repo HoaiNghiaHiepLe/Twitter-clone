@@ -82,6 +82,14 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log(`user ${socket.id} disconnected`)
   })
+  // Lắng nghe sự kiện chat từ client
+  socket.on('chat', (message) => {
+    // Nhận message từ client và log ra console
+    console.log(message)
+  })
+
+  // Gửi message từ server tới client
+  socket.emit('hello', { message: `hello user ${socket.id} from server` })
 })
 
 httpServer.listen(port, () => {
