@@ -1,25 +1,32 @@
-import { useEffect } from 'react'
-import { io } from 'socket.io-client'
+import { useEffect, useState } from 'react'
+import socket from 'src/utils/socket'
 
 const Chat = () => {
-  // Lấy url của api server từ biến môi trường VITE_API_URL
-  const { VITE_API_URL } = import.meta.env
-
+  const [value, setValue] = useState<string>('')
+  const profile = JSON.parse(localStorage.getItem('profile') || '{}')
+  const [messages, setMessages] = useState<any[]>([])
   useEffect(() => {
-    // tạo socket với url của api server
-    const socket = io(VITE_API_URL)
+    // Gán _id của user vào socket.auth khi kết nối tới server
+    socket.auth = {
+      _id: profile._id
+    }
+
+    // Kết nối tới server
+    //! Lưu ý: Đảm bảo kết nối với socket được thiết lập
+    socket.connect()
 
     // log ra khi có user connect vào server
     socket.on('connect', () => {
       console.log(`user ${socket.id} connected`)
-
-      // gửi event chat với nội dung là "Hello from client"
-      socket.emit('chat', `Hello from client ${socket.id}`)
     })
 
-    // lắng nghe event hello từ server và log ra nội dung
-    socket.on('hello', (data) => {
-      console.log('chat from server:', data)
+    // lắng nghe event receive private message từ server
+    // Nếu đúng user được nhận tin nhắn thì mới thêm tin nhắn vào state messages
+    socket.on('receive private message', (data) => {
+      setMessages((prev) => {
+        console.log('prev', prev)
+        return [...prev, data]
+      })
     })
 
     // log ra khi có user disconnect khỏi server
@@ -35,7 +42,40 @@ const Chat = () => {
     }
   }, [])
 
-  return <div>Chat</div>
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    // emit sự kiện private message và truyền đi 1 object có key content và to
+    socket.emit('private message', {
+      // nội dung tin nhắn lấy từ state value
+      content: value,
+      // đến id của user nhận tin nhắn
+      to: '65b2386524e7120262946e84'
+    })
+    setValue('')
+  }
+  return (
+    <div>
+      <h1>Chat</h1>
+      <div>
+        {messages.map((message, index) => (
+          <div key={index}>
+            <p>{message.from}</p>
+            <p>{message.content}</p>
+          </div>
+        ))}
+      </div>
+      <form onSubmit={handleSubmit}>
+        <input
+          className='mx-2 my-4 border-2 hover:bg-slate-50'
+          type='text'
+          onChange={(e) => setValue(e.target.value)}
+          value={value}
+          placeholder='Type your message'
+        />
+        <button type='submit'>Send</button>
+      </form>
+    </div>
+  )
 }
 
 export default Chat
