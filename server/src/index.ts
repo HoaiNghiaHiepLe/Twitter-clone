@@ -73,23 +73,46 @@ const io = new Server(httpServer, {
   }
 })
 
+// khởi tạo object users bằng new Map()
+const users = new Map()
+
 // Lắng nghe sự kiện trên instance io
 io.on('connection', (socket) => {
   //socket là instance của client kết nối tới server nằm trong instance io
   // log khi có người dùng kết nối tới server
   console.log(`user ${socket.id} connected`)
+
+  // Lấy user_id là _id của từng user khi kết nối với server và truyền qua server từ client từ bằng socket.auth
+  const user_id = socket.handshake.auth._id
+
+  // set key của object users = user_id có value là object {socket_id: socket.id}
+  // Khi có người dùng kết nối tới server thì sẽ lưu thông tin với key là user_id và value là object {socket_id: socket.id} vào object users
+  users.set(user_id, { socket_id: socket.id })
+  console.log('users', users)
+
+  // Lắng nghe sự kiện private message từ client
+  //! Luồng xử lý của socket khi emit 1 sự kiện
+  // khi socket 1 là của người gửi, emit 1 sự kiện bên client
+  // Chỉ socket 1 bên server lắng nghe đuợc sự kiện này
+  // Sau đó socket 1 bên server sẽ lấy được id của người nhận và message được gửi từ client và truyền message đó tới socket của người nhận
+  socket.on('private message', (data) => {
+    // Lấy ra socket_id của người nhận từ object users:
+    // users[data.to].socket_id hoặc users.get(data.to).socket_id
+    // data.to là user_id của người nhận được gửi từ client
+    const receiver_socket_id = users.get(data.to).socket_id
+    // Gửi message từ người gửi tới người nhận
+    // với event là receive private message và data là object {content: data.content, from: user_id}
+    // data.content là message được gửi từ client
+    // user_id được lấy từ socket.auth._id và là user id của người gửi khi emit sự kiện private message từ client
+    socket.to(receiver_socket_id).emit('receive private message', { content: data.content, from: user_id })
+  })
   // log khi có người dùng ngắt kết nối tới server
   socket.on('disconnect', () => {
+    // Khi người dùng ngắt kết nối thì xóa thông tin của người dùng đó trong object users
+    users.delete(user_id)
     console.log(`user ${socket.id} disconnected`)
+    console.log(users)
   })
-  // Lắng nghe sự kiện chat từ client
-  socket.on('chat', (message) => {
-    // Nhận message từ client và log ra console
-    console.log(message)
-  })
-
-  // Gửi message từ server tới client
-  socket.emit('hello', { message: `hello user ${socket.id} from server` })
 })
 
 httpServer.listen(port, () => {

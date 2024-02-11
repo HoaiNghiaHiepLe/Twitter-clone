@@ -20,7 +20,6 @@ function App() {
         signal: controller.signal
       })
       .then((res) => {
-        console.log(res)
         localStorage.setItem('profile', JSON.stringify(res.data.result))
       })
   }
