@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { useEffect, useState } from 'react'
 import socket from 'src/utils/socket'
 
@@ -6,8 +7,16 @@ const Chat = () => {
   const [value, setValue] = useState<string>('')
   // state lưu trữ tin nhắn
   const [messages, setMessages] = useState<any[]>([])
+  // state lưu trữ người nhận tin nhắn
+  const [receiver, setReceiver] = useState<{ _id: string; email: string } | undefined>(undefined)
   // lấy thông tin user từ localStorage
   const profile = JSON.parse(localStorage.getItem('profile') || '{}')
+
+  // lấy biến môi trường VITE_API_URL từ file .env
+  const { VITE_API_URL } = import.meta.env
+
+  // Danh sách user để test private message hoặc có thể là api lấy danh sách user từ server
+  const usernames = ['user_65b8d07c6f997cd8c41ccc0f', 'user_65b2386524e7120262946e84']
 
   useEffect(() => {
     // Gán _id của user vào socket.auth khi kết nối tới server
@@ -59,7 +68,7 @@ const Chat = () => {
       // nội dung tin nhắn lấy từ state value
       content: value,
       // đến id của user nhận tin nhắn
-      to: '65b2386524e7120262946e84'
+      to: receiver ? receiver._id : undefined
     })
     setValue('')
     setMessages((prev) => {
@@ -73,9 +82,31 @@ const Chat = () => {
       ]
     })
   }
+
+  // Hàm lấy thông tin user từ server bằng username
+  const getProfile = (username: string) => {
+    axios
+      .get(`users/${username}`, {
+        baseURL: VITE_API_URL
+      })
+      .then((res) => {
+        console.log(res.data)
+        setReceiver({ _id: res.data.result._id, email: res.data.result.email })
+        alert(`You are chatting with ${receiver?.email}`)
+      })
+  }
   return (
     <div>
       <h1>Chat</h1>
+      <div>
+        {usernames.map((username) => (
+          <div className='my-1' key={username}>
+            <button className='rounded-md bg-slate-500 px-2 py-1' onClick={() => getProfile(username)}>
+              {username}
+            </button>
+          </div>
+        ))}
+      </div>
       <div>
         <div className='max-h-64 max-w-sm overflow-y-scroll'>
           {messages.map((message, index) => (
@@ -94,11 +125,11 @@ const Chat = () => {
       </div>
       <form onSubmit={handleSendMessage}>
         <input
-          className='mx-2 my-4 border-2 hover:bg-slate-50'
+          className='mx-2 my-4 w-96 border-2 hover:bg-slate-50'
           type='text'
           onChange={(e) => setValue(e.target.value)}
           value={value}
-          placeholder='Type your message'
+          placeholder={`Type your message to ${receiver ? receiver.email : undefined}`}
         />
         <button type='submit'>Send</button>
       </form>

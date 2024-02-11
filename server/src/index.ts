@@ -99,11 +99,13 @@ io.on('connection', (socket) => {
     // Lấy ra socket_id của người nhận từ object users:
     // users[data.to].socket_id hoặc users.get(data.to).socket_id
     // data.to là user_id của người nhận được gửi từ client
-    const receiver_socket_id = users.get(data.to).socket_id
+    const receiver_socket_id = users.get(data.to)?.socket_id
     // Gửi message từ người gửi tới người nhận
     // với event là receive private message và data là object {content: data.content, from: user_id}
     // data.content là message được gửi từ client
     // user_id được lấy từ socket.auth._id và là user id của người gửi khi emit sự kiện private message từ client
+    // Nếu người nhận không online thì không gửi message
+    if (!receiver_socket_id) return
     socket.to(receiver_socket_id).emit('receive private message', { content: data.content, from: user_id })
   })
   // log khi có người dùng ngắt kết nối tới server
