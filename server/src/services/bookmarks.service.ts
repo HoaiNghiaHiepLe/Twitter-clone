@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb'
-import Bookmark, { BookmarkConstructor } from '~/models/schemas/bookmark.schema'
+import Bookmark, { BookmarkConstructor } from '~/models/schemas/Bookmarks.schema'
 import {
   findAndDeleteBookmarkById,
   findAndDeleteBookmarkByTweet,

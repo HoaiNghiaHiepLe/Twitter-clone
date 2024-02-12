@@ -10,9 +10,9 @@ import {
   getTweetsByFollowedUserIds,
   insertOneTweet
 } from '~/repository/tweets.repository'
-import Tweet from '~/models/schemas/Tweet.schema'
+import Tweet from '~/models/schemas/Tweets.schema'
 import { findOneAndUpdateHashtag } from '~/repository/hashtags.repository'
-import Hashtag from '~/models/schemas/Hashtag.schema'
+import Hashtag from '~/models/schemas/Hashtags.schema'
 import { IntegerType, ObjectId, OnlyFieldsOfType } from 'mongodb'
 import { TweetType } from '~/constant/enum'
 

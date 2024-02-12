@@ -1,7 +1,7 @@
 import { Request } from 'express'
-import User from './models/schemas/User.schema'
+import User from './models/schemas/Users.schema'
 import { TokenPayload } from './models/requests/User.request'
-import Tweet from './models/schemas/Tweet.schema'
+import Tweet from './models/schemas/Tweets.schema'
 declare module 'express' {
   interface Request {
     user?: User
@@ -19,6 +19,7 @@ declare global {
       readonly DB_USERNAME: string
       readonly DB_PASSWORD: string
       readonly DB_NAME: string
+
       readonly DB_USERS_COLLECTION: string
       readonly DB_REFRESH_TOKEN_COLLECTION: string
       readonly DB_FOLLOWERS_COLLECTION: string
@@ -27,6 +28,8 @@ declare global {
       readonly DB_HASHTAGS_COLLECTION: string
       readonly DB_BOOKMARKS_COLLECTION: string
       readonly DB_LIKES_COLLECTION: string
+      readonly DB_CONVERSATIONS_COLLECTION: string
+
       readonly PASSWORD_SECRET: string
       readonly JWT_SECRET_ACCESS_TOKEN: string
       readonly JWT_SECRET_REFRESH_TOKEN: string

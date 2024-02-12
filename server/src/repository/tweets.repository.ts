@@ -1,7 +1,7 @@
 import { Document, IntegerType, ObjectId, OnlyFieldsOfType } from 'mongodb'
 import { TweetType } from '~/constant/enum'
-import Tweet from '~/models/schemas/Tweet.schema'
-import User from '~/models/schemas/User.schema'
+import Tweet from '~/models/schemas/Tweets.schema'
+import User from '~/models/schemas/Users.schema'
 import databaseService from '~/services/database.service'
 import { NewFeed, TweetDetail } from '~/types/Tweet.type'
 

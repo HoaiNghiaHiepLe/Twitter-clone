@@ -1,9 +1,9 @@
 import { Document, InsertOneResult, ObjectId, UpdateResult, WithId } from 'mongodb'
 import { UserVerifyStatus } from '~/constant/enum'
 import { RegisterReqBody, UpdateMeReqBody } from '~/models/requests/User.request'
-import Follower from '~/models/schemas/Follower.schema'
-import RefreshToken from '~/models/schemas/RefreshToken.schema'
-import User from '~/models/schemas/User.schema'
+import Follower from '~/models/schemas/Followers.schema'
+import RefreshToken from '~/models/schemas/RefreshTokens.schema'
+import User from '~/models/schemas/Users.schema'
 import databaseService from '~/services/database.service'
 import { hashPassword } from '~/utils/crypto'
 

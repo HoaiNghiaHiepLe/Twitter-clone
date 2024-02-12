@@ -1,5 +1,5 @@
-import Tweet from '~/models/schemas/Tweet.schema'
-import User from '~/models/schemas/User.schema'
+import Tweet from '~/models/schemas/Tweets.schema'
+import User from '~/models/schemas/Users.schema'
 
 //type of response when get newfeed of user
 export type NewFeed = Tweet & {

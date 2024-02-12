@@ -1,4 +1,4 @@
-import Bookmark, { BookmarkConstructor } from '~/models/schemas/bookmark.schema'
+import Bookmark, { BookmarkConstructor } from '~/models/schemas/Bookmarks.schema'
 import { findAndDeleteTweetLike, insertOneTweetLike } from '~/repository/likes.repository'
 
 class likeServices {
