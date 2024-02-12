@@ -17,6 +17,8 @@ import searchRouter from './routes/search.routes'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import { insertOneConversation } from './repository/conversations.repository'
+import conversationsRouter from './routes/conversations.routes'
+import conversationsService from './services/conversations.service'
 // test upload file to s3
 // import '~/utils/s3'
 // fake data
@@ -53,6 +55,7 @@ app.use(PATH.BASE.MEDIAS, mediasRouter)
 app.use(PATH.BASE.TWEETS, tweetsRouter)
 app.use(PATH.BASE.BOOKMARKS, bookmarksRouter)
 app.use(PATH.BASE.SEARCH, searchRouter)
+app.use(PATH.BASE.CONVERSATIONS, conversationsRouter)
 
 // serve static file by router
 app.use(PATH.BASE.STATIC, staticRouter)
@@ -113,7 +116,7 @@ io.on('connection', (socket) => {
     if (!receiver_socket_id) return
 
     // Lưu conversation vào database
-    await insertOneConversation({
+    await conversationsService.createConversation({
       sender_id: data.from,
       receiver_id: data.to,
       content: data.content
