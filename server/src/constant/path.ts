@@ -5,7 +5,8 @@ export const PATH = {
     STATIC: '/static',
     TWEETS: '/tweets',
     BOOKMARKS: '/bookmarks',
-    SEARCH: '/search'
+    SEARCH: '/search',
+    CONVERSATIONS: '/conversations'
   },
   USER: {
     LOGIN: '/login',
@@ -53,5 +54,8 @@ export const PATH = {
   LIKE: {
     LIKE_TWEET: '/like',
     UNLIKE_TWEET: '/unlike/:tweet_id'
+  },
+  CONVERSATIONS: {
+    GET_CONVERSATIONS: '/receivers/:receiver_id'
   }
 } as const

@@ -4,6 +4,7 @@ import Tweet from '~/models/schemas/Tweets.schema'
 import User from '~/models/schemas/Users.schema'
 import databaseService from '~/services/database.service'
 import { NewFeed, TweetDetail } from '~/types/Tweet.type'
+import { paginationStage } from './common.repository'
 
 export const insertOneTweet = async (tweet: Tweet) => {
   const result = await databaseService.tweets.insertOne(tweet)
@@ -386,29 +387,5 @@ export const compileTweetDetails = (): Document[] => [
         }
       }
     }
-  }
-]
-
-export const paginationStage = ({
-  page,
-  limit
-}: {
-  page: number
-  limit: number
-}): [
-  {
-    $skip: number
-  },
-  {
-    $limit: number
-  }
-] => [
-  {
-    // Trang hiện tại
-    $skip: limit * (page - 1) // Công thưc phân trang
-  },
-  {
-    // Số lượng bản ghi mỗi trang
-    $limit: limit
   }
 ]
