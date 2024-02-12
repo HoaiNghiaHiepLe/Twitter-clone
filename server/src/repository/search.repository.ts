@@ -1,6 +1,6 @@
 import { Document, ObjectId, WithId } from 'mongodb'
 import { SearchRequestQuery } from '~/models/requests/Search.request'
-import Tweet from '~/models/schemas/Tweet.schema'
+import Tweet from '~/models/schemas/Tweets.schema'
 import databaseService from '~/services/database.service'
 import { compileTweetDetails, getTweetsByFollowedUserIds, paginationStage } from './tweets.repository'
 import { MediaRequestQuery, MediaType, PeopleFollowType } from '~/constant/enum'

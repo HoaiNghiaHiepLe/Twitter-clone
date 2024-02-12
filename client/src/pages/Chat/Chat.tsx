@@ -68,7 +68,9 @@ const Chat = () => {
       // nội dung tin nhắn lấy từ state value
       content: value,
       // đến id của user nhận tin nhắn
-      to: receiver ? receiver._id : undefined
+      to: receiver ? receiver._id : undefined,
+      // id người gửi tin nhắn
+      from: profile._id
     })
     setValue('')
     setMessages((prev) => {
@@ -92,7 +94,6 @@ const Chat = () => {
       .then((res) => {
         console.log(res.data)
         setReceiver({ _id: res.data.result._id, email: res.data.result.email })
-        alert(`You are chatting with ${receiver?.email}`)
       })
   }
   return (

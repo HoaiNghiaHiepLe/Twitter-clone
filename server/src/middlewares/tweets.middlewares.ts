@@ -6,7 +6,7 @@ import { MediaType, TweetAudience, TweetType, UserVerifyStatus } from '~/constan
 import HTTP_STATUS from '~/constant/httpStatus'
 import { MESSAGE } from '~/constant/message'
 import { ErrorWithStatus } from '~/models/Errors'
-import Tweet from '~/models/schemas/Tweet.schema'
+import Tweet from '~/models/schemas/Tweets.schema'
 import { findBookmarkById } from '~/repository/bookmarks.repository'
 import { findTweetById } from '~/repository/tweets.repository'
 import { findUserById } from '~/repository/users.repository'

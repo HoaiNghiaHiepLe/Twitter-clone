@@ -1,7 +1,7 @@
 import { JwtPayload } from 'jsonwebtoken'
 import { ObjectId } from 'mongodb'
 import { TokenType, UserVerifyStatus } from '~/constant/enum'
-import User from '../schemas/User.schema'
+import User from '../schemas/Users.schema'
 
 export type UpdateMeReqBody = Pick<
   User,

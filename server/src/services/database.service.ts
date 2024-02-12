@@ -1,12 +1,13 @@
 import { Collection, Db, MongoClient, ServerApiVersion } from 'mongodb'
 import { config } from 'dotenv'
-import User from '~/models/schemas/User.schema'
-import RefreshToken from '~/models/schemas/RefreshToken.schema'
-import Follower from '~/models/schemas/Follower.schema'
+import User from '~/models/schemas/Users.schema'
+import RefreshToken from '~/models/schemas/RefreshTokens.schema'
+import Follower from '~/models/schemas/Followers.schema'
 import VideoEncodingStatus from '~/models/schemas/videoStatus.chema'
-import Tweet from '~/models/schemas/Tweet.schema'
-import Hashtag from '~/models/schemas/Hashtag.schema'
-import Bookmark from '~/models/schemas/bookmark.schema'
+import Tweet from '~/models/schemas/Tweets.schema'
+import Hashtag from '~/models/schemas/Hashtags.schema'
+import Bookmark from '~/models/schemas/Bookmarks.schema'
+import Conversation from '~/models/schemas/Conversations.schema'
 
 config()
 
@@ -115,6 +116,10 @@ class DatabaseService {
 
   get likes(): Collection<Bookmark> {
     return this.db.collection(process.env.DB_LIKES_COLLECTION as string)
+  }
+
+  get conversation(): Collection<Conversation> {
+    return this.db.collection(process.env.DB_CONVERSATIONS_COLLECTION as string)
   }
 }
 

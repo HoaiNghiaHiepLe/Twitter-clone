@@ -16,6 +16,7 @@ import bookmarksRouter from './routes/bookmarks.routes'
 import searchRouter from './routes/search.routes'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
+import { insertOneConversation } from './repository/conversations.repository'
 // test upload file to s3
 // import '~/utils/s3'
 // fake data
@@ -95,7 +96,7 @@ io.on('connection', (socket) => {
   // khi socket 1 là của người gửi, emit 1 sự kiện bên client
   // Chỉ socket 1 bên server lắng nghe đuợc sự kiện này
   // Sau đó socket 1 bên server sẽ lấy được id của người nhận và message được gửi từ client và truyền message đó tới socket của người nhận
-  socket.on('private message', (data) => {
+  socket.on('private message', async (data) => {
     // Lấy ra socket_id của người nhận từ object users:
     // users[data.to].socket_id hoặc users.get(data.to).socket_id
     // data.to là user_id của người nhận được gửi từ client
@@ -104,10 +105,24 @@ io.on('connection', (socket) => {
     // với event là receive private message và data là object {content: data.content, from: user_id}
     // data.content là message được gửi từ client
     // user_id được lấy từ socket.auth._id và là user id của người gửi khi emit sự kiện private message từ client
+
+    // Nếu data từ client không có from, to hoặc content thì không gửi message
+    if (!data.from || !data.to || !data.content) return
+
     // Nếu người nhận không online thì không gửi message
     if (!receiver_socket_id) return
+
+    // Lưu conversation vào database
+    await insertOneConversation({
+      sender_id: data.from,
+      receiver_id: data.to,
+      content: data.content
+    })
+
+    // emit sự kiện receive private message tới người nhận
     socket.to(receiver_socket_id).emit('receive private message', { content: data.content, from: user_id })
   })
+
   // log khi có người dùng ngắt kết nối tới server
   socket.on('disconnect', () => {
     // Khi người dùng ngắt kết nối thì xóa thông tin của người dùng đó trong object users

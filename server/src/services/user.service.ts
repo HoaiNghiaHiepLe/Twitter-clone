@@ -20,11 +20,11 @@ import {
 } from '~/repository/users.repository'
 import { config } from 'dotenv'
 import { DeleteResult, Document, ObjectId, UpdateResult, WithId } from 'mongodb'
-import User from '~/models/schemas/User.schema'
+import User from '~/models/schemas/Users.schema'
 import axios from 'axios'
 import { hashPassword } from '~/utils/crypto'
 import { googleOAuthPayload, googleOAuthToken } from '~/types/OpenAuth.type'
-import Follower from '~/models/schemas/Follower.schema'
+import Follower from '~/models/schemas/Followers.schema'
 import { sendForgotPasswordEmail, sendVerifyEmail } from '~/utils/email'
 
 config()

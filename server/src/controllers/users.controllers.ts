@@ -18,7 +18,7 @@ import {
 } from '~/models/requests/User.request'
 import { MESSAGE } from '~/constant/message'
 import { interpolateMessage } from '~/utils/utils'
-import User from '~/models/schemas/User.schema'
+import User from '~/models/schemas/Users.schema'
 import { ObjectId } from 'mongodb'
 import HTTP_STATUS from '~/constant/httpStatus'
 import { findUserById } from '~/repository/users.repository'

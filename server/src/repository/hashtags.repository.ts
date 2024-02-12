@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb'
-import Hashtag from '~/models/schemas/Hashtag.schema'
+import Hashtag from '~/models/schemas/Hashtags.schema'
 import databaseService from '~/services/database.service'
 
 export const findOneAndUpdateHashtag = async (hashtag: Hashtag) => {

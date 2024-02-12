@@ -6,7 +6,7 @@ import tweetServices from '~/services/tweets.service'
 import { TokenPayload } from '~/models/requests/User.request'
 import { interpolateMessage } from '~/utils/utils'
 import { MESSAGE } from '~/constant/message'
-import Tweet from '~/models/schemas/Tweet.schema'
+import Tweet from '~/models/schemas/Tweets.schema'
 import { TweetType } from '~/constant/enum'
 import userService from '~/services/user.service'
 
