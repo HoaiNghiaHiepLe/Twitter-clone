@@ -10,13 +10,11 @@ class conversationService {
     // Kiểm tra xem có đủ thông tin để tạo cuộc trò chuyện không
     if (!sender_id || !receiver_id || !content) return false
     // Gọi repository để tạo cuộc trò chuyện
-    await insertOneConversation({
+    return await insertOneConversation({
       sender_id,
       receiver_id,
       content
     })
-
-    return
   }
 
   async getConversations({
