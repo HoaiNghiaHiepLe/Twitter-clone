@@ -19,6 +19,8 @@ import { Server } from 'socket.io'
 import { insertOneConversation } from './repository/conversations.repository'
 import conversationsRouter from './routes/conversations.routes'
 import conversationsService from './services/conversations.service'
+import Conversation from './models/schemas/Conversations.schema'
+import { ConversationPayload } from './types/common.type'
 // test upload file to s3
 // import '~/utils/s3'
 // fake data
@@ -94,36 +96,50 @@ io.on('connection', (socket) => {
   users.set(user_id, { socket_id: socket.id })
   console.log('users', users)
 
-  // Lắng nghe sự kiện private message từ client
+  // Lắng nghe sự kiện send_message từ client
   //! Luồng xử lý của socket khi emit 1 sự kiện
   // khi socket 1 là của người gửi, emit 1 sự kiện bên client
   // Chỉ socket 1 bên server lắng nghe đuợc sự kiện này
   // Sau đó socket 1 bên server sẽ lấy được id của người nhận và message được gửi từ client và truyền message đó tới socket của người nhận
-  socket.on('private message', async (data) => {
+  socket.on('send_message', async (data) => {
+    // Lấy ra sender_id, receiver_id, content từ data gửi từ client
+    const { sender_id, receiver_id, content } = data.payload as ConversationPayload
+
+    // Nếu data từ client không có sender_id, receiver_id hoặc content thì không gửi message
+    if (!receiver_id || !sender_id || !content) return
+
     // Lấy ra socket_id của người nhận từ object users:
-    // users[data.to].socket_id hoặc users.get(data.to).socket_id
-    // data.to là user_id của người nhận được gửi từ client
-    const receiver_socket_id = users.get(data.to)?.socket_id
-    // Gửi message từ người gửi tới người nhận
-    // với event là receive private message và data là object {content: data.content, from: user_id}
-    // data.content là message được gửi từ client
-    // user_id được lấy từ socket.auth._id và là user id của người gửi khi emit sự kiện private message từ client
+    // users[data.receiver_id].socket_id hoặc users.get(data.receiver_id).socket_id
+    // Lấy data.receiver_id từ map users là user_id của người nhận thư đc gửi từ client khi emit sự kiện send_message
+    const receiver_socket_id = users.get(receiver_id)?.socket_id
 
-    // Nếu data từ client không có from, to hoặc content thì không gửi message
-    if (!data.from || !data.to || !data.content) return
+    // Vừa tạo conversation từ instance conversation trả ra cho client đồng thời lưu conversation vào database cũng bằng data đó nhưng không cần phải query lại từ database để trả về cho client
+    const [conversation, result] = await Promise.all([
+      // Tạo instance conversation để trả về cho client với data từ event send_message của client gửi lên bao gồm sender_id, receiver_id, content
+      new Conversation({
+        sender_id: sender_id,
+        receiver_id: receiver_id,
+        content: content
+      }),
 
-    // Nếu người nhận không online thì không gửi message
-    if (!receiver_socket_id) return
+      // Lưu conversation vào database
+      conversationsService.createConversation({
+        sender_id: sender_id,
+        receiver_id: receiver_id,
+        content: content
+      })
+    ])
 
-    // Lưu conversation vào database
-    await conversationsService.createConversation({
-      sender_id: data.from,
-      receiver_id: data.to,
-      content: data.content
-    })
+    // nếu k đủ dữ liệu để tạo conversation trong db thì return
+    if (!result) return
+    // Gán _id của conversation từ database vào instance conversation để trả về cho client
+    conversation._id = result.insertedId
 
-    // emit sự kiện receive private message tới người nhận
-    socket.to(receiver_socket_id).emit('receive private message', { content: data.content, from: user_id })
+    // Đảm bảo răng nếu result và conversation tồn tại thì mới emit sự kiện
+    if (result && conversation) {
+      // emit event receive_message để chuyển data tới người nhận bằng socket_id (khác user_id) với data là object {payload: conversation} chứa thông tin conversation vừa tạo ở trên
+      socket.to(receiver_socket_id).emit('receive_message', { payload: conversation })
+    }
   })
 
   // log khi có người dùng ngắt kết nối tới server
