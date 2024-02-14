@@ -1,17 +1,14 @@
 import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { MESSAGE } from '~/constant/message'
-import { ConversationRequestQueryParam } from '~/models/requests/Common.request'
+import { GetConversationParam } from '~/models/requests/Conversation.request'
 import { TokenPayload } from '~/models/requests/User.request'
 import conversationService from '~/services/conversations.service'
 import { interpolateMessage } from '~/utils/utils'
 
-export const getConversationsController = async (
-  req: Request<ParamsDictionary, any, any, ConversationRequestQueryParam>,
-  res: Response
-) => {
+export const getConversationsController = async (req: Request<GetConversationParam>, res: Response) => {
   // Lấy thông tin người nhận tin nhắn từ params
-  const { receiver_id } = req.params
+  const receiver_id = String(req.params.receiver_id)
   // Lấy thông tin limit và page từ query
   const limit = Number(req.query.limit)
   const page = Number(req.query.page)

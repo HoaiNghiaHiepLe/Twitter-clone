@@ -120,7 +120,7 @@ const dateOfBirthSchema: ParamSchema = {
   }
 }
 
-const followedUserIdSchema: ParamSchema = {
+const userIdSchema: ParamSchema = {
   custom: {
     options: async (value: string, { req }) => {
       if (!ObjectId.isValid(value)) {
@@ -471,16 +471,25 @@ export const updateMeValidator = validate(
 export const followValidator = validate(
   checkSchema(
     {
-      followed_user_id: followedUserIdSchema
+      followed_user_id: userIdSchema
     },
     ['body']
+  )
+)
+
+export const getConversationsValidator = validate(
+  checkSchema(
+    {
+      receiver_id: userIdSchema
+    },
+    ['params']
   )
 )
 
 export const unFollowValidator = validate(
   checkSchema(
     {
-      followed_user_id: followedUserIdSchema
+      followed_user_id: userIdSchema
     },
     ['params']
   )
