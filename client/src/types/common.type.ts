@@ -3,3 +3,8 @@ export type ConversationPayload = {
   receiver_id: string
   content: string
 }
+
+export type ConversationPagination = {
+  page: number
+  total_pages: number
+}

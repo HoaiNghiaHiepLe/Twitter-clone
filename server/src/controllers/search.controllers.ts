@@ -40,7 +40,7 @@ export const searchController = async (req: Request<ParamsDictionary, any, any, 
       tweets: updatedTweetsViews,
       page,
       limit,
-      total_page: Math.ceil(Number(totalTweets[0]?.total_tweets || 0) / Number(limit))
+      total_pages: Math.ceil(Number(totalTweets[0]?.total_tweets || 0) / Number(limit))
     }
   })
 }
