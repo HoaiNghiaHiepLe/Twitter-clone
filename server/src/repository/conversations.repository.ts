@@ -57,7 +57,7 @@ export const getConversationsBySenderIdAndReceiverId = async ({
       // Giới hạn số lượng cuộc trò chuyện trả về
       .limit(limit)
       // Sắp xếp cuộc trò chuyện theo thời gian tạo mới nhất
-      // .sort({ created_at: -1 })
+      .sort({ created_at: -1 })
       // Chuyển kết quả từ cursor sang mảng
       .toArray(),
     // Đếm tổng số cuộc trò chuyện dựa trên match

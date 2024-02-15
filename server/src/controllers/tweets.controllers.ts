@@ -68,7 +68,7 @@ export const getTweetChildrenController = async (
       tweet_type,
       page,
       limit,
-      total_page: Math.ceil(tweetChildren.totalTweets / limit)
+      total_pages: Math.ceil(tweetChildren.totalTweets / limit)
     }
   })
 }
@@ -96,7 +96,7 @@ export const getNewsFeedController = async (req: Request<ParamsDictionary, any, 
       newsFeed,
       page,
       limit,
-      total_page: Math.ceil(newsFeed.totalTweets / limit)
+      total_pages: Math.ceil(newsFeed.totalTweets / limit)
     }
   })
 }
