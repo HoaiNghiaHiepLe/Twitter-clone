@@ -86,7 +86,7 @@ const io = new Server(httpServer, {
   }
 })
 
-// Middleware cho instance io, chỉ chạy 1 lần khi có người dùng kết nối tới server
+// Middleware cho io server instance, chỉ chạy 1 lần khi có người dùng kết nối tới server
 io.use(async (socket, next) => {
   // Lấy ra access_token từ Authorization gửi từ client
   const { Authorization } = socket.handshake.auth
@@ -109,6 +109,8 @@ io.use(async (socket, next) => {
 
     // Gán decoded_authorization vào socket.handshake.auth để sử dụng ở những bước tiếp theo
     socket.handshake.auth.decoded_authorization = decoded_authorization
+    // Gán access_token vào socket.handshake.auth để sử dụng ở những bước tiếp theo
+    socket.handshake.auth.access_token = access_token
     // Nếu đã verify thì gọi next() để cho phép kết nối tới server
     next()
   } catch (error) {
@@ -138,6 +140,29 @@ io.on('connection', (socket) => {
   // Khi có người dùng kết nối tới server thì sẽ lưu thông tin với key là user_id và value là object {socket_id: socket.id} vào object users
   users.set(user_id, { socket_id: socket.id })
   console.log('users', users)
+
+  // Middleware cho socket khi emit 1 sự kiện chạy trước khi sự kiện đó được emit
+  socket.use(async (packet, next) => {
+    // Lấy ra access_token từ socket.handshake.auth
+    const { access_token } = socket.handshake.auth
+    try {
+      // verify access_token
+      await verifyAccessToken(access_token)
+      // Nếu verify thành công thì gọi next() để emit sự kiện
+      next()
+    } catch (error) {
+      // Nếu có lỗi thì next với error message là 'Unauthorized'
+      next(new Error('Unauthorized'))
+    }
+  })
+
+  // Lắng nghe sự kiện error
+  socket.on('error', (error) => {
+    // Nếu có lỗi là 'Unauthorized' thì ngắt kết nối socket
+    if (error.message === 'Unauthorized') {
+      socket.disconnect()
+    }
+  })
 
   // Lắng nghe sự kiện send_message từ client
   //! Luồng xử lý của socket khi emit 1 sự kiện

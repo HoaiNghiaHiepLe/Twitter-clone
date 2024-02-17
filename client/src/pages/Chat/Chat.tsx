@@ -53,9 +53,9 @@ const Chat = () => {
       console.log('connect_error', (error as any).data)
     })
 
-    // log ra khi có user disconnect khỏi server
-    socket.on('disconnect', () => {
-      console.log(`user ${socket.id} disconnected`)
+    // Lắng nghe event disconnect từ server khi có lỗi kết nối
+    socket.on('disconnect', (reason) => {
+      console.log(`user ${socket.id} disconnected because ${reason}`)
     })
 
     return () => {
