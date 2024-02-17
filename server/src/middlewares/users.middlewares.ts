@@ -21,6 +21,7 @@ import userService from '~/services/user.service'
 import { ObjectId } from 'mongodb'
 import { REGEX_USERNAME } from '~/constant/regex'
 import { hashPassword } from '~/utils/crypto'
+import { verifyAccessToken } from '~/utils/common'
 
 const passwordSchema: ParamSchema = {
   notEmpty: { errorMessage: interpolateMessage(MESSAGE.IS_REQUIRED, { field: 'password' }) },
@@ -268,31 +269,10 @@ export const accessTokenValidator = validate(
         },
         custom: {
           options: async (value: string, { req }) => {
+            // Lấy ra access_token từ Authorization bằng cách split chuỗi và lấy phần tử thứ 2
             const access_token = value.split(' ')[1]
-            if (!access_token) {
-              throw new ErrorWithStatus({
-                message: interpolateMessage(MESSAGE.INVALID, { field: 'access token' }),
-                status: HTTP_STATUS.UNAUTHORIZED
-              })
-            }
-
-            try {
-              const decoded_authorization = await verifyToken({
-                token: access_token,
-                secretOrPublicKey: process.env.JWT_SECRET_ACCESS_TOKEN as string
-              })
-              ;(req as Request).decoded_authorization = decoded_authorization
-            } catch (error) {
-              if (error instanceof JsonWebTokenError) {
-                throw new ErrorWithStatus({
-                  message: capitalize((error as JsonWebTokenError).message),
-                  status: HTTP_STATUS.UNAUTHORIZED
-                })
-              } else {
-                throw error
-              }
-            }
-            return true
+            // verify access_token
+            return await verifyAccessToken(access_token, req as Request)
           }
         }
       }

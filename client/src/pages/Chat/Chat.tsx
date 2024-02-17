@@ -31,15 +31,6 @@ const Chat = () => {
 
   // useEffect chỉ chạy 1 lần khi kết nối với socket ở server
   useEffect(() => {
-    // Gán _id của user vào socket.auth khi kết nối tới server
-    socket.auth = {
-      _id: profile._id
-    }
-
-    // Kết nối tới server
-    //! Lưu ý: Đảm bảo kết nối với socket được thiết lập
-    socket.connect()
-
     // log ra khi có user connect vào server
     socket.on('connect', () => {
       console.log(`user ${socket.id} connected`)
@@ -54,6 +45,12 @@ const Chat = () => {
       setConversations((conversations) => {
         return [payload, ...conversations]
       })
+    })
+
+    // Lắng nghe event connect_error từ server khi có lỗi kết nối
+    // connect_error chỉ có thể lắng nghe từ phía client
+    socket.on('connect_error', (error) => {
+      console.log('connect_error', (error as any).data)
     })
 
     // log ra khi có user disconnect khỏi server
@@ -106,7 +103,6 @@ const Chat = () => {
 
   // Hàm fetch thêm cuộc trò chuyện khi scroll lên top
   const fetchMoreConversations = () => {
-    console.log('fetchMoreConversations', receiver, pagination.page, pagination.total_pages)
     if (receiver && pagination.page < pagination.total_pages) {
       axios
         .get(`conversations/receivers/${receiver?._id}`, {
@@ -157,7 +153,7 @@ const Chat = () => {
           ...conversation,
           // vì không có _id từ server nên tạo 1 _id ngẫu nhiên và thêm vào state conversations để render khồng bị lỗi
           // Sau khi get lại đc conversations từ server thì sẽ lấy data từ server với đầy đủ _id và không cần phải tạo _id từ timestamp
-          _id: new Date().getTime()
+          _id: new Date().getTime().toString()
         },
         ...prev
       ]
