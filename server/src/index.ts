@@ -21,6 +21,13 @@ import conversationsRouter from './routes/conversations.routes'
 import conversationsService from './services/conversations.service'
 import Conversation from './models/schemas/Conversations.schema'
 import { ConversationPayload } from './types/common.type'
+import { verifyAccessToken } from './utils/common'
+import { TokenPayload } from './models/requests/User.request'
+import { UserVerifyStatus } from './constant/enum'
+import { ErrorWithStatus } from './models/Errors'
+import { interpolateMessage } from './utils/utils'
+import { MESSAGE } from './constant/message'
+import HTTP_STATUS from './constant/httpStatus'
 // test upload file to s3
 // import '~/utils/s3'
 // fake data
@@ -79,6 +86,42 @@ const io = new Server(httpServer, {
   }
 })
 
+// Middleware cho instance io, chỉ chạy 1 lần khi có người dùng kết nối tới server
+io.use(async (socket, next) => {
+  // Lấy ra access_token từ Authorization gửi từ client
+  const { Authorization } = socket.handshake.auth
+  // Lấy ra access_token từ Authorization bằng cách split chuỗi và lấy phần tử thứ 2
+  const access_token = Authorization?.split(' ')[1]
+  try {
+    // verify access_token từ client gửi lên và lấy ra decoded_authorization
+    const decoded_authorization = await verifyAccessToken(access_token)
+    // Lấy ra verify từ decoded_authorization
+    const { verify } = decoded_authorization as TokenPayload
+
+    // Nếu verify không phải là Verified thì throw error
+    if (verify !== UserVerifyStatus.Verified) {
+      // Nếu user chưa verify thì không cho phép kết nối tới server và throw error và error nay sẽ được catch ở dưới
+      throw new ErrorWithStatus({
+        message: interpolateMessage(MESSAGE.UNVERIFIED, { field: 'Your account' }),
+        status: HTTP_STATUS.FORBIDDEN
+      })
+    }
+
+    // Gán decoded_authorization vào socket.handshake.auth để sử dụng ở những bước tiếp theo
+    socket.handshake.auth.decoded_authorization = decoded_authorization
+    // Nếu đã verify thì gọi next() để cho phép kết nối tới server
+    next()
+  } catch (error) {
+    // Nếu có lỗi thì không cho phép kết nối tới server và trả về lỗi
+    // fn next của socket.io có kiểu error extends từ Error gốc, thêm property data nên phải truyền vào next đúng kiểu error
+    next({
+      message: 'Unauthorized',
+      name: 'UnauthorizedError',
+      data: error
+    })
+  }
+})
+
 // khởi tạo object users bằng new Map()
 const users = new Map()
 
@@ -88,8 +131,8 @@ io.on('connection', (socket) => {
   // log khi có người dùng kết nối tới server
   console.log(`user ${socket.id} connected`)
 
-  // Lấy user_id là _id của từng user khi kết nối với server và truyền qua server từ client từ bằng socket.auth
-  const user_id = socket.handshake.auth._id
+  // Lấy user_id từ decoded_authorization gửi từ client đã được gán ở middleware ở trên
+  const { user_id } = socket.handshake.auth.decoded_authorization as TokenPayload
 
   // set key của object users = user_id có value là object {socket_id: socket.id}
   // Khi có người dùng kết nối tới server thì sẽ lưu thông tin với key là user_id và value là object {socket_id: socket.id} vào object users
@@ -135,8 +178,8 @@ io.on('connection', (socket) => {
     // Gán _id của conversation từ database vào instance conversation để trả về cho client
     conversation._id = result.insertedId
 
-    // Đảm bảo răng nếu result và conversation tồn tại thì mới emit sự kiện
-    if (result && conversation) {
+    // Đảm bảo răng nếu result, conversation tồn tại và receiver có kết nối  với socket server thì mới emit sự kiện
+    if (result && conversation && receiver_socket_id) {
       // emit event receive_message để chuyển data tới người nhận bằng socket_id (khác user_id) với data là object {payload: conversation} chứa thông tin conversation vừa tạo ở trên
       socket.to(receiver_socket_id).emit('receive_message', { payload: conversation })
     }
