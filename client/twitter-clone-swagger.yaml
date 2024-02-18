@@ -1,0 +1,167 @@
+openapi: 3.0.3
+info:
+  title: Twitter clone Typescript 2024
+  description: |-
+    This is a sample server for a Twitter clone.
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: hieple.dev.1209@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.11
+servers:
+  - url: http://localhost:4000
+    description: The local server
+  - url: http://twitter-clone.hieple.com./api/v34
+    description: The Twitter clone server
+tags:
+  - name: users
+    description: API for users in the system
+paths:
+  /users/login:
+    post:
+      tags:
+        - users
+      summary: Logs user into the system
+      operationId: login
+      requestBody:
+        description: The user credentials
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginBody'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Logged in successfully'
+                  result:
+                    $ref: '#/components/schemas/SuccessAuthentication'
+        '400':
+          description: Invalid username/password
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'Invalid username/password'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'Unauthorized'
+        'default':
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'unexpected error'
+  /users/me:
+    get:
+      tags:
+        - users
+      summary: Get me
+      operationId: getMe
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Logged in successfully'
+                  result:
+                    $ref: '#/components/schemas/SuccessGetMe'
+components:
+  schemas:
+    LoginBody:
+      type: object
+      properties:
+        email:
+          type: string
+          example: 'hieple.dev.1209@gmail.com'
+        password:
+          type: string
+          example: 'Hiep123!'
+    SuccessAuthentication:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
+        refresh_token:
+          type: string
+          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
+    SuccessGetMe:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: ObjectId
+          example: '65b2386524e7120262946e84'
+        name:
+          type: string
+          example: 'Hieple'
+        email:
+          type: string
+          example: 'hieple.dev.1209@gmail.com'
+        dateOfBirth:
+          type: string
+          format: ISO8601
+          example: '2023-12-12T00:00:00.000Z'
+        created_at:
+          type: string
+          format: ISO8601
+          example: '2024-12-09T00:00:00.000Z'
+        updated_at:
+          type: string
+          format: ISO8601
+          example: '2024-12-09T00:00:00.000Z'
+        verify:
+          type: integer
+          example: 1
+          enum: [Unverified, Verified, Banned]
+        twitterCircle:
+          type: array
+          items:
+            type: string
+            format: ObjectId
+          example: ['65b2386524e7120262946e84', '65b2386524e7120262946e85']
+        bio:
+          type: string
+          example: 'I am a developer'
+        location:
+          type: string
+          example: 'Danang, Vietnam'
+        website:
+          type: string
+          example: 'https://hieple.com'
+        username:
+          type: string
+          example: 'hieple1209'
+        avatar:
+          type: string
+          example: 'https://hieple.com/avatar.jpg'
+        cover_photo:
+          type: string
+          example: 'https://hieple.com/cover.jpg'
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
