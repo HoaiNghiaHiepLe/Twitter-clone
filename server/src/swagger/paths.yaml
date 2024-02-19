@@ -17,7 +17,7 @@ servers:
     description: The Twitter clone server
 tags:
   - name: users
-    description: API for users in the system
+    description: API for users
 paths:
   /users/login:
     post:
@@ -87,81 +87,3 @@ paths:
                     example: 'Logged in successfully'
                   result:
                     $ref: '#/components/schemas/SuccessGetMe'
-components:
-  schemas:
-    LoginBody:
-      type: object
-      properties:
-        email:
-          type: string
-          example: 'hieple.dev.1209@gmail.com'
-        password:
-          type: string
-          example: 'Hiep123!'
-    SuccessAuthentication:
-      type: object
-      properties:
-        access_token:
-          type: string
-          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
-        refresh_token:
-          type: string
-          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
-    SuccessGetMe:
-      type: object
-      properties:
-        _id:
-          type: string
-          format: ObjectId
-          example: '65b2386524e7120262946e84'
-        name:
-          type: string
-          example: 'Hieple'
-        email:
-          type: string
-          example: 'hieple.dev.1209@gmail.com'
-        dateOfBirth:
-          type: string
-          format: ISO8601
-          example: '2023-12-12T00:00:00.000Z'
-        created_at:
-          type: string
-          format: ISO8601
-          example: '2024-12-09T00:00:00.000Z'
-        updated_at:
-          type: string
-          format: ISO8601
-          example: '2024-12-09T00:00:00.000Z'
-        verify:
-          type: integer
-          example: 1
-          enum: [Unverified, Verified, Banned]
-        twitterCircle:
-          type: array
-          items:
-            type: string
-            format: ObjectId
-          example: ['65b2386524e7120262946e84', '65b2386524e7120262946e85']
-        bio:
-          type: string
-          example: 'I am a developer'
-        location:
-          type: string
-          example: 'Danang, Vietnam'
-        website:
-          type: string
-          example: 'https://hieple.com'
-        username:
-          type: string
-          example: 'hieple1209'
-        avatar:
-          type: string
-          example: 'https://hieple.com/avatar.jpg'
-        cover_photo:
-          type: string
-          example: 'https://hieple.com/cover.jpg'
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT

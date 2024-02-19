@@ -6,7 +6,8 @@ export const PATH = {
     TWEETS: '/tweets',
     BOOKMARKS: '/bookmarks',
     SEARCH: '/search',
-    CONVERSATIONS: '/conversations'
+    CONVERSATIONS: '/conversations',
+    SWAGGER: '/swagger'
   },
   USER: {
     LOGIN: '/login',
