@@ -17,11 +17,56 @@ import searchRouter from './routes/search.routes'
 import { createServer } from 'http'
 import conversationsRouter from './routes/conversations.routes'
 import initSocket from './utils/socket'
+// import fs from 'fs'
+// import YAML from 'yaml'
+import swaggerUi from 'swagger-ui-express'
+import swaggerJSDoc from 'swagger-jsdoc'
 
 // test upload file to s3
 // import '~/utils/s3'
 // fake data
 // import '~/utils/faker'
+
+//Đọc file swagger.yaml và chuyển thành dạng json
+// const swaggerFile = fs.readFileSync(path.resolve(__dirname, 'swagger/twitter-clone-swagger.yaml'), 'utf8')
+
+// Dùng thư viện yaml để chuyển file
+// const swaggerDocument = YAML.parse(swaggerFile)
+
+//? Tạo swagger options bằng swaggerJSDoc
+//? Cách này chỉ cần cài đặt swagger-jsdoc và swagger-ui-express
+const swaggerOptions: swaggerJSDoc.Options = {
+  definition: {
+    // Thông tin cơ bản của swagger
+    openapi: '3.0.0',
+    info: {
+      title: 'Twitter Clone API',
+      version: '1.0.0'
+    },
+    components: {
+      // Định nghĩa security scheme ở đây hoặc ở từng route bằng cú pháp comment
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT'
+        }
+      }
+    }
+  },
+
+  apis: [
+    // Đọc các file route để tạo swagger
+    // './src/routes/*.routes.ts',
+    // Đọc các file schema để tạo swagger
+    // './src/models/schemas/*.schema.ts'
+    //? Lấy trực tiếp từ tất cả file yaml trong thư mục swagger
+    './src/swagger/*.yaml'
+  ]
+}
+
+// Tạo swagger spec từ swagger options
+const swaggerSpec = swaggerJSDoc(swaggerOptions)
 
 config()
 
@@ -49,6 +94,14 @@ initFolder()
 
 // parse application/x-www-form-urlencoded
 app.use(express.json())
+
+// Dùng 1 trong 2 cách để khai báo swagger api docs route và ui
+// Dùng yaml và swagger-ui-express tiện lợi hơn và dễ dàng hơn
+// swagger api docs route and ui bằng swagger-ui-express và khai báo tất cả route test với swagger ở file yaml
+// app.use(PATH.BASE.SWAGGER, swaggerUi.serve, swaggerUi.setup(swaggerDocument))
+
+// swagger api docs route and ui bằng swaggerJSDoc và đọc từ swaggerOptions và khai báo swagger ở từng route
+app.use(PATH.BASE.SWAGGER, swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 // routers
 app.use(PATH.BASE.USERS, userRouter)

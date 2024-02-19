@@ -39,11 +39,56 @@ import { PATH } from '~/constant/path'
 
 const usersRouter = Router()
 
+// Tạo swagger options cho từng route trong file routes
 /**
- * Description: Login a user
- * Path: /login
- * Method: POST
- * Body: { email: string, password: string }
+ * @swagger
+ * /users/login:
+ *   post:
+ *     tags:
+ *       - users
+ *     summary: Logs user into the system
+ *     operationId: login
+ *     requestBody:
+ *       description: The user credentials
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/LoginBody'
+ *     responses:
+ *       '200':
+ *         description: successful operation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 'Logged in successfully'
+ *                 result:
+ *                   $ref: '#/components/schemas/SuccessAuthentication'
+ *       '400':
+ *         description: Invalid username/password
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ *               example: 'Invalid username/password'
+ *       '401':
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ *               example: 'Unauthorized'
+ *       'default':
+ *         description: unexpected error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ *               example: 'unexpected error'
  */
 usersRouter.post(PATH.USER.LOGIN, loginValidator, wrapRequestHandler(loginController))
 
