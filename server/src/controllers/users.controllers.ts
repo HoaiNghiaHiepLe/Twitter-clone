@@ -24,9 +24,7 @@ import HTTP_STATUS from '~/constant/httpStatus'
 import { findUserById } from '~/repository/users.repository'
 import { UserVerifyStatus } from '~/constant/enum'
 import { ErrorWithStatus } from '~/models/Errors'
-import { config } from 'dotenv'
-
-config()
+import { envConfig } from '~/constant/config'
 
 export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   const { user } = req as LoginReqBody
@@ -47,7 +45,7 @@ export const oAuthController = async (req: Request, res: Response) => {
 
   const result = await userService.oAuth(code as string)
 
-  const urlRedirect = `${process.env.CLIENT_REDIRECT_URI}/?access_token=${result?.access_token}&refresh_token=${result?.refresh_token}&new_user=${result?.new_user}&verify=${result?.verify}`
+  const urlRedirect = `${envConfig.clientRedirectUri}/?access_token=${result?.access_token}&refresh_token=${result?.refresh_token}&new_user=${result?.new_user}&verify=${result?.verify}`
 
   if (!result) {
     throw new ErrorWithStatus({

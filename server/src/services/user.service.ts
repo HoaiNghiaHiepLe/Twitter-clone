@@ -18,7 +18,6 @@ import {
   checkExistEmail,
   getFollowedUsersByUserId
 } from '~/repository/users.repository'
-import { config } from 'dotenv'
 import { DeleteResult, Document, ObjectId, UpdateResult, WithId } from 'mongodb'
 import User from '~/models/schemas/Users.schema'
 import axios from 'axios'
@@ -26,8 +25,8 @@ import { hashPassword } from '~/utils/crypto'
 import { googleOAuthPayload, googleOAuthToken } from '~/types/OpenAuth.type'
 import Follower from '~/models/schemas/Followers.schema'
 import { sendForgotPasswordEmail, sendVerifyEmail } from '~/utils/email'
+import { envConfig } from '~/constant/config'
 
-config()
 class UserService {
   private signAccessToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }): Promise<string> {
     return signToken({
@@ -36,9 +35,9 @@ class UserService {
         token_type: TokenType.AccessToken,
         verify: verify
       },
-      privateKey: process.env.JWT_SECRET_ACCESS_TOKEN as string,
+      privateKey: envConfig.jwtSecretAccessToken,
       options: {
-        expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN
+        expiresIn: envConfig.accessTokenExpiresIn
       }
     })
   }
@@ -57,7 +56,7 @@ class UserService {
       //? Để bảo mật hơn sẽ có trường hợp gọi đến hàm refresh Token khi refresh token cũ đã hết hạn nó sẽ tạo ra 1 refresh token mới với exp cũng hết hạn
       //? User sẽ phải login lại để lấy refresh token mới
       //? Hoặc thuận tiện hơn cho user nhưng ít bảo mật hơn thì có thể check nếu exp && exp < Date.now() thì mới truyền exp vào payload để signToken
-      //? Lúc này nếu refresh token cũ hết hạn thì sẽ tạo ra 1 refresh token mới với expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN
+      //? Lúc này nếu refresh token cũ hết hạn thì sẽ tạo ra 1 refresh token mới với expiresIn: envConfig.refreshTokenExpiresIn
       //? Vì vậy khi refresh token bị lộ attacker vẫn có thể dùng refresh token cũ để tiếp tục lấy refresh token mới
       return signToken({
         payload: {
@@ -66,7 +65,7 @@ class UserService {
           verify: verify,
           exp
         },
-        privateKey: process.env.JWT_SECRET_REFRESH_TOKEN as string
+        privateKey: envConfig.jwtSecretRefreshToken
       })
     }
     //? nếu không truyền exp thì sign với expiresIn (dùng cho trường hợp refresh token lấy exp mặc định từ env)
@@ -76,9 +75,9 @@ class UserService {
         token_type: TokenType.RefreshToken,
         verify: verify
       },
-      privateKey: process.env.JWT_SECRET_REFRESH_TOKEN as string,
+      privateKey: envConfig.jwtSecretRefreshToken,
       options: {
-        expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN
+        expiresIn: envConfig.refreshTokenExpiresIn
       }
     })
   }
@@ -90,9 +89,9 @@ class UserService {
         token_type: TokenType.EmailVerifyToken,
         verify: verify
       },
-      privateKey: process.env.JWT_SECRET_EMAIL_VERIFY_TOKEN as string,
+      privateKey: envConfig.jwtSecretEmailVerifyToken,
       options: {
-        expiresIn: process.env.EMAIL_VERIFY_TOKEN_EXPIRES_IN
+        expiresIn: envConfig.emailVerifyTokenExpiresIn
       }
     })
   }
@@ -108,7 +107,7 @@ class UserService {
   }
 
   private decodeRefreshToken(refresh_token: string): Promise<TokenPayload> {
-    return verifyToken({ token: refresh_token, secretOrPublicKey: process.env.JWT_SECRET_REFRESH_TOKEN as string })
+    return verifyToken({ token: refresh_token, secretOrPublicKey: envConfig.jwtSecretRefreshToken })
   }
 
   private signForgotPasswordToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }): Promise<string> {
@@ -118,9 +117,9 @@ class UserService {
         token_type: TokenType.ForgotPasswordToken,
         verify: verify
       },
-      privateKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN as string,
+      privateKey: envConfig.jwtSecretForgotPasswordToken,
       options: {
-        expiresIn: process.env.FORGOT_PASSWORD_TOKEN_EXPIRES_IN
+        expiresIn: envConfig.forgotPasswordTokenExpiresIn
       }
     })
   }
@@ -178,9 +177,9 @@ class UserService {
   private async getOAuthGoogleToken(code: string): Promise<googleOAuthToken> {
     const body = {
       code,
-      client_id: process.env.GOOGLE_CLIENT_ID,
-      client_secret: process.env.GOOGLE_CLIENT_SECRET,
-      redirect_uri: process.env.GOOGLE_REDIRECT_URI,
+      client_id: envConfig.googleClientId,
+      client_secret: envConfig.googleClientSecret,
+      redirect_uri: envConfig.googleRedirectUri,
       grant_type: 'authorization_code'
     }
 
