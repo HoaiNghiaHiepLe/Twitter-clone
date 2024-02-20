@@ -1,16 +1,14 @@
 import { Upload } from '@aws-sdk/lib-storage'
 import { S3 } from '@aws-sdk/client-s3'
-import { config } from 'dotenv'
 import fs from 'fs'
 import { Response } from 'express'
-
-config()
+import { envConfig } from '~/constant/config'
 
 const s3 = new S3({
-  region: process.env.AWS_REGION as string,
+  region: envConfig.awsRegion,
   credentials: {
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID as string
+    secretAccessKey: envConfig.awsSecretAccessKey,
+    accessKeyId: envConfig.awsAccessKeyId
   }
 })
 
@@ -32,7 +30,7 @@ export const uploadFileToS3 = async ({
     client: s3,
     params: {
       // Tên bucket s3 trên aws
-      Bucket: process.env.S3_BUCKET_NAME as string,
+      Bucket: envConfig.awsS3BucketName,
       // Tên file sẽ lưu trên s3
       Key: fileName,
       // Nội dung file sẽ gửi lên s3
@@ -59,7 +57,7 @@ export const sendFileFromS3 = async (res: Response, filePath: string) => {
     //? Lấy file từ s3 bằng getobject
     const data = await s3.getObject({
       // Tên bucket s3 trên aws
-      Bucket: process.env.S3_BUCKET_NAME as string,
+      Bucket: envConfig.awsS3BucketName,
       // Tên file sẽ lưu trên s3
       Key: filePath
     }) //? Trả về file dưới dạng stream

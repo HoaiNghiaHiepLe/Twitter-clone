@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { config } from 'dotenv'
 import { Pagination, TweetRequestBody, TweetRequestParams, TweetRequestQuery } from '~/models/requests/Tweet.request'
 import tweetServices from '~/services/tweets.service'
 import { TokenPayload } from '~/models/requests/User.request'
@@ -9,8 +8,6 @@ import { MESSAGE } from '~/constant/message'
 import Tweet from '~/models/schemas/Tweets.schema'
 import { TweetType } from '~/constant/enum'
 import userService from '~/services/user.service'
-
-config()
 
 export const createTweetController = async (req: Request<ParamsDictionary, any, TweetRequestBody>, res: Response) => {
   const { user_id } = req.decoded_authorization as TokenPayload

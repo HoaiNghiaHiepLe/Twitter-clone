@@ -1,4 +1,3 @@
-import { config } from 'dotenv'
 import { TweetRequestBody } from '~/models/requests/Tweet.request'
 import {
   countNewsFeedByAggregate,
@@ -15,8 +14,6 @@ import { findOneAndUpdateHashtag } from '~/repository/hashtags.repository'
 import Hashtag from '~/models/schemas/Hashtags.schema'
 import { IntegerType, ObjectId, OnlyFieldsOfType } from 'mongodb'
 import { TweetType } from '~/constant/enum'
-
-config()
 
 class TweetServices {
   async checkAndCreateHashtag(hashtags: string[]) {

@@ -1,14 +1,11 @@
 import { NextFunction, Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { config } from 'dotenv'
 import { MESSAGE } from '~/constant/message'
 import { interpolateMessage } from '~/utils/utils'
 import { SearchRequestQuery } from '~/models/requests/Search.request'
 import searchService from '~/services/search.service'
 import tweetServices from '~/services/tweets.service'
 import { countTweetsByAggregate } from '~/repository/search.repository'
-
-config()
 
 export const searchController = async (req: Request<ParamsDictionary, any, any, SearchRequestQuery>, res: Response) => {
   const { q, f, pf, page, limit } = req.query

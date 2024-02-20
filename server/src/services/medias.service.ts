@@ -4,8 +4,7 @@ import sharp from 'sharp'
 import { DIR } from '~/constant/dir'
 import { getFileExtension, getFilesInDir, getNameFromFullName, uploadImage, uploadVideo } from '~/utils/file'
 import fsPromise from 'fs/promises'
-import { isProduction } from '~/constant/config'
-import { config } from 'dotenv'
+import { envConfig, isProduction } from '~/constant/config'
 import { EncodingStatus, MediaType, VideoEncodingNotification } from '~/constant/enum'
 import { Media } from '~/types/Media.type'
 import formidable from 'formidable'
@@ -16,8 +15,6 @@ import { uploadFileToS3 } from '~/utils/s3'
 import { CompleteMultipartUploadCommandOutput } from '@aws-sdk/client-s3'
 import { normalizePath } from '~/utils/common'
 import { rimrafSync } from 'rimraf'
-
-config()
 
 class Queue {
   // Lưu trữ danh sách các video đang được encode
@@ -186,8 +183,8 @@ class MediaService {
         //? Trả về đường dẫn tới file ở server k kèm theo phần mở rộng
         // return {
         //   url: isProduction
-        //     ? `${process.env.HOST}/static/image/${newName}`
-        //     : `http://localhost:${process.env.PORT}/static/image/${newName}`,
+        //     ? `${envConfig.host}/static/image/${newName}`
+        //     : `http://localhost:${envConfig.port}/static/image/${newName}`,
         //   type: MediaType.Image
         // }
         //? Trả về đường dẫn trên aws s3 sau khi đã upload
@@ -229,8 +226,8 @@ class MediaService {
         //? Trả về đường dẫn tới file ở server sau khi đã upload
         // return {
         //   url: isProduction
-        //     ? `${process.env.HOST}/static/${file.newFilename}`
-        //     : `http://localhost:${process.env.PORT}/static/${file.newFilename}`,
+        //     ? `${envConfig.host}/static/${file.newFilename}`
+        //     : `http://localhost:${envConfig.port}/static/${file.newFilename}`,
         //   type: MediaType.Video
         // }
       })
@@ -255,8 +252,8 @@ class MediaService {
         // Tạo Media object để trả về cho client
         return {
           url: isProduction
-            ? `${process.env.HOST}/static/video-hls/${newName}`
-            : `http://localhost:${process.env.PORT}/static/video-hls/${newName}`,
+            ? `${envConfig.host}/static/video-hls/${newName}`
+            : `http://localhost:${envConfig.port}/static/video-hls/${newName}`,
           type: MediaType.HLS
         }
       })
@@ -285,8 +282,8 @@ class MediaService {
         //? Trả về đường dẫn tới file k kèm theo phần mở rộng
         return {
           url: isProduction
-            ? `${process.env.HOST}/static/image/${newName}`
-            : `http://localhost:${process.env.PORT}/static/image/${newName}`,
+            ? `${envConfig.host}/static/image/${newName}`
+            : `http://localhost:${envConfig.port}/static/image/${newName}`,
           type: MediaType.Image
         }
       })
@@ -311,8 +308,8 @@ class MediaService {
 
         return {
           url: isProduction
-            ? `${process.env.HOST}/static/${video.newFilename}`
-            : `http://localhost:${process.env.PORT}/static/${video.newFilename}`,
+            ? `${envConfig.host}/static/${video.newFilename}`
+            : `http://localhost:${envConfig.port}/static/${video.newFilename}`,
           type: MediaType.Video
         }
       })

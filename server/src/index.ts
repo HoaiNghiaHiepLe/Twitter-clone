@@ -4,7 +4,6 @@ import DatabaseService from './services/database.service'
 import { defaultErrorHandler } from './middlewares/error.middlewares'
 import mediasRouter from './routes/medias.routes'
 import { initFolder } from './utils/file'
-import { config } from 'dotenv'
 import path from 'path'
 import { DIR } from './constant/dir'
 import { PATH } from './constant/path'
@@ -17,6 +16,8 @@ import searchRouter from './routes/search.routes'
 import { createServer } from 'http'
 import conversationsRouter from './routes/conversations.routes'
 import initSocket from './utils/socket'
+import { envConfig } from './constant/config'
+
 // import fs from 'fs'
 // import YAML from 'yaml'
 import swaggerUi from 'swagger-ui-express'
@@ -67,8 +68,6 @@ const swaggerOptions: swaggerJSDoc.Options = {
 
 // Tạo swagger spec từ swagger options
 const swaggerSpec = swaggerJSDoc(swaggerOptions)
-
-config()
 
 //connect với mongodb rồi chạy hàm tạo index cho các collection nếu chưa có
 DatabaseService.connect().then(() => {
