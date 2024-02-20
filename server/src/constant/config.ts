@@ -2,9 +2,13 @@ import argv from 'minimist'
 import { config } from 'dotenv'
 const options = argv(process.argv.slice(2))
 
-config()
+export const isProduction = options.env === 'production'
 
-export const isProduction = Boolean(options.production)
+config({
+  // Lấy ra options.env đã truyền ở package.json trong câu lệnh chạy server (npm run dev hoặc npm run start -- --env=development)
+  // Nếu có options.env và khác development thì sẽ lấy file .env của môi trường đó, còn không thì lấy file .env mặc định
+  path: options.env && options.env !== 'development' ? `.env.${options.env}` : '.env'
+})
 
 export const envConfig = {
   //? Port server
