@@ -17,6 +17,7 @@ import { createServer } from 'http'
 import conversationsRouter from './routes/conversations.routes'
 import initSocket from './utils/socket'
 import helmet from 'helmet'
+import rateLimit from 'express-rate-limit'
 
 // import fs from 'fs'
 // import YAML from 'yaml'
@@ -80,6 +81,20 @@ DatabaseService.connect().then(() => {
 })
 
 const app = express()
+
+// enable rate limit
+const limiter = rateLimit({
+  // 15 phút cho 100 request từ 1 ip
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  // Gửi header về client để thông báo số request còn lại
+  standardHeaders: true,
+  // Không gửi header về client để thông báo số request còn lại
+  legacyHeaders: false,
+  message: 'Too many requests from this IP, please try again after an hour'
+})
+
+app.use(limiter)
 
 // Tạo server để sử dụng socket.io
 const httpServer = createServer(app)
