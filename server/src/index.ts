@@ -8,7 +8,7 @@ import path from 'path'
 import { DIR } from './constant/dir'
 import { PATH } from './constant/path'
 import staticRouter from './routes/static.routes'
-import cors from 'cors'
+import cors, { CorsOptions } from 'cors'
 import databaseService from './services/database.service'
 import tweetsRouter from './routes/tweets.routes'
 import bookmarksRouter from './routes/bookmarks.routes'
@@ -16,12 +16,13 @@ import searchRouter from './routes/search.routes'
 import { createServer } from 'http'
 import conversationsRouter from './routes/conversations.routes'
 import initSocket from './utils/socket'
-import { envConfig } from './constant/config'
+import helmet from 'helmet'
 
 // import fs from 'fs'
 // import YAML from 'yaml'
 import swaggerUi from 'swagger-ui-express'
 import swaggerJSDoc from 'swagger-jsdoc'
+import { isProduction } from './constant/config'
 
 // test upload file to s3
 // import '~/utils/s3'
@@ -83,8 +84,18 @@ const app = express()
 // Tạo server để sử dụng socket.io
 const httpServer = createServer(app)
 
+// enable helmet
+app.use(helmet())
+
+const corsOptions: CorsOptions = {
+  // Chỉ cho phép client url được truy cập api nếu là production
+  // Nếu không sẽ cho phép tất cả các domain khác truy cập
+  // Chỉ tác dụng với browser k tác dụng với postman
+  origin: isProduction ? process.env.CLIENT_URL : '*'
+}
+
 // enable cors
-app.use(cors())
+app.use(cors(corsOptions))
 
 const port = process.env.PORT || 4000
 
