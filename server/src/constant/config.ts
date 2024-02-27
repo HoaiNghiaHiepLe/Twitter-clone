@@ -1,13 +1,38 @@
-import argv from 'minimist'
 import { config } from 'dotenv'
-const options = argv(process.argv.slice(2))
+import fs from 'fs'
+import path from 'path'
+// Fix lỗi 'NODE_ENV' is not recognized as an internal or external command:
+// https://stackoverflow.com/questions/47499322/node-env-is-not-recognized-as-an-internal-or-external-command
+// npm install - g win - node - env(Nếu chạy trên window)
+const env = process.env.NODE_ENV
+const envFileName = `.env.${env}`
 
-export const isProduction = options.env === 'production'
+// nếu k truyền env vào script
+if (!env) {
+  // Thông báo lỗi và dừng chương trình
+  console.log('NODE_ENV is not defined (example: NODE_ENV=development, NODE_ENV=production in package.json script)')
+  console.log(`detecting NODE_ENV = ${env}`)
+  process.exit(1)
+}
+
+// Phát hiện file env là NODE_ENV = development hoặc production thì dùng file env tương ứng
+console.log(`detecting NODE_ENV = ${env} => using ${envFileName} file`)
+
+if (!fs.existsSync(path.resolve(envFileName))) {
+  console.log(`File ${envFileName} is not exist`)
+  console.log(
+    'caution: App will not use .env file to load environment variables, example: if NODE_ENV = development, it will use .env.development file to load environment variables.'
+  )
+  console.log(`Please create ${envFileName} or reference to .env.example file to create it`)
+  process.exit(1)
+}
+
+export const isProduction = env === 'production'
 
 config({
-  // Lấy ra options.env đã truyền ở package.json trong câu lệnh chạy server (npm run dev hoặc npm run start -- --env=development)
-  // Nếu có options.env và khác development thì sẽ lấy file .env của môi trường đó, còn không thì lấy file .env mặc định
-  path: options.env && options.env !== 'development' ? `.env.${options.env}` : '.env'
+  // Lấy ra env đã truyền ở package.json trong câu lệnh chạy server (npm run dev hoặc npm run start -- --env=development)
+  // ko dùng file .env mặc định
+  path: envFileName
 })
 
 export const envConfig = {
