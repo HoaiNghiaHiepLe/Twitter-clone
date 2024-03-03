@@ -3,7 +3,7 @@ module.exports = {
   apps: [
     {
       name: 'Twitter-Clone',
-      script: 'dist/index.js',
+      script: 'node dist/index.js',
       env: {
         NODE_ENV: 'development',
         // Riêng NODE_ENV thì có thể dùng process.env.NODE_ENV hoặc process.NODE_ENV, còn lại thì chỉ được dùng process.env.TEN_BIEN
