@@ -8,24 +8,70 @@ import Tweet from '~/models/schemas/Tweets.schema'
 import Hashtag from '~/models/schemas/Hashtags.schema'
 import Bookmark from '~/models/schemas/Bookmarks.schema'
 import Conversation from '~/models/schemas/Conversations.schema'
-import { envConfig } from '~/constant/config'
+import { envConfig, isProduction } from '~/constant/config'
 
-const uri = `mongodb+srv://${envConfig.dbUserName}:${envConfig.dbPassword}@twitter.juksne5.mongodb.net/?retryWrites=true&w=majority`
+const dbUser = envConfig.dbUserName
+const dbPassword = envConfig.dbPassword
+const dbName = envConfig.dbName
+const dbHost = envConfig.dbHost // Make sure this comes from the correct env variable
+const dbPort = envConfig.dbPort
+
+// Dùng khi connect với chạy trên docker
+const uri = `mongodb://${dbUser}:${dbPassword}@${dbHost}:${dbPort}/${dbName}`
+
+// Dùng khi connect với mongodb atlas cloud
+// const uri = `mongodb+srv://${dbUser}:${dbPassword}@twitter.juksne5.mongodb.net/?retryWrites=true&w=majority`
+
 class DatabaseService {
   private client: MongoClient
   private db: Db
+
   constructor() {
-    this.client = new MongoClient(uri)
+    this.client = new MongoClient(uri, { serverApi: ServerApiVersion.v1 })
     this.db = this.client.db(envConfig.dbName)
   }
 
   async connect() {
     try {
       await this.db.command({ ping: 1 })
-      console.log('Pinged your deployment. You successfully connected to MongoDB!')
+      console.log(`Connected to MongoDB at host: ${envConfig.dbHost}`)
     } catch (error) {
       console.log('Error', error)
       throw error
+    }
+  }
+
+  //? Hàm này sẽ chạy khi server start để tạo ra các collection nếu chưa có
+  async setupInitCollections() {
+    // Danh sách các collection cần tạo
+    const collectionConfigs = [
+      { name: envConfig.dbUsersCollection },
+      { name: envConfig.dbRefreshTokensCollection },
+      { name: envConfig.dbFollowersCollection },
+      { name: envConfig.dbVideoEncodingStatusCollection },
+      { name: envConfig.dbTweetsCollection },
+      { name: envConfig.dbHashtagsCollection },
+      { name: envConfig.dbBookmarksCollection },
+      { name: envConfig.dbConversationsCollection }
+    ]
+
+    // Lấy danh sách các collection đã có trong db
+    const existingCollections = await this.db.listCollections({}, { nameOnly: true }).toArray()
+    // Lấy ra tên của các collection đã có
+    const existingCollectionNames = existingCollections.map((col) => col.name)
+
+    // Duyệt qua danh sách các collection cần tạo
+    for (const config of collectionConfigs) {
+      try {
+        // Nếu collection chưa có thì tạo mới
+        if (!existingCollectionNames.includes(config.name)) {
+          // Nếu collection chưa có thì tạo mới
+          await this.db.createCollection(config.name)
+          console.log(`Collection ${config.name} created.`)
+        }
+      } catch (error) {
+        console.error(`Error setting up initial collection ${config.name}:`, error)
+      }
     }
   }
 

@@ -72,12 +72,15 @@ const swaggerOptions: swaggerJSDoc.Options = {
 const swaggerSpec = swaggerJSDoc(swaggerOptions)
 
 //connect với mongodb rồi chạy hàm tạo index cho các collection nếu chưa có
-DatabaseService.connect().then(() => {
-  databaseService.indexUser()
-  databaseService.indexRefreshToken()
-  databaseService.indexVideoStatus()
-  databaseService.indexFollower()
-  databaseService.indexTweet()
+DatabaseService.connect().then(async () => {
+  // Tạo collection nếu chưa có
+  await databaseService.setupInitCollections()
+  // Tạo index cho các collection nếu chưa có
+  await databaseService.indexUser()
+  await databaseService.indexRefreshToken()
+  await databaseService.indexVideoStatus()
+  await databaseService.indexFollower()
+  await databaseService.indexTweet()
 })
 
 const app = express()

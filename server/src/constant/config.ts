@@ -41,6 +41,9 @@ export const envConfig = {
   portClient: (process.env.PORT_CLIENT as string) || (5000 as number),
   host: process.env.HOST as string,
 
+  //? Kết nối database mongodb trong docker hoặc mongodb atlas cloud
+  dbHost: process.env.DB_HOST as string,
+  dbPort: process.env.DB_PORT as string,
   //? Tên database và tài khoản để kết nối
   dbUserName: process.env.DB_USERNAME as string,
   dbPassword: process.env.DB_PASSWORD as string,

@@ -1,8 +1,59 @@
-version: '3'
+version: '3.8'
+
 services:
-  twitter:
-    image: hieple/twitter:v0
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    container_name: twitter-clone-nginx
+    ports:
+      - '80:80'
+    volumes:
+      - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
+    depends_on:
+      - server
+    networks:
+      - twitter-clone-network
+
+  server:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    restart: unless-stopped
+    container_name: twitter-clone-server
     ports:
       - '4000:4000'
     volumes:
       - ~/Twitter-clone/server/uploads:/app/uploads
+    depends_on:
+      - mongodb
+    environment:
+      DB_USERNAME: hieple
+      DB_PASSWORD: hieple
+      DB_NAME: TwitterDev
+    networks:
+      - twitter-clone-network
+
+  mongodb:
+    image: mongo:latest
+    restart: unless-stopped
+    container_name: twitter-clone-mongodb
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongodb-data:/data/db
+      - ./server/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    environment:
+      MONGODB_INITDB_ROOT_USERNAME: hieple
+      MONGODB_INITDB_ROOT_PASSWORD: hieple
+      MONGODB_INITDB_DATABASE: TwitterDev
+    networks:
+      - twitter-clone-network
+
+networks:
+  twitter-clone-network:
+    name: twitter-clone-network
+    driver: bridge
+
+volumes:
+  mongodb-data:
+    name: mongodb-data-twitter-clone
