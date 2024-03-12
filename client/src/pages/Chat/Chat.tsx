@@ -27,7 +27,7 @@ const Chat = () => {
   const { VITE_API_URL } = import.meta.env
 
   // Danh sách user để test send_message hoặc có thể là api lấy danh sách user từ server
-  const usernames = ['user_65b8d07c6f997cd8c41ccc0f', 'user_65b2386524e7120262946e84']
+  const usernames = ['user_65edaacfa2a7f84cb0942e5a', 'user_65f09938a7cb4522fefbccff']
 
   // useEffect chỉ chạy 1 lần khi kết nối với socket ở server
   useEffect(() => {
