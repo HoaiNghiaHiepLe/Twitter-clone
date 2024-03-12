@@ -23,7 +23,7 @@ import rateLimit from 'express-rate-limit'
 // import YAML from 'yaml'
 import swaggerUi from 'swagger-ui-express'
 import swaggerJSDoc from 'swagger-jsdoc'
-import { isProduction } from './constant/config'
+import { envConfig, isProduction } from './constant/config'
 
 // test upload file to s3
 // import '~/utils/s3'
@@ -109,7 +109,7 @@ const corsOptions: CorsOptions = {
   // Chỉ cho phép client url được truy cập api nếu là production
   // Nếu không sẽ cho phép tất cả các domain khác truy cập
   // Chỉ tác dụng với browser k tác dụng với postman
-  origin: isProduction ? process.env.CLIENT_URL : '*'
+  origin: isProduction ? envConfig.clientUrl : '*'
 }
 
 // enable cors
