@@ -15,6 +15,7 @@ services:
       - twitter-clone-network
 
   server:
+    image: twitter-clone-server:v0
     build:
       context: .
       dockerfile: docker/Dockerfile.dev
