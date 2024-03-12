@@ -28,5 +28,6 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
+          file: docker/Dockerfile.dev
           push: true
           tags: hoainghiahieple/twitter-clone-server:latest
