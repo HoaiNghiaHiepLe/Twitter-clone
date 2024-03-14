@@ -198,6 +198,10 @@ export const serveVideoStreamController = async (req: Request, res: Response, ne
   videoSteams.pipe(res)
 }
 
+//! Lưu ý khi đổi nơi lưu file video
+//! Phải thay dổi cả ở hàm serveM3u8Controller và serveSegmentController
+//! Vì cần cả file master m3u8 và các file segment cùng 1 folder trả về cho client nếu khồng sẽ lỗi 404
+
 //? Video streaming m3u8
 export const serveM3u8Controller = async (req: Request, res: Response, next: NextFunction) => {
   const { id, masterM3u8 } = req.params
@@ -206,7 +210,7 @@ export const serveM3u8Controller = async (req: Request, res: Response, next: Nex
   // video-hls là folder chứa file master m3u8 và các file segment trên s3
   // masterM3u8 đc gửi lên từ req.params luôn có định dạng là master.m3u8
   return sendFileFromS3(res, `video-hls/${id}/${masterM3u8}`)
-  // trả về file từ local khi không sử dụng s3
+  // trả về file lưu trong local để xem từ client khi không sử dụng s3
   // return res.sendFile(path.resolve(DIR.UPLOAD_VIDEO_DIR, id, masterM3u8), (err) => {
   //   if (err) return res.status(404).send('Not found')
   // })
@@ -222,7 +226,7 @@ export const serveSegmentController = async (req: Request, res: Response, next: 
   // segment là file segment
   return sendFileFromS3(res, `video-hls/${id}/${version}/${segment}`)
 
-  // trả về file từ local khi không sử dụng s3
+  // trả về file lưu trong local để xem từ client khi không sử dụng s3
   // return res.sendFile(path.resolve(DIR.UPLOAD_VIDEO_DIR, id, version, segment), (err) => {
   //   if (err) return res.status(404).send('Not found')
   // })
