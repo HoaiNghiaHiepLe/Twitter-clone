@@ -1,33 +1,61 @@
-name: Docker Image CI
+# name: Docker Image CI
+
+# on:
+#   push:
+#     branches: ['develop']
+#   pull_request:
+#     branches: ['develop']
+# # jobs:
+# # # sử dụng khi docker chứa source code và cần phải build lại image để apply các thay đổi
+# # build-and-push:
+# #   runs-on: ubuntu-latest
+# #   defaults:
+# #     run:
+# #       working-directory: .
+# #   steps:
+# #     - uses: actions/checkout@v3
+# #     # Tạo file .env.development từ trong docker image bằng các biến môi trường được set trong secrets của repository
+# #     - name: 'Create env file'
+# #       run: echo "${{ secrets.ENV_DEVELOPMENT }}" > .env.development
+# #     # Đăng nhập vào Docker Hub bằng username và password được set trong secrets của repository
+# #     - name: Log in to Docker Hub
+# #       uses: docker/login-action@v2
+# #       with:
+# #         username: ${{ secrets.DOCKERHUB_USERNAME }}
+# #         password: ${{ secrets.DOCKERHUB_PASSWORD }}
+# #     # Build và push image lên Docker Hub với tag là latest
+# #     - name: Build and push Docker image
+# #       uses: docker/build-push-action@v3
+# #       with:
+# #         context: .
+# #         file: docker/Dockerfile.dev
+# #         push: true
+# #         tags: hoainghiahieple/twitter-clone-server:latest
+
+name: Deploy
 
 on:
   push:
     branches: ['develop']
   pull_request:
     branches: ['develop']
-
 jobs:
-  build-and-push:
+  deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: .
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: 'Create env file'
-        run: echo "${{ secrets.ENV_DEVELOPMENT }}" > .env.development
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          ssh-private-key: ${{ secrets.SSH_AUTHORIZED_KEY }}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          file: docker/Dockerfile.dev
-          push: true
-          tags: hoainghiahieple/twitter-clone-server:latest
+      - name: Pull latest code and update .env.development on VPS
+        run: |
+          ssh hieple@103.170.122.218 <<EOF
+            cd Twitter-clone/
+            git pull origin develop
+            echo '${{ secrets.ENV_DEVELOPMENT }}' > .env.development
+          EOF

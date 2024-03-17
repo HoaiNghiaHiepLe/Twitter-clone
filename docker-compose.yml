@@ -17,7 +17,8 @@ services:
       - twitter-clone-network
 
   server:
-    # image: twitter-clone-server:v0
+    # NOTE: use image from dockerhub or build with docker compose file in the same directory, not both
+    # image: twitter-clone-server:latest
     build:
       context: .
       dockerfile: docker/Dockerfile.dev
