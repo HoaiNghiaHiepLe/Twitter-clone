@@ -50,11 +50,11 @@ jobs:
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.5.3
         with:
-          ssh-private-key: ${{ secrets.SSH_AUTHORIZED_KEY }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Pull latest code and update .env.development on VPS
         run: |
-          ssh hieple@103.170.122.218 <<EOF
+          ssh -i .ssh/id_rsa_personal hieple@103.170.122.218 <<EOF
             cd Twitter-clone/
             git pull origin develop
             echo '${{ secrets.ENV_DEVELOPMENT }}' > .env.development
