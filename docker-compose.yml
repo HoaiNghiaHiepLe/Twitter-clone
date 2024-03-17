@@ -8,6 +8,8 @@ services:
     ports:
       - '80:80'
     volumes:
+      # mount ./server in git repo to /app in docker container
+      - ./server:/app
       - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
     depends_on:
       - server
@@ -15,7 +17,7 @@ services:
       - twitter-clone-network
 
   server:
-    image: twitter-clone-server:v0
+    # image: twitter-clone-server:v0
     build:
       context: .
       dockerfile: docker/Dockerfile.dev
@@ -24,7 +26,8 @@ services:
     ports:
       - '4000:4000'
     volumes:
-      - ~/Twitter-clone/server/uploads:/app/uploads
+      # mount ./server in git repo to /app in docker container
+      - ./server:/app
     depends_on:
       - mongodb
     environment:
@@ -42,6 +45,7 @@ services:
       - '27017:27017'
     volumes:
       - mongodb-data:/data/db
+      # create init user to readWrite database
       - ./server/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     environment:
       MONGODB_INITDB_ROOT_USERNAME: hieple
