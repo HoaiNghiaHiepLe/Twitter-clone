@@ -70,16 +70,11 @@ jobs:
       - name: Executing remote ssh commands using password
         uses: appleboy/ssh-action@master
         with:
-          # Địa chỉ IP của VPS
           host: ${{ secrets.HOST }}
-          # Username và password để đăng nhập vào VPS
           username: ${{ secrets.HOST_USERNAME }}
           password: ${{ secrets.HOST_PASSWORD }}
-          # Không khai báo port thì mặc định sẽ là 22
           port: ${{ secrets.PORT }}
-
-      - name: Pull latest code and update .env.development on VPS
-        run: |
-          cd Twitter-clone/
-          git pull origin develop
-          echo '${{ secrets.ENV_DEVELOPMENT }}' > .env.development
+          script: |
+            cd /home/${{ secrets.HOST_USERNAME }}/Twitter-clone/
+            git pull origin develop
+            echo '${{ secrets.ENV_DEVELOPMENT }}' > .env.development
