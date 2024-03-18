@@ -47,11 +47,11 @@ services:
     volumes:
       - mongodb-data:/data/db
       # create init user to readWrite database
-      - ./server/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
-    environment:
-      MONGODB_INITDB_ROOT_USERNAME: hieple
-      MONGODB_INITDB_ROOT_PASSWORD: hieple
-      MONGODB_INITDB_DATABASE: TwitterDev
+      # - ./server/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    # environment:
+    #   MONGODB_INITDB_ROOT_USERNAME: hieple
+    #   MONGODB_INITDB_ROOT_PASSWORD: hieple
+    #   MONGODB_INITDB_DATABASE: TwitterDev
     networks:
       - twitter-clone-network
 
