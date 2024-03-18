@@ -16,7 +16,8 @@ const dbHost = envConfig.dbHost // Make sure this comes from the correct env var
 const dbPort = envConfig.dbPort
 
 // Dùng khi connect với chạy trên docker
-const uri = `mongodb://${dbUser}:${dbPassword}@${dbHost}:${dbPort}/${dbName}`
+// const uri = `mongodb://${dbUser}:${dbPassword}@${dbHost}:${dbPort}/${dbName}`
+const uri = `mongodb://${dbHost}:${dbPort}/${dbName}`
 
 // Dùng khi connect với mongodb atlas cloud
 // const uri = `mongodb+srv://${dbUser}:${dbPassword}@twitter.juksne5.mongodb.net/?retryWrites=true&w=majority`
