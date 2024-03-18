@@ -5,15 +5,19 @@ WORKDIR /app
 # if not mount git repo into container, then copy all files to container
 # COPY ./server ./
 
-RUN apt install npm -y
-RUN apk add --no-cache ffmpeg
-RUN apk add python3
-RUN npm install pm2 -g
+# Install dependencies
+RUN apk add --no-cache ffmpeg python3
 
-# fix error: Could not load the "sharp" module using the linuxmusl-x64 runtime
-RUN npm install --os=linux --libc=musl --cpu=x64 sharp
+# Install global npm packages
+RUN npm install -g pm2
 
-RUN cd /app/server && npm install
+# Copy package.json and package-lock.json before other files
+# Utilize Docker cache to save re-installing dependencies if unchanged
+# have to copy package.json and package-lock.json first to avoid image build error, even git repo is mounted into container because the container only mounts the git repo after the image is built
+COPY ./server/package*.json ./
+
+# Install npm dependencies
+RUN npm install
 
 # if not mount git repo into container, then install node_modules
 # RUN npm install
