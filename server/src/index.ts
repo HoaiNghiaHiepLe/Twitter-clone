@@ -85,6 +85,14 @@ DatabaseService.connect().then(async () => {
 
 const app = express()
 
+// Dùng 1 trong 2 cách để khai báo swagger api docs route và ui
+// Dùng yaml và swagger-ui-express tiện lợi hơn và dễ dàng hơn
+// swagger api docs route and ui bằng swagger-ui-express và khai báo tất cả route test với swagger ở file yaml
+// app.use(PATH.BASE.SWAGGER, swaggerUi.serve, swaggerUi.setup(swaggerDocument))
+
+// swagger api docs route and ui bằng swaggerJSDoc và đọc từ swaggerOptions và khai báo swagger ở từng route
+app.use(PATH.BASE.SWAGGER, swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+
 // enable rate limit
 const limiter = rateLimit({
   // 15 phút cho 100 request từ 1 ip
@@ -122,14 +130,6 @@ initFolder()
 
 // parse application/x-www-form-urlencoded
 app.use(express.json())
-
-// Dùng 1 trong 2 cách để khai báo swagger api docs route và ui
-// Dùng yaml và swagger-ui-express tiện lợi hơn và dễ dàng hơn
-// swagger api docs route and ui bằng swagger-ui-express và khai báo tất cả route test với swagger ở file yaml
-// app.use(PATH.BASE.SWAGGER, swaggerUi.serve, swaggerUi.setup(swaggerDocument))
-
-// swagger api docs route and ui bằng swaggerJSDoc và đọc từ swaggerOptions và khai báo swagger ở từng route
-app.use(PATH.BASE.SWAGGER, swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 // routers
 app.use(PATH.BASE.USERS, userRouter)
