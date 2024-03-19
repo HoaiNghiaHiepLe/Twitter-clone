@@ -1,20 +1,20 @@
 version: '3.8'
 
 services:
-  nginx:
-    image: nginx:alpine
-    restart: unless-stopped
-    container_name: twitter-clone-nginx
-    ports:
-      - '80:80'
-    volumes:
-      # mount ./server in git repo to /app in docker container
-      - ./server:/app
-      - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
-    depends_on:
-      - server
-    networks:
-      - twitter-clone-network
+  # nginx:
+  #   image: nginx:alpine
+  #   restart: unless-stopped
+  #   container_name: twitter-clone-nginx
+  #   ports:
+  #     - '80:80'
+  #   volumes:
+  #     # mount ./server in git repo to /app in docker container
+  #     - ./server:/app
+  #     - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
+  #   depends_on:
+  #     - server
+  #   networks:
+  #     - twitter-clone-network
 
   server:
     # NOTE: use image from dockerhub or build with docker compose file in the same directory, not both
