@@ -103,7 +103,7 @@ app.use(limiter)
 const httpServer = createServer(app)
 
 // enable helmet
-app.use(helmet())
+// app.use(helmet())
 
 const corsOptions: CorsOptions = {
   // Chỉ cho phép client url được truy cập api nếu là production
