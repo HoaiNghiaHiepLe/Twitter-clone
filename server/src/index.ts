@@ -57,7 +57,11 @@ const swaggerOptions: swaggerJSDoc.Options = {
       }
     }
   },
-
+  servers: [
+    {
+      url: 'http://103.170.122.218:4000' // Update to use HTTP
+    }
+  ],
   apis: [
     // Đọc các file route để tạo swagger
     // './src/routes/*.routes.ts',
