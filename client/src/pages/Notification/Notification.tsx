@@ -1,5 +1,4 @@
-import { useEffect } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { PATH } from 'src/constants/path'
 import { Link } from 'react-router-dom'
 

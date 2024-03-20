@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PATH } from 'src/constants/path'
 import useQueryParams from 'src/hooks/useQueryParams'

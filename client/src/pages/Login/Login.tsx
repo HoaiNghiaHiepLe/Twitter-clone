@@ -1,11 +1,11 @@
 import axios from 'axios'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PATH } from 'src/constants/path'
 import useQueryParams from 'src/hooks/useQueryParams'
 
 const Login = () => {
-  const { access_token: access_token_param, refresh_token: refresh_token_param, new_user, verify } = useQueryParams()
+  const { access_token: access_token_param, refresh_token: refresh_token_param } = useQueryParams()
   const { VITE_API_URL } = import.meta.env
 
   const navigate = useNavigate()
