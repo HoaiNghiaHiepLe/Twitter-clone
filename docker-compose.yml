@@ -1,20 +1,25 @@
 version: '3.8'
 
 services:
-  # nginx:
-  #   image: nginx:alpine
-  #   restart: unless-stopped
-  #   container_name: twitter-clone-nginx
-  #   ports:
-  #     - '80:80'
-  #   volumes:
-  #     # mount ./server in git repo to /app in docker container
-  #     - ./server:/app
-  #     - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
-  #   depends_on:
-  #     - server
-  #   networks:
-  #     - twitter-clone-network
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    container_name: twitter-clone-nginx
+    ports:
+      - '80:80'
+    volumes:
+      # mount ./server in git repo to /app in docker container
+      - type: bind
+        source: ./server
+        target: /app
+      # mount ./docker/nginx/conf.d/ in git repo to /etc/nginx/conf.d/ in docker container
+      - type: bind
+        source: ./docker/nginx/conf.d/
+        target: /etc/nginx/conf.d/
+    depends_on:
+      - server
+    networks:
+      - twitter-clone-network
 
   server:
     # NOTE: use image from dockerhub or build with docker compose file in the same directory, not both
@@ -26,15 +31,14 @@ services:
     container_name: twitter-clone-server
     ports:
       - '4000:4000'
+
     volumes:
       # mount ./server in git repo to /app in docker container
-      - ./server:/app
+      - type: bind
+        source: ./server
+        target: /app
     depends_on:
       - mongodb
-    environment:
-      DB_USERNAME: hieple
-      DB_PASSWORD: hieple
-      DB_NAME: TwitterDev
     networks:
       - twitter-clone-network
 
@@ -45,7 +49,11 @@ services:
     ports:
       - '27017:27017'
     volumes:
-      - mongodb-data:/data/db
+      - type: volume
+        source: mongodb-data
+        target: /data/db
+        volume:
+          nocopy: true
       # create init user to readWrite database
       # - ./server/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     # environment:
@@ -54,6 +62,11 @@ services:
     #   MONGODB_INITDB_DATABASE: TwitterDev
     networks:
       - twitter-clone-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo localhost:27017/TwitterDev --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
 
 networks:
   twitter-clone-network:
